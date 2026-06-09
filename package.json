@@ -1,0 +1,23 @@
+{
+  "name": "nan-video-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline de video generativo usando solo modelos del cluster NaN",
+  "scripts": {
+    "script": "tsx src/pipeline/01-script.ts",
+    "vision": "tsx src/pipeline/02-vision.ts",
+    "voice": "tsx src/pipeline/03-voice.ts",
+    "produce": "tsx src/pipeline/00-orchestrator.ts",
+    "load": "tsx src/content/load.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "openai": "^4.67.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

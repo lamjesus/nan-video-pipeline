@@ -1,0 +1,11 @@
+node_modules/
+.env
+# Assets generados (audio, imagenes, video)
+assets/audio/*
+assets/images/*
+assets/output/*
+!assets/**/.gitkeep
+# Carpetas de render por caso
+render-*/
+# Casos generados en runtime
+src/content/caso-generado.ts
