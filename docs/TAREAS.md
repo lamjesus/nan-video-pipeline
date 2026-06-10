@@ -124,7 +124,7 @@ relacionada, devolviendo el caso.
 ## Tarea H — Harness y tooling [Manu ✅]
 
 **Archivos:** varios (aditivos, no tocan tareas de otros)
-**Objetivo:** tooling de desarrollo y CI para el repo.
+**Objetivo:** tooling de desarrollo para el repo.
 
 **Implementado:**
 - `scripts/doctor.ts` — preflight: env vars, ffmpeg, NaN API, vitest
@@ -132,12 +132,16 @@ relacionada, devolviendo el caso.
 - `src/lib/nan-call.ts` — wrapper con retry exponencial + semáforo (max 3) + throttle (60 rpm)
 - `config.yml` — modelos + voz + providers fuera del código (carga en `src/config`)
 - Carga de `.env` con `dotenv/config` (antes no se leía → `doctor` fallaba)
-- Gestor de paquetes **yarn** (CI, scripts y docs migrados; `package-lock.json` fuera)
+- Gestor de paquetes **yarn** (scripts y docs migrados; `package-lock.json` fuera)
 - `.pre-commit-config.yaml` — gitleaks v8.30.1
-- `.github/workflows/ci.yml` — typecheck + test en PR (con yarn)
 - `.editorconfig` — utf-8, lf, indent 2
 - `AGENTS.md` — mapa del repo, comandos, convenciones, cómo trabajar
 - `vitest` + `yarn test` — 30 tests (freepik eliminado)
+
+**Sin CI en GitHub Actions:** la cuenta del owner tiene Actions bloqueado por
+billing, así que el workflow se eliminó. La verificación se hace **en local** antes
+de la PR: `yarn typecheck` + `yarn test` (+ `yarn doctor` si tocas el cluster). Ver
+[`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md) > No hay CI.
 
 **Nota:** `pre-commit install` necesario tras pull.
 

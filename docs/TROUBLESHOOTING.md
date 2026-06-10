@@ -66,6 +66,30 @@ seguro es `wikimedia,local` (ver `config.yml`).
 
 ---
 
+## No hay CI en GitHub Actions
+
+**Síntoma:** la PR no ejecuta checks automáticos (typecheck/test), o aparecía un
+check que fallaba al instante con "the job was not started because your account is
+locked due to a billing issue".
+
+**Causa:** GitHub Actions en repos privados consume minutos facturables. La cuenta
+del **owner** del repo tiene Actions **bloqueado por billing**, así que ningún job
+arranca (falla en segundos sin ejecutarse).
+
+**Fix:** se eliminó el workflow (`.github/workflows/ci.yml`) para no dejar un check
+rojo permanente. La verificación se hace **en local** antes de abrir/actualizar PR:
+
+```bash
+yarn typecheck      # tipos
+yarn test           # 30 tests
+yarn doctor         # sólo si tocas el cluster
+```
+
+Si el owner resuelve el billing y queréis CI de vuelta, basta recuperar el workflow
+del historial (`git show <commit>:.github/workflows/ci.yml`).
+
+---
+
 ## `gitleaks` / pre-commit no se ejecuta
 
 **Síntoma:** los hooks de pre-commit no corren al hacer commit tras clonar o
