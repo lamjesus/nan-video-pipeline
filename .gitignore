@@ -9,3 +9,5 @@ assets/output/*
 render-*/
 # Casos generados en runtime
 src/content/caso-generado.ts
+# Bitácora personal de trabajo (canónica en el vault; fuera de PRs)
+PROGRESS.md

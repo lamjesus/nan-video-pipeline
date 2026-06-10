@@ -50,23 +50,28 @@ en estéreo, y la consola imprime la duración real.
 
 ---
 
-## Tarea C — Selección visual con mimo-v2.5 [Manu ✅]
+## Tarea C — Selección visual con modelo de visión NaN [Manu 🔶 en curso]
 
-**Archivos:** `src/pipeline/02-vision.ts` + `src/lib/media/` (6 ficheros)
-**Objetivo:** que por cada escena se elija una imagen de archivo de dominio público
-relevante, evaluada por `mimo`.
+**Archivos:** `src/pipeline/02-vision.ts` + `src/lib/media/` (5 ficheros)
+**Objetivo:** que por cada escena se elija una imagen de archivo relevante,
+**evaluada por un modelo de visión** (ver hallazgo abajo: mimo no sirve → gemma4/qwen).
 
-**Implementado:**
+**Implementado (núcleo OK):**
 - Capa de proveedores de media: Wikimedia (default, sin key), Local (fallback offline),
-  Pexels/Freepik (opt-in, requieren API key)
+  Pexels (opt-in, requiere `PEXELS_API_KEY` — validada: key OK, JPEG descargable)
 - Selector por env `MEDIA_PROVIDERS` (csv, default `wikimedia,local`)
 - Search terms: heurística simple (quita stopwords del imagePrompt)
-- `elegirMejor()` llama a mimo-v2.5 con markdown inline `![image](url)`
-  (único formato que acepta el cluster NaN — el OpenAI array da "Param Incorrect")
-- Descarga la imagen elegida a `assets/images/<scene.id>.<ext>`
-- Tests TDD: 17 tests (vitest)
+- Descarga de la imagen elegida a `assets/images/<scene.id>.<ext>`
+- Tests TDD: 16 tests (vitest; freepik eliminado — su API no es gratuita)
 
-**Verificado:** `MEDIA_PROVIDERS=local npm run vision caso-ejemplo` → 9/9 imágenes ✅
+**⚠️ HALLAZGO (pendiente de fix — se explica en la daily):**
+- `mimo-v2.5` **está CIEGO** en el cluster: no descarga URLs, alucina la descripción
+  desde el nombre del fichero → la selección no era real (las 9 escenas salían idénticas).
+- **Fix probado:** `gemma4` (con `qwen3.6` de fallback) + imagen en **base64, formato
+  array OpenAI** (no markdown, no URL). gemma4 describe imágenes reales correctamente.
+- Falta `User-Agent` en la descarga (Wikimedia devuelve HTML sin él).
+- Por eso la tarea está 🔶: el núcleo (providers, búsqueda, descarga) está; la
+  EVALUACIÓN por visión hay que rehacerla con gemma4 para cumplir el objetivo.
 
 **No toques:** el guion (Tarea D); consumes el storyboard ya cargado.
 
@@ -124,7 +129,7 @@ relacionada, devolviendo el caso.
 - `.github/workflows/ci.yml` — typecheck + test en PR
 - `.editorconfig` — utf-8, lf, indent 2
 - `AGENTS.md` — mapa del repo, comandos, convenciones
-- `vitest` + `npm test` — 17 tests
+- `vitest` + `npm test` — 16 tests (freepik eliminado)
 
 **Nota:** `pre-commit install` necesario tras pull.
 
