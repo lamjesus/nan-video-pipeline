@@ -17,7 +17,6 @@ src/
       wikimedia.ts — Wikimedia Commons (default, sin key)
       local.ts     — Pool local (fallback offline)
       pexels.ts    — Pexels (opt-in, requiere PEXELS_API_KEY)
-      freepik.ts   — Freepik (opt-in, requiere FREEPIK_API_KEY)
       index.ts     — Selector por env MEDIA_PROVIDERS
   pipeline/
     00-orchestrator.ts — Orquestador (encadena etapas)
@@ -67,7 +66,7 @@ npm run typecheck
 ## Variables de entorno
 
 Ver `.env.example`. Obligatorias: `NAN_BASE_URL`, `NAN_API_KEY`.
-Opcionales: `NAN_VOICE_ID`, `MEDIA_PROVIDERS`, `PEXELS_API_KEY`, `FREEPIK_API_KEY`.
+Opcionales: `NAN_VOICE_ID`, `MEDIA_PROVIDERS`, `PEXELS_API_KEY`.
 
 ## Formato de errores
 

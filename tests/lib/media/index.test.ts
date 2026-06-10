@@ -8,7 +8,6 @@ describe('selectProvider', () => {
     process.env = { ...originalEnv };
     delete process.env.MEDIA_PROVIDERS;
     delete process.env.PEXELS_API_KEY;
-    delete process.env.FREEPIK_API_KEY;
   });
 
   it('usa wikimedia,local por defecto', async () => {
@@ -31,14 +30,6 @@ describe('selectProvider', () => {
     const providers = await selectProvider();
     const names = providers.map((p) => p.name);
     expect(names).toContain('pexels');
-  });
-
-  it('incluye freepik si hay FREEPIK_API_KEY', async () => {
-    process.env.MEDIA_PROVIDERS = 'wikimedia,freepik';
-    process.env.FREEPIK_API_KEY = 'test-key';
-    const providers = await selectProvider();
-    const names = providers.map((p) => p.name);
-    expect(names).toContain('freepik');
   });
 
   it('salta pexels si no hay key', async () => {
