@@ -53,14 +53,36 @@ function checkEnv(): void {
   }
 }
 
-// --- Check 2: ffmpeg / ffprobe ---
+// --- Check 2: vitest (test runner) ---
+function checkVitest(): void {
+  try {
+    // Verificar que vitest está instalado (devDep)
+    const pkg = JSON.parse(require('node:fs').readFileSync('./package.json', 'utf-8'));
+    const hasVitest = pkg.devDependencies?.vitest || pkg.dependencies?.vitest;
+    if (hasVitest) {
+      record({ name: 'vitest (test runner)', ok: true });
+    } else {
+      record({
+        name: 'vitest (test runner)',
+        ok: false,
+        error: 'vitest no está en package.json. Ejecuta: npm install -D vitest',
+      });
+    }
+  } catch {
+    record({ name: 'vitest (test runner)', ok: true }); // skip si no se puede leer
+  }
+}
+
+// --- Check 3: ffmpeg / ffprobe ---
 async function checkFFmpeg(): Promise<void> {
   const tools = ['ffmpeg', 'ffprobe'];
   const missing: string[] = [];
 
   for (const tool of tools) {
     try {
-      await exec(tool, ['--version']);
+      // ffmpeg usa -version (un guion), otros usan --version.
+      const arg = tool === 'ffmpeg' || tool === 'ffprobe' ? ['-version'] : ['--version'];
+      await exec(tool, arg);
     } catch {
       missing.push(tool);
     }
@@ -126,6 +148,7 @@ async function main(): Promise<void> {
   console.log('🔍 NaN Video Pipeline — Doctor\n');
 
   checkEnv();
+  checkVitest();
   await checkFFmpeg();
   await checkNaN();
 

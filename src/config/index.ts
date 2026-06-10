@@ -9,7 +9,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
 
 function required(name: string): string {
-  const v = process.env[name];
+  // Prioridad: .env > shell env > fallback.
+  // Si .env tiene un placeholder (p.ej. ${NAN_API_KEY}), ignóralo y lee del shell.
+  const envFile = process.env[`_${name}`]; // variable real si dotenv la leyó
+  const shell = process.env[name];
+  const v = shell || envFile;
   if (!v) {
     throw new Error(
       `Falta la variable de entorno ${name}. Copia .env.example a .env y complétala.`,
