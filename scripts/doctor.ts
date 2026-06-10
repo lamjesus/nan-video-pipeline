@@ -1,5 +1,5 @@
 // Preflight doctor: verifica que el entorno está listo para el pipeline.
-// Uso: npm run doctor
+// Uso: yarn doctor
 //
 // Verifica:
 //   1. Variables de entorno NAN_BASE_URL y NAN_API_KEY
@@ -9,6 +9,7 @@
 // Formato de errores: ERROR / WHY / FIX.
 // Exit 1 si algún check falla.
 
+import 'dotenv/config'; // carga .env antes de leer process.env
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -65,7 +66,7 @@ function checkVitest(): void {
       record({
         name: 'vitest (test runner)',
         ok: false,
-        error: 'vitest no está en package.json. Ejecuta: npm install -D vitest',
+        error: 'vitest no está en package.json. Ejecuta: yarn add -D vitest',
       });
     }
   } catch {

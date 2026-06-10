@@ -1,19 +1,25 @@
 // Configuración central: rutas absolutas y acceso a la API del cluster NaN.
 // Todos los modelos del cluster se acceden por la misma API OpenAI-compatible,
 // con el mismo base URL. Aquí se centraliza esa configuración.
+//
+// Los valores ajustables (modelos, voz, providers) viven en `config.yml` en la
+// raíz; este módulo los carga. Los secretos siguen en el entorno (.env).
+//
+// `dotenv/config` carga el .env al importar: cualquier script que use `config`
+// ve las variables sin pasos extra. (Si no existe .env, dotenv no falla.)
+import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // raíz del proyecto = dos niveles arriba de src/config/
 const ROOT = resolve(__dirname, '..', '..');
 
 function required(name: string): string {
-  // Prioridad: .env > shell env > fallback.
-  // Si .env tiene un placeholder (p.ej. ${NAN_API_KEY}), ignóralo y lee del shell.
-  const envFile = process.env[`_${name}`]; // variable real si dotenv la leyó
-  const shell = process.env[name];
-  const v = shell || envFile;
+  // dotenv/config ya volcó el .env en process.env (ver import arriba).
+  const v = process.env[name];
   if (!v) {
     throw new Error(
       `Falta la variable de entorno ${name}. Copia .env.example a .env y complétala.`,
@@ -21,6 +27,37 @@ function required(name: string): string {
   }
   return v;
 }
+
+// --- Carga de config.yml (modelos, voz, providers) ---
+// Es obligatorio: sin él no sabemos a qué modelos del cluster llamar.
+interface FileConfig {
+  models: {
+    text: string;
+    textHeavy: string;
+    visionEval: string;
+    visionEvalFallback: string;
+    tts: string;
+    stt: string;
+    embedding: string;
+  };
+  voice: { default: string };
+  media: { providers: string[] };
+}
+
+function loadFileConfig(): FileConfig {
+  const path = resolve(ROOT, 'config.yml');
+  try {
+    return parse(readFileSync(path, 'utf-8')) as FileConfig;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `No se pudo leer config.yml en ${path}. Es obligatorio ` +
+        `(modelos, voz, providers). Detalle: ${msg}`,
+    );
+  }
+}
+
+const file = loadFileConfig();
 
 export const config = {
   // Rutas absolutas (evita que los scripts escriban en el lugar equivocado).
@@ -38,18 +75,16 @@ export const config = {
     apiKey: () => required('NAN_API_KEY'),     // token del miembro
   },
 
-  // Nombres de modelo del cluster (ajustar si cambian en la plataforma).
-  models: {
-    text: 'qwen3.6',              // guion / chat / tool calling
-    textHeavy: 'deepseek-v4-flash',// alternativa para razonamiento largo
-    vision: 'mimo-v2.5',          // entiende imágenes (NO las genera)
-    tts: 'kokoro',                // texto a voz
-    stt: 'whisper',               // voz a texto (subtítulos)
-    embedding: 'qwen3-embedding', // embeddings vectoriales (RAG)
+  // Nombres de modelo del cluster (vienen de config.yml; ajustar allí).
+  models: file.models,
+
+  // Voz por defecto para kokoro (override puntual con NAN_VOICE_ID).
+  voice: {
+    id: () => process.env.NAN_VOICE_ID ?? file.voice.default,
   },
 
-  // Voz por defecto para kokoro (es = español).
-  voice: {
-    id: () => process.env.NAN_VOICE_ID ?? 'em_alex', // em_alex (m) / ef_dora (f)
+  // Proveedores de media por defecto (override puntual con MEDIA_PROVIDERS).
+  media: {
+    providers: file.media.providers,
   },
 } as const;

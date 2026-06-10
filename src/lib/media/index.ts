@@ -5,9 +5,11 @@
 import type { MediaProvider } from './provider.js';
 import { WikimediaProvider } from './wikimedia.js';
 import { LocalProvider } from './local.js';
+import { config } from '../../config/index.js';
 
 export async function selectProvider(): Promise<MediaProvider[]> {
-  const envProviders = (process.env.MEDIA_PROVIDERS ?? 'wikimedia,local')
+  // Default desde config.yml; override puntual con la env MEDIA_PROVIDERS (csv).
+  const envProviders = (process.env.MEDIA_PROVIDERS ?? config.media.providers.join(','))
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
