@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Pipeline de video generativo usando solo modelos del cluster NaN",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "script": "tsx src/pipeline/01-script.ts",
     "vision": "tsx src/pipeline/02-vision.ts",
@@ -18,7 +19,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "openai": "^4.67.0"
+    "openai": "^4.67.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
