@@ -10,7 +10,9 @@
     "voice": "tsx src/pipeline/03-voice.ts",
     "produce": "tsx src/pipeline/00-orchestrator.ts",
     "load": "tsx src/content/load.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "doctor": "tsx scripts/doctor.ts",
+    "models:check": "tsx scripts/models-check.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

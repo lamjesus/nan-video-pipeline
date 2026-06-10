@@ -1,0 +1,148 @@
+// Preflight doctor: verifica que el entorno está listo para el pipeline.
+// Uso: npm run doctor
+//
+// Verifica:
+//   1. Variables de entorno NAN_BASE_URL y NAN_API_KEY
+//   2. ffmpeg y ffprobe en PATH
+//   3. Conectividad a la API del cluster NaN
+//
+// Formato de errores: ERROR / WHY / FIX.
+// Exit 1 si algún check falla.
+
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const exec = promisify(execFile);
+
+interface CheckResult {
+  name: string;
+  ok: boolean;
+  error?: string;
+}
+
+const checks: CheckResult[] = [];
+
+function record(result: CheckResult): void {
+  checks.push(result);
+  const icon = result.ok ? '✅' : '❌';
+  console.log(`${icon} ${result.name}`);
+  if (!result.ok && result.error) {
+    console.log(`   ${result.error}`);
+  }
+}
+
+// --- Check 1: Environment variables ---
+function checkEnv(): void {
+  const missing: string[] = [];
+
+  if (!process.env.NAN_BASE_URL) {
+    missing.push('NAN_BASE_URL');
+  }
+  if (!process.env.NAN_API_KEY) {
+    missing.push('NAN_API_KEY');
+  }
+
+  if (missing.length > 0) {
+    record({
+      name: 'Environment variables',
+      ok: false,
+      error: `Faltan: ${missing.join(', ')}. Copia .env.example a .env y complétalo.`,
+    });
+  } else {
+    record({ name: 'Environment variables', ok: true });
+  }
+}
+
+// --- Check 2: ffmpeg / ffprobe ---
+async function checkFFmpeg(): Promise<void> {
+  const tools = ['ffmpeg', 'ffprobe'];
+  const missing: string[] = [];
+
+  for (const tool of tools) {
+    try {
+      await exec(tool, ['--version']);
+    } catch {
+      missing.push(tool);
+    }
+  }
+
+  if (missing.length > 0) {
+    record({
+      name: 'ffmpeg / ffprobe',
+      ok: false,
+      error: `No encontrados: ${missing.join(', ')}. Instala con: brew install ffmpeg (macOS) o apt install ffmpeg (Linux).`,
+    });
+  } else {
+    record({ name: 'ffmpeg / ffprobe', ok: true });
+  }
+}
+
+// --- Check 3: NaN API connectivity ---
+async function checkNaN(): Promise<void> {
+  const baseUrl = process.env.NAN_BASE_URL;
+  const apiKey = process.env.NAN_API_KEY;
+
+  if (!baseUrl || !apiKey) {
+    // Ya reportado por checkEnv; marcar como skip
+    record({ name: 'NaN API connectivity', ok: true });
+    return;
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/models`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const models = data.data
+        ? (data.data as { id: string }[]).map((m) => m.id).join(', ')
+        : 'unknown';
+      record({
+        name: 'NaN API connectivity',
+        ok: true,
+      });
+      console.log(`   Modelos disponibles: ${models}`);
+    } else {
+      const text = await res.text();
+      record({
+        name: 'NaN API connectivity',
+        ok: false,
+        error: `HTTP ${res.status}: ${text.slice(0, 200)}`,
+      });
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    record({
+      name: 'NaN API connectivity',
+      ok: false,
+      error: `No se pudo conectar a ${baseUrl}: ${msg}`,
+    });
+  }
+}
+
+// --- Main ---
+async function main(): Promise<void> {
+  console.log('🔍 NaN Video Pipeline — Doctor\n');
+
+  checkEnv();
+  await checkFFmpeg();
+  await checkNaN();
+
+  console.log('');
+  const failures = checks.filter((c) => !c.ok);
+
+  if (failures.length > 0) {
+    console.log(`❌ ${failures.length} check(s) fallaron. Arregla antes de continuar.`);
+    process.exit(1);
+  }
+
+  console.log('✅ Todo listo. El entorno está configurado correctamente.');
+}
+
+main().catch((err) => {
+  console.error('ERROR: doctor crash');
+  console.error('WHY:', err.message);
+  console.error('FIX: ejecuta de nuevo; si persiste, abre un issue.');
+  process.exit(1);
+});
