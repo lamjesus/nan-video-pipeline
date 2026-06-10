@@ -1,6 +1,6 @@
 // Selector de proveedores de media.
 // Lee MEDIA_PROVIDERS del env (csv, default "wikimedia,local").
-// Los providers opt-in (pexels, freepik) solo se incluyen si tienen API key.
+// Pexels es opt-in: solo se incluye si tiene PEXELS_API_KEY.
 
 import type { MediaProvider } from './provider.js';
 import { WikimediaProvider } from './wikimedia.js';
@@ -26,12 +26,6 @@ export async function selectProvider(): Promise<MediaProvider[]> {
         if (process.env.PEXELS_API_KEY) {
           const { PexelsProvider } = await import('./pexels.js');
           providers.push(new PexelsProvider());
-        }
-        break;
-      case 'freepik':
-        if (process.env.FREEPIK_API_KEY) {
-          const { FreepikProvider } = await import('./freepik.js');
-          providers.push(new FreepikProvider());
         }
         break;
     }

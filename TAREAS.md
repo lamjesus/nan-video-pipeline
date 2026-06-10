@@ -50,22 +50,23 @@ en estéreo, y la consola imprime la duración real.
 
 ---
 
-## Tarea C — Selección visual con mimo-v2.5
+## Tarea C — Selección visual con mimo-v2.5 [Manu ✅]
 
-**Archivo:** `src/pipeline/02-vision.ts`
+**Archivos:** `src/pipeline/02-vision.ts` + `src/lib/media/` (6 ficheros)
 **Objetivo:** que por cada escena se elija una imagen de archivo de dominio público
 relevante, evaluada por `mimo`.
 
-**Pasos:**
-1. Implementar `buscarCandidatas(scene)`: consultar la API de Wikimedia Commons
-   con palabras clave del tema de la escena y devolver una lista de URLs.
-2. Confirmar en la doc cómo se pasa una imagen a `mimo` (URL vs base64) y ajustar
-   `elegirMejor()`.
-3. Descargar la imagen elegida a `assets/images/` con el nombre de la escena
-   (`scene-01.png`, etc.).
+**Implementado:**
+- Capa de proveedores de media: Wikimedia (default, sin key), Local (fallback offline),
+  Pexels/Freepik (opt-in, requieren API key)
+- Selector por env `MEDIA_PROVIDERS` (csv, default `wikimedia,local`)
+- Search terms: heurística simple (quita stopwords del imagePrompt)
+- `elegirMejor()` llama a mimo-v2.5 con markdown inline `![image](url)`
+  (único formato que acepta el cluster NaN — el OpenAI array da "Param Incorrect")
+- Descarga la imagen elegida a `assets/images/<scene.id>.<ext>`
+- Tests TDD: 17 tests (vitest)
 
-**Hecho cuando:** `yarn vision caso-ejemplo` deja una imagen por escena en
-`assets/images/` y registra en consola cuál eligió.
+**Verificado:** `MEDIA_PROVIDERS=local npm run vision caso-ejemplo` → 9/9 imágenes ✅
 
 **No toques:** el guion (Tarea D); consumes el storyboard ya cargado.
 
@@ -107,6 +108,25 @@ y el cargador puede importar (tras registrarlo en `load.ts`).
 relacionada, devolviendo el caso.
 
 **No toques:** el resto del pipeline; esta pieza es independiente.
+
+---
+
+## Tarea H — Harness y tooling [Manu ✅]
+
+**Archivos:** varios (aditivos, no tocan tareas de otros)
+**Objetivo:** tooling de desarrollo y CI para el repo.
+
+**Implementado:**
+- `scripts/doctor.ts` — preflight: env vars, ffmpeg, NaN API, vitest
+- `scripts/models-check.ts` — smoke test de cada modelo del cluster
+- `src/lib/nan-call.ts` — wrapper con retry exponencial + semáforo (max 3) + throttle (60 rpm)
+- `.pre-commit-config.yaml` — gitleaks v8.30.1
+- `.github/workflows/ci.yml` — typecheck + test en PR
+- `.editorconfig` — utf-8, lf, indent 2
+- `AGENTS.md` — mapa del repo, comandos, convenciones
+- `vitest` + `npm test` — 17 tests
+
+**Nota:** `pre-commit install` necesario tras pull.
 
 ---
 

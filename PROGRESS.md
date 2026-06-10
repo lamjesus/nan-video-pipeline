@@ -18,7 +18,7 @@
 | 5 — Media providers (ext) | ✅ | pexels.ts + freepik.ts (stubs funcionales) |
 | 6 — Cierre harness | 🔶 | CI creado, falta .editorconfig, AGENTS.md, TAREAS.md |
 
-**Tests:** 17 pasan (vitest). **Typecheck:** pendiente.
+**Tests:** 17 pasan (vitest). **Typecheck:** ✅. **Doctor:** ✅. **Vision (local):** 9/9 imágenes ✅.
 
 ## Pasos completados
 
@@ -58,13 +58,16 @@
 - [x] `src/lib/media/pexels.ts` — opt-in PEXELS_API_KEY
 - [x] `src/lib/media/freepik.ts` — opt-in FREEPIK_API_KEY
 
-### Paso 6 — Cierre harness (pendiente)
-- [ ] `.editorconfig`
+### Paso 6 — Cierre harness ✅
+- [x] `.editorconfig`
 - [x] `.github/workflows/ci.yml` — typecheck + test
-- [ ] `AGENTS.md`
-- [ ] Editar `TAREAS.md` (claim C + H)
-- [ ] `vitest.config.ts` + script `npm test`
-- [ ] `.env.example` actualizado con MEDIA_PROVIDERS
+- [x] `AGENTS.md` — mapa del repo, comandos, modelos, convenciones
+- [x] Editar `TAREAS.md` (claim C + H)
+- [x] `vitest.config.ts` + script `npm test`
+- [x] `.env.example` actualizado con MEDIA_PROVIDERS
+- [x] `npm run doctor` ✅ | `npm test` 17/17 ✅ | `npm run typecheck` ✅
+- [x] `MEDIA_PROVIDERS=local npm run vision` → 9/9 imágenes ✅
+- [x] Whisper → transcripción correcta con timestamps ✅
 
 ## Hallazgos de la API NaN (doc oficial)
 

@@ -50,6 +50,14 @@ function extFromUrl(url: string): string {
 }
 
 async function downloadImage(url: string, destPath: string): Promise<void> {
+  // file:// — copiar localmente (fetch de Node no soporta file://)
+  if (url.startsWith('file://')) {
+    const { copyFile } = await import('node:fs/promises');
+    const { fileURLToPath } = await import('node:url');
+    await copyFile(fileURLToPath(url), destPath);
+    return;
+  }
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} descargando ${url}`);
   const buffer = Buffer.from(await res.arrayBuffer());
