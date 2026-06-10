@@ -50,22 +50,33 @@ en estéreo, y la consola imprime la duración real.
 
 ---
 
-## Tarea C — Selección visual con mimo-v2.5
+## Tarea C — Selección visual con modelo de visión NaN [Manu ✅ verificado e2e]
 
-**Archivo:** `src/pipeline/02-vision.ts`
-**Objetivo:** que por cada escena se elija una imagen de archivo de dominio público
-relevante, evaluada por `mimo`.
+**Archivos:** `src/pipeline/02-vision.ts` + `src/lib/media/` (5 ficheros)
+**Objetivo:** que por cada escena se elija una imagen de archivo relevante,
+**evaluada por un modelo de visión**.
 
-**Pasos:**
-1. Implementar `buscarCandidatas(scene)`: consultar la API de Wikimedia Commons
-   con palabras clave del tema de la escena y devolver una lista de URLs.
-2. Confirmar en la doc cómo se pasa una imagen a `mimo` (URL vs base64) y ajustar
-   `elegirMejor()`.
-3. Descargar la imagen elegida a `assets/images/` con el nombre de la escena
-   (`scene-01.png`, etc.).
+**Implementado:**
+- Capa de proveedores de media: Wikimedia (default, sin key), Local (fallback offline),
+  Pexels (opt-in, requiere `PEXELS_API_KEY` — validada: key OK, JPEG descargable)
+- Selector por `MEDIA_PROVIDERS` con default desde `config.yml` (`wikimedia,local`)
+- Search terms: heurística simple (quita stopwords del imagePrompt)
+- Descarga de candidatas (con `User-Agent`) y guardado de la elegida en
+  `assets/images/<scene.id>.<ext>`
+- **Evaluación por visión:** `gemma4` (fallback `qwen3.6`) con la imagen en base64
+  (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué,
+  en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`caso-uso-1.md`](./caso-uso-1.md).
+  Modelos configurables en `config.yml`.
+- Tests TDD: 30 tests (16 providers + 14 de lógica pura en `vision-util.ts`;
+  freepik eliminado — su API no es gratuita)
 
-**Hecho cuando:** `yarn vision caso-ejemplo` deja una imagen por escena en
-`assets/images/` y registra en consola cuál eligió.
+**Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
+→ 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
+confirma que `gemma4` acepta el base64 array. Detalle en `caso-uso-1.md`.
+
+**Limitación conocida:** la selección es tan buena como las candidatas; términos
+heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords con
+`qwen3.6` (Tarea D) y generar imágenes al pool (Tarea I).
 
 **No toques:** el guion (Tarea D); consumes el storyboard ya cargado.
 
@@ -110,6 +121,32 @@ relacionada, devolviendo el caso.
 
 ---
 
+## Tarea H — Harness y tooling [Manu ✅]
+
+**Archivos:** varios (aditivos, no tocan tareas de otros)
+**Objetivo:** tooling de desarrollo para el repo.
+
+**Implementado:**
+- `scripts/doctor.ts` — preflight: env vars, ffmpeg, NaN API, vitest
+- `scripts/models-check.ts` — smoke test de cada modelo del cluster
+- `src/lib/nan-call.ts` — wrapper con retry exponencial + semáforo (max 3) + throttle (60 rpm)
+- `config.yml` — modelos + voz + providers fuera del código (carga en `src/config`)
+- Carga de `.env` con `dotenv/config` (antes no se leía → `doctor` fallaba)
+- Gestor de paquetes **yarn** (scripts y docs migrados; `package-lock.json` fuera)
+- `.pre-commit-config.yaml` — gitleaks v8.30.1
+- `.editorconfig` — utf-8, lf, indent 2
+- `AGENTS.md` — mapa del repo, comandos, convenciones, cómo trabajar
+- `vitest` + `yarn test` — 30 tests (freepik eliminado)
+
+**Sin CI en GitHub Actions:** la cuenta del owner tiene Actions bloqueado por
+billing, así que el workflow se eliminó. La verificación se hace **en local** antes
+de la PR: `yarn typecheck` + `yarn test` (+ `yarn doctor` si tocas el cluster). Ver
+[`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md) > No hay CI.
+
+**Nota:** `pre-commit install` necesario tras pull.
+
+---
+
 ## Tarea F — Entorno e integración [Luis]
 
 **Objetivo:** que el repo arranque limpio en cualquier máquina y el orquestador
@@ -128,6 +165,26 @@ encadene las piezas.
 integración con HyperFrames para exportar el MP4 vertical. GSAP se carga por CDN
 dentro del propio HTML; HyperFrames se ejecuta con `npx hyperframes render .`.
 Esta pieza la lleva Luis.
+
+---
+
+## Tarea I — Generación de imágenes con el nuevo modelo NaN [Manu · próxima PR]
+
+**Objetivo:** explorar la generación de imágenes con el nuevo modelo de imagen de
+NaN para escenas que el archivo no cubre bien (ej. la `scene-01` del caso-ejemplo,
+donde las candidatas de archivo son malas).
+
+**Enfoque:** la generación se hace **por la GUI de NaN** (no por API en este repo).
+Las imágenes generadas se colocan en `assets/images/_pool/`, de modo que el
+provider **`local`** las sirve como candidatas — sin tocar la capa de evaluación,
+que ya rankea con `gemma4` sobre la unión de providers.
+
+**Hecho cuando:** con imágenes generadas en el pool, `yarn vision caso-ejemplo`
+(con `MEDIA_PROVIDERS` incluyendo `local`) las considera y `gemma4` elige entre
+archivo y generadas.
+
+**No toques:** la capa de evaluación ni los otros providers; sólo añades material
+al pool local. Va en una PR aparte de la actual.
 
 ---
 

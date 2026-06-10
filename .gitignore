@@ -1,5 +1,7 @@
 node_modules/
 .env
+# Este repo usa yarn: nada de lockfile de npm
+package-lock.json
 # Assets generados (audio, imagenes, video)
 assets/audio/*
 assets/images/*
@@ -9,3 +11,13 @@ assets/output/*
 render-*/
 # Casos generados en runtime
 src/content/caso-generado.ts
+# Bitácora personal de trabajo (canónica en el vault; fuera de PRs)
+PROGRESS.md
+# Carpetas/ficheros de herramientas de IA (locales por desarrollador)
+.claude/
+.copilot/
+.cursor/
+.gemini/
+.opencode/
+.aider*
+CLAUDE.local.md

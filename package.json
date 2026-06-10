@@ -4,20 +4,27 @@
   "private": true,
   "type": "module",
   "description": "Pipeline de video generativo usando solo modelos del cluster NaN",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "script": "tsx src/pipeline/01-script.ts",
     "vision": "tsx src/pipeline/02-vision.ts",
     "voice": "tsx src/pipeline/03-voice.ts",
     "produce": "tsx src/pipeline/00-orchestrator.ts",
     "load": "tsx src/content/load.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "doctor": "tsx scripts/doctor.ts",
+    "models:check": "tsx scripts/models-check.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "openai": "^4.67.0"
+    "openai": "^4.67.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.8"
   }
 }

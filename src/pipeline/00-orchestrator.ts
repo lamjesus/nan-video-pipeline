@@ -16,7 +16,9 @@ if (!tema) {
 
 async function step(label: string, args: string[]) {
   console.log(`\n=== ${label} ===`);
-  const { stdout, stderr } = await exec('npx', ['tsx', ...args]);
+  // execFile sin shell: los argumentos (incl. el tema del usuario) van literales,
+  // sin interpretación de metacaracteres → no hay inyección de comandos.
+  const { stdout, stderr } = await exec('yarn', ['tsx', ...args]);
   if (stdout) process.stdout.write(stdout);
   if (stderr) process.stderr.write(stderr);
 }

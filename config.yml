@@ -1,0 +1,28 @@
+# Configuración ajustable del pipeline — sin tocar TypeScript.
+# Los secretos (NAN_BASE_URL, NAN_API_KEY) y los overrides puntuales
+# (NAN_VOICE_ID, MEDIA_PROVIDERS) siguen viviendo en .env.
+# Lo carga src/config/index.ts al arrancar.
+
+# Nombres de modelo del cluster NaN. Si la plataforma los renombra,
+# se cambian AQUÍ (no en el código).
+models:
+  text: qwen3.6                 # guion / chat / tool calling
+  textHeavy: deepseek-v4-flash  # razonamiento largo (alternativa)
+  # Visión: mimo-v2.5 está CIEGO en el cluster, no se usa
+  # (ver docs/TROUBLESHOOTING.md > mimo-v2.5).
+  visionEval: gemma4            # evaluación visual real (describe base64)
+  visionEvalFallback: qwen3.6   # si visionEval falla, se usa este
+  tts: kokoro                   # texto a voz
+  stt: whisper                  # voz a texto (subtítulos)
+  embedding: qwen3-embedding    # embeddings vectoriales (RAG)
+
+# Voz por defecto de kokoro. Override puntual con la env NAN_VOICE_ID.
+voice:
+  default: em_alex              # em_alex (masculina) / ef_dora (femenina)
+
+# Proveedores de imagen por defecto, en orden de prioridad.
+# Override puntual con la env MEDIA_PROVIDERS (csv).
+media:
+  providers:
+    - wikimedia
+    - local
