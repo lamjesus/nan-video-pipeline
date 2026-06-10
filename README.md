@@ -49,23 +49,48 @@ src/
 assets/{audio,images,output}/   área de trabajo
 ```
 
+## Requisitos previos
+
+- **Node.js 24+**
+- **FFmpeg + ffprobe** (`brew install ffmpeg` en macOS, `apt install ffmpeg` en Linux)
+- **pre-commit** (`pip install pre-commit` o `brew install pre-commit`) → `pre-commit install`
+- Variables de entorno: copiar `.env.example` a `.env` y completar `NAN_BASE_URL` / `NAN_API_KEY`
+
 ## Puesta en marcha
 
 ```bash
-yarn install
+npm install
+pre-commit install
 cp .env.example .env     # completa NAN_BASE_URL y NAN_API_KEY
-yarn load caso-ejemplo   # comprueba que la estructura carga
+npm run doctor           # verifica que todo está listo
+npm run load caso-ejemplo # comprueba que la estructura carga
 ```
 
 ## Comandos
 
 ```bash
-yarn script "<tema>"     # genera un guion (paso 1)
-yarn vision <caso>       # selecciona imágenes (paso 2)
-yarn voice <caso>        # genera la voz (paso 3)
-yarn produce "<tema>"    # pipeline completo (orquestador)
-yarn typecheck           # comprueba tipos
+npm run script "<tema>"     # genera un guion (paso 1)
+npm run vision <caso>       # selecciona imágenes (paso 2)
+npm run voice <caso>        # genera la voz (paso 3)
+npm run produce "<tema>"    # pipeline completo (orquestador)
+npm run typecheck           # comprueba tipos
+npm run doctor              # verifica entorno (env + ffmpeg + API)
+npm run models:check        # smoke-test de cada modelo NaN
 ```
+
+## Variables de entorno
+
+| Variable | Obligatorio | Descripción |
+|----------|-------------|-------------|
+| `NAN_BASE_URL` | ✅ | Base URL del cluster NaN (API OpenAI-compatible) |
+| `NAN_API_KEY` | ✅ | Token de autenticación del miembro |
+| `NAN_VOICE_ID` | ❌ | Voz kokoro: `em_alex` (m) / `ef_dora` (f), default `em_alex` |
+| `MEDIA_PROVIDERS` | ❌ | Providers de imagen: csv, default `wikimedia,local` |
+| `PEXELS_API_KEY` | ❌ | API key para Pexels (opt-in) |
+
+## Troubleshooting
+
+Ver [`docs/troubleshooting.md`](./docs/troubleshooting.md) para problemas conocidos y soluciones.
 
 ## Estado y reparto
 
