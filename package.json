@@ -9,6 +9,7 @@
     "script": "tsx src/pipeline/01-script.ts",
     "vision": "tsx src/pipeline/02-vision.ts",
     "voice": "tsx src/pipeline/03-voice.ts",
+    "subtitles": "tsx src/pipeline/05-subtitles.ts",
     "produce": "tsx src/pipeline/00-orchestrator.ts",
     "load": "tsx src/content/load.ts",
     "typecheck": "tsc --noEmit",
