@@ -1,5 +1,5 @@
 // Smoke-test de cada modelo del cluster NaN.
-// Uso: npm run models:check
+// Uso: yarn models:check
 //
 // Llama a cada modelo con una petición mínima y reporta OK/FAIL.
 // Para kokoro (TTS): guarda una muestra en assets/audio/_voice-sample.mp3.
@@ -40,17 +40,18 @@ async function checkText(): Promise<void> {
   }
 }
 
-// --- vision: mimo-v2.5 ---
-// ⚠️ El cluster NaN NO acepta content como array (formato OpenAI estándar).
-// El proxy litellm da "Param Incorrect" con image_url.
-// Solución: pasar la imagen como markdown inline en content string.
-// Ver PROGRESS.md > Hallazgos críticos > mimo-v2.5 para detalles.
+// --- vision: gemma4 (evaluación real con imagen en base64, formato array) ---
+// mimo-v2.5 no se prueba: está ciego en el cluster (ver docs/TROUBLESHOOTING.md).
 async function checkVision(): Promise<void> {
   const baseUrl = config.nan.baseUrl();
   const apiKey = config.nan.apiKey();
+  const model = config.models.visionEval;
+
+  // PNG 1x1 transparente: verifica que el modelo acepta imagen en base64.
+  const dataUri =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
   try {
-    const imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Vesuvius_1826.jpg/256px-Vesuvius_1826.jpg';
     const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -58,29 +59,32 @@ async function checkVision(): Promise<void> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: config.models.vision,
+        model,
         messages: [
           {
             role: 'user',
-            content: `![image](${imageUrl}) Describe esta imagen brevemente en una frase.`,
+            content: [
+              { type: 'text', text: '¿Recibes la imagen? Responde OK.' },
+              { type: 'image_url', image_url: { url: dataUri } },
+            ],
           },
         ],
-        max_tokens: 100,
+        max_tokens: 10,
       }),
     });
 
     if (!res.ok) {
       const text = await res.text();
-      record({ model: config.models.vision, ok: false, detail: `HTTP ${res.status}: ${text.slice(0, 200)}` });
+      record({ model, ok: false, detail: `HTTP ${res.status}: ${text.slice(0, 200)}` });
       return;
     }
 
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content ?? '';
-    record({ model: config.models.vision, ok: true, detail: `ok → "${text.trim().slice(0, 60)}..."` });
+    record({ model, ok: true, detail: `ok → "${text.trim().slice(0, 60)}"` });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    record({ model: config.models.vision, ok: false, detail: msg });
+    record({ model, ok: false, detail: msg });
   }
 }
 
@@ -233,7 +237,7 @@ async function main(): Promise<void> {
       console.log(`   ❌ ${f.model}: ${f.detail}`);
     }
     console.log('\n   Estos modelos no son críticos para la demo básica.');
-    console.log('   Los modelos core (qwen3.6, mimo-v2.5, kokoro) deben estar OK.');
+    console.log('   Los modelos core (qwen3.6, gemma4, kokoro) deben estar OK.');
   } else {
     console.log('✅ Todos los modelos respondieron correctamente.');
   }

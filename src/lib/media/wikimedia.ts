@@ -9,6 +9,10 @@ import type { Candidate, MediaProvider } from './provider.js';
 
 const WIKI_API = 'https://en.wikipedia.org/w/api.php';
 
+// Wikimedia exige un User-Agent identificable; sin él devuelve HTML/errores.
+const USER_AGENT =
+  'nan-video-pipeline/0.1 (hackathon; +https://github.com/nan-cluster)';
+
 export class WikimediaProvider implements MediaProvider {
   name = 'wikimedia';
 
@@ -27,7 +31,7 @@ export class WikimediaProvider implements MediaProvider {
     url.searchParams.set('format', 'json');
     url.searchParams.set('origin', '*');
 
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), { headers: { 'User-Agent': USER_AGENT } });
     if (!res.ok) {
       throw new Error(`Wikimedia API error: HTTP ${res.status}`);
     }

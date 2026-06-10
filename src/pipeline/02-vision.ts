@@ -1,108 +1,100 @@
-// PASO 2 · Selección de material visual con el modelo de visión (mimo-v2.5).
-// mimo NO genera imágenes: las entiende. Aquí se le pasan imágenes candidatas
-// (de archivo de dominio público, p.ej. Wikimedia Commons) y evalúa cuál
-// encaja mejor con cada escena.
+// PASO 2 · Selección de material visual con un modelo de visión del cluster.
+// El modelo NO genera imágenes: las entiende. Se le pasan candidatas (de archivo
+// de dominio público, p.ej. Wikimedia Commons) y evalúa cuál encaja con la escena.
 // Uso: yarn vision caso-ejemplo
 //
-// ⚠️ El cluster NaN NO acepta content como array (formato OpenAI estándar).
-// El proxy litellm da "Param Incorrect" con image_url.
-// Solución: pasar la imagen como markdown inline en content string.
-// Ver PROGRESS.md > Hallazgos críticos > mimo-v2.5 para detalles.
+// ⚠️ mimo-v2.5 está CIEGO en el cluster: no descarga URLs y alucina la imagen
+// desde el nombre del fichero. La evaluación real se hace con `gemma4`
+// (fallback `qwen3.6`) pasando la imagen en BASE64 dentro del formato array
+// OpenAI (no markdown, no URL remota). Además Wikimedia exige User-Agent o
+// devuelve HTML. Detalle completo en docs/TROUBLESHOOTING.md > mimo-v2.5.
 import { writeFile, mkdir } from 'node:fs/promises';
 import { nan } from '../lib/nan-client.js';
 import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import type { Scene } from '../lib/types.js';
 
+// Wikimedia (y muchos CDNs) bloquean peticiones sin User-Agent identificable.
+const USER_AGENT =
+  'nan-video-pipeline/0.1 (hackathon; +https://github.com/nan-cluster)';
+
 // --- Media provider layer ---
 import { selectProvider } from '../lib/media/index.js';
 
-// --- Search terms ---
-// Deriva 2-3 keywords del imagePrompt de la escena.
-// MVP: heurística simple (quitar stopwords).
-// Opcional: llamada a qwen3.6 para keywords más precisas.
-const STOPWORDS = new Set([
-  'a', 'an', 'the', 'in', 'on', 'at', 'of', 'to', 'for', 'with', 'and', 'or',
-  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
-  'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might',
-  'this', 'that', 'these', 'those', 'it', 'its', 'they', 'them', 'their',
-  'we', 'us', 'our', 'you', 'your', 'he', 'she', 'him', 'her', 'his',
-  'from', 'by', 'as', 'but', 'not', 'no', 'so', 'if', 'about', 'into',
-  'over', 'after', 'before', 'between', 'under', 'above', 'below',
-  'very', 'just', 'also', 'more', 'some', 'any', 'each', 'every',
-  'all', 'both', 'few', 'most', 'other', 'such', 'only', 'own', 'same',
-]);
+// --- Lógica pura (con tests en tests/pipeline/vision-util.test.ts) ---
+import {
+  deriveSearchTerms,
+  extFromUrl,
+  mimeFromExt,
+  bestByScore,
+} from './vision-util.js';
 
-function deriveSearchTerms(imagePrompt: string): string[] {
-  const words = imagePrompt.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-  const filtered = words.filter((w) => !STOPWORDS.has(w) && w.length > 2);
-  // Devolver hasta 3 términos, quitando duplicados
-  return [...new Set(filtered)].slice(0, 3);
-}
-
-// --- Image download ---
-// Descarga una imagen de una URL y la guarda en assets/images/<sceneId>.<ext>.
-// Determina la extensión del Content-Type o de la URL.
-function extFromUrl(url: string): string {
-  const match = url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i);
-  if (match) return match[1].toLowerCase();
-  return 'jpg'; // fallback
-}
-
-async function downloadImage(url: string, destPath: string): Promise<void> {
-  // file:// — copiar localmente (fetch de Node no soporta file://)
+// Trae los bytes de una candidata. Soporta file:// (pool local) y http(s).
+// El User-Agent es obligatorio: sin él Wikimedia devuelve HTML, no la imagen.
+async function fetchImageBuffer(url: string): Promise<Buffer> {
   if (url.startsWith('file://')) {
-    const { copyFile } = await import('node:fs/promises');
+    const { readFile } = await import('node:fs/promises');
     const { fileURLToPath } = await import('node:url');
-    await copyFile(fileURLToPath(url), destPath);
-    return;
+    return readFile(fileURLToPath(url));
   }
 
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   if (!res.ok) throw new Error(`HTTP ${res.status} descargando ${url}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
-  await writeFile(destPath, buffer);
+  return Buffer.from(await res.arrayBuffer());
 }
 
-// --- Evalúa con mimo cuál de las candidatas encaja mejor con la escena ---
-// ⚠️ Formato especial: el cluster NaN NO acepta content como array.
-// Usamos markdown inline: `![image](url)` dentro del content string.
-// Como no podemos pasar múltiples imágenes en un content array,
-// llamamos a mimo por cada candidata por separado y elegimos la mejor.
-async function elegirMejor(scene: Scene, urls: string[]): Promise<string | null> {
-  if (urls.length === 0) return null;
-  if (urls.length === 1) return urls[0];
+// Candidata ya descargada: bytes en memoria + metadatos para evaluar/guardar.
+interface Candidate {
+  url: string;
+  ext: string;
+  buffer: Buffer;
+}
 
-  // Evaluar cada candidata por separado y pedir puntuación 1-10
-  const scores: { url: string; score: number }[] = [];
+// --- Puntúa UNA candidata (1-10) según encaja con la escena ---
+// La imagen va en BASE64 dentro del formato array OpenAI (image_url con data-URI).
+// Se intenta con visionEval (gemma4); si falla, con visionEvalFallback (qwen3.6).
+async function puntuar(scene: Scene, cand: Candidate): Promise<number> {
+  const dataUri = `data:${mimeFromExt(cand.ext)};base64,${cand.buffer.toString('base64')}`;
+  const messages = [
+    {
+      role: 'user' as const,
+      content: [
+        {
+          type: 'text' as const,
+          text:
+            `Escena: ${scene.imagePrompt}\n` +
+            `Del 1 al 10, ¿qué tan bien esta imagen ilustra la escena? ` +
+            `Responde SOLO con el número.`,
+        },
+        { type: 'image_url' as const, image_url: { url: dataUri } },
+      ],
+    },
+  ];
 
-  for (const url of urls) {
+  const modelos = [config.models.visionEval, config.models.visionEvalFallback];
+  for (const model of modelos) {
     try {
-      const res = await nan.chat.completions.create({
-        model: config.models.vision,
-        messages: [
-          {
-            role: 'user',
-            content:
-              `![image](${url})\n` +
-              `Escena: ${scene.imagePrompt}\n` +
-              `Del 1 al 10, ¿qué tan bien esta imagen ilustra la escena? ` +
-              `Responde SOLO con el número.`,
-          },
-        ],
-        max_tokens: 10,
-      });
-
+      const res = await nan.chat.completions.create({ model, messages, max_tokens: 10 });
       const txt = res.choices[0]?.message?.content ?? '';
       const score = parseInt(txt.trim(), 10);
-      scores.push({ url, score: isNaN(score) ? 5 : Math.max(1, Math.min(10, score)) });
+      if (!isNaN(score)) return Math.max(1, Math.min(10, score));
     } catch {
-      scores.push({ url, score: 5 }); // fallback neutral
+      // probar el siguiente modelo
     }
   }
+  return 5; // neutral si ninguno respondió un número
+}
 
-  scores.sort((a, b) => b.score - a.score);
-  return scores[0].url;
+// --- Elige la mejor candidata evaluándolas con el modelo de visión ---
+async function elegirMejor(scene: Scene, candidatas: Candidate[]): Promise<Candidate | null> {
+  if (candidatas.length === 0) return null;
+  if (candidatas.length === 1) return candidatas[0];
+
+  const scored: { item: Candidate; score: number }[] = [];
+  for (const cand of candidatas) {
+    scored.push({ item: cand, score: await puntuar(scene, cand) });
+  }
+  return bestByScore(scored);
 }
 
 async function main() {
@@ -122,36 +114,47 @@ async function main() {
     console.log(`  Términos: ${terms.join(', ') || '(usando fallback)'}`);
     const query = terms.length > 0 ? terms.join(' ') : scene.imagePrompt;
 
-    // 2. Buscar candidatas en todos los providers
-    let candidatas: string[] = [];
+    // 2. Buscar URLs candidatas en todos los providers
+    const urls: string[] = [];
     for (const provider of providers) {
       try {
         const results = await provider.search(query, 5);
-        const urls = results.map((c) => c.url).filter(Boolean);
-        candidatas.push(...urls);
-        console.log(`  ${provider.name}: ${urls.length} candidatas`);
+        const found = results.map((c) => c.url).filter(Boolean);
+        urls.push(...found);
+        console.log(`  ${provider.name}: ${found.length} candidatas`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn(`  ${provider.name}: error - ${msg}`);
       }
     }
 
-    // 3. Elegir la mejor con mimo
-    elegidas[scene.id] = await elegirMejor(scene, candidatas);
-    console.log(`  Elegida: ${elegidas[scene.id] ?? '(sin imagen)'}`);
-
-    // 4. Descargar la elegida
-    if (elegidas[scene.id]) {
-      const ext = extFromUrl(elegidas[scene.id]!);
-      const destDir = config.paths.images;
-      await mkdir(destDir, { recursive: true });
-      const destPath = `${destDir}/${scene.id}.${ext}`;
+    // 3. Descargar los bytes UNA vez (el modelo de visión los evalúa en base64)
+    const candidatas: Candidate[] = [];
+    for (const url of urls) {
       try {
-        await downloadImage(elegidas[scene.id]!, destPath);
-        console.log(`  Descargada: ${destPath}`);
+        candidatas.push({ url, ext: extFromUrl(url), buffer: await fetchImageBuffer(url) });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.warn(`  Error descargando: ${msg}`);
+        console.warn(`  descarga fallida (${url}): ${msg}`);
+      }
+    }
+
+    // 4. Elegir la mejor con el modelo de visión (gemma4 → qwen3.6)
+    const elegida = await elegirMejor(scene, candidatas);
+    elegidas[scene.id] = elegida?.url ?? null;
+    console.log(`  Elegida: ${elegida?.url ?? '(sin imagen)'}`);
+
+    // 5. Guardar la ganadora (ya está en memoria, no se re-descarga)
+    if (elegida) {
+      const destDir = config.paths.images;
+      await mkdir(destDir, { recursive: true });
+      const destPath = `${destDir}/${scene.id}.${elegida.ext}`;
+      try {
+        await writeFile(destPath, elegida.buffer);
+        console.log(`  Guardada: ${destPath}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn(`  Error guardando: ${msg}`);
       }
     }
   }
