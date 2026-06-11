@@ -1,0 +1,129 @@
+# Generado por `yarn script` — tema: "El misterio del Mary Celeste, el barco fantasma". Regenerar sobrescribe este archivo.
+# Editable a mano: el cargador valida la estructura al usarlo.
+channel: Misterios del Mar
+caseNumber: 42
+title: El Misterio del Mary Celeste
+totalDuration: 60
+artDirection:
+  medium: Cinematic 3D Animation
+  lineWork: Soft edges, realistic shading
+  palette: Desaturated ocean blues, foggy greys, warm sepia for flashbacks
+  lighting: Dramatic, moody, volumetric fog
+  texture: Wet wood, rough canvas, misty atmosphere
+  mood: Eerie, suspenseful, melancholic
+  composition: Wide shots of the empty ship, close-ups of abandoned items
+  humanTreatment: Silhouettes or implied presence, no gore
+  constraints: No modern elements, historically accurate ship design
+scenes:
+  - id: scene-01
+    block: GANCHO
+    start: 0
+    end: 6
+    voiceover: Un barco a la deriva, con la tripulación desaparecida y una cena
+      servida a medio comer. ¿Qué pudo ocurrir?
+    onScreenText:
+      - EL BARCO FANTASMA
+    imagePrompt: Close-up of a wooden table on a ship deck with a half-eaten meal,
+      candles burning, fog surrounding the area, cinematic lighting, eerie
+      atmosphere
+    motion: zoom-in lento
+  - id: scene-02
+    block: GANCHO
+    start: 6
+    end: 12
+    voiceover: 1872. El Mary Celeste es encontrado en el Atlántico. Todo parece
+      normal, pero no hay nadie a bordo.
+    onScreenText:
+      - 1872 - ATLÁNTICO
+    imagePrompt: Wide shot of the Mary Celeste ship sailing alone in a misty ocean,
+      calm waves, overcast sky, historical style, realistic textures
+    motion: paneo lateral
+  - id: scene-03
+    block: DESARROLLO
+    start: 12
+    end: 18
+    voiceover: La tripulación de diez personas había desaparecido por completo. El
+      bote salvavidas estaba vacío.
+    onScreenText:
+      - 10 PERSONAS DESAPARECIDAS
+    imagePrompt: Empty lifeboat hanging on the side of the ship, ropes frayed, ocean
+      background, muted colors, mysterious mood
+    motion: estático
+  - id: scene-04
+    block: DESARROLLO
+    start: 18
+    end: 24
+    voiceover: A bordo, la comida estaba lista, los mapas abiertos y el dinero
+      intacto. Nadie había huido por necesidad.
+    onScreenText:
+      - TODO INTACTO
+    imagePrompt: Interior of the ship's cabin, open nautical maps on a desk, stacks
+      of coins and papers, dust motes in light beams, vintage aesthetic
+    motion: zoom-in lento
+  - id: scene-05
+    block: DESARROLLO
+    start: 24
+    end: 30
+    voiceover: El capitán Benjamin Briggs era conocido por su prudencia. ¿Por qué
+      abandonaría su barco en perfectas condiciones?
+    onScreenText:
+      - CAPITÁN BRIGGS
+    imagePrompt: Portrait style illustration of Captain Benjamin Briggs, stern
+      expression, 19th-century sailor uniform, soft lighting, historical
+      accuracy
+    motion: estático
+  - id: scene-06
+    block: DESARROLLO
+    start: 30
+    end: 36
+    voiceover: Algunos teorizan que un tsunami gigante los arrastró al mar, pero no
+      hay pruebas de tal ola.
+    onScreenText:
+      - "TEORÍA: TSUNAMI"
+    imagePrompt: Dark stormy sea with a massive, towering wave approaching a small
+      ship, dramatic lighting, ominous atmosphere, cinematic composition
+    motion: shake
+  - id: scene-07
+    block: DESARROLLO
+    start: 36
+    end: 42
+    voiceover: Otra hipótesis sugiere un incendio en la carga de alcohol. El vapor
+      habría obligado a la tripulación a huir.
+    onScreenText:
+      - "TEORÍA: INCENDIO"
+    imagePrompt: Ship deck with barrels leaking liquid, smoke rising, fire in the
+      background, tense atmosphere, realistic fire effects
+    motion: paneo lateral
+  - id: scene-08
+    block: DESARROLLO
+    start: 42
+    end: 48
+    voiceover: Piratas? Un ataque repentino. Pero, ¿por qué dejarían el barco y el
+      botín atrás?
+    onScreenText:
+      - "TEORÍA: PIRATAS"
+    imagePrompt: Silhouette of a pirate ship in the distance at sunset, foggy ocean,
+      mysterious vibe, wide angle shot
+    motion: deriva
+  - id: scene-09
+    block: CIERRE
+    start: 48
+    end: 54
+    voiceover: Ninguna teoría ha sido probada definitivamente. El Mary Celeste sigue
+      siendo uno de los mayores misteríos marítimos.
+    onScreenText:
+      - SIN RESPUESTA
+    imagePrompt: The Mary Celeste drifting into the fog, fading away, melancholic
+      music visualized through slow motion waves, grey tones
+    motion: zoom-out
+  - id: scene-10
+    block: CIERRE
+    start: 54
+    end: 60
+    voiceover: ¿Qué ocurrió realmente con el Mary Celeste? Cuéntame tu teoría en los
+      comentarios.
+    onScreenText:
+      - TU TEORÍA
+    imagePrompt: End screen with a question mark over the ocean, dark blue
+      background, text overlay space, cinematic finish
+    motion: estático
