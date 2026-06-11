@@ -11,6 +11,7 @@ import { promisify } from 'node:util';
 import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import type { Scene } from '../lib/types.js';
+import { getAudioDuration } from '../lib/ffprobe.js';
 
 const exec = promisify(execFile);
 
@@ -61,13 +62,10 @@ async function main() {
   }
 
   // Medir duración real (necesaria para sincronizar el montaje).
-  try {
-    const { stdout } = await exec('ffprobe', [
-      '-v', 'error', '-show_entries', 'format=duration',
-      '-of', 'csv=p=0', finalPath,
-    ]);
-    console.log(`Duración real: ${parseFloat(stdout).toFixed(1)}s`);
-  } catch {
+  const duration = await getAudioDuration(finalPath);
+  if (duration !== null) {
+    console.log(`Duración real: ${duration.toFixed(1)}s`);
+  } else {
     console.log('Instala ffmpeg para medir la duración automáticamente.');
   }
 }
