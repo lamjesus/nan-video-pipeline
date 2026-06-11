@@ -1,0 +1,133 @@
+# Migrado de src/content/caso-muralla.ts (2026-06-11)
+channel: Historia Visual
+caseNumber: 1042
+title: "La Gran Muralla: El Dragón de Piedra"
+totalDuration: 60
+artDirection:
+  medium: Cinematic 3D Animation
+  lineWork: High fidelity realistic rendering
+  palette: Earthy ochres, granite greys, muted greens, and dramatic sunset oranges
+  lighting: Golden hour backlighting with deep shadows to emphasize scale
+  texture: Rough stone, weathered wood, and ancient mortar details
+  mood: Epic, majestic, and awe-inspiring
+  composition: Wide landscape shots focusing on the endless curvature of the wall
+    against mountain ridges
+  humanTreatment: Small silhouettes of workers to emphasize the monumental scale
+    of the structure
+  constraints: No gore, no modern elements, strictly historical aesthetic
+scenes:
+  - id: scene-01
+    block: GANCHO
+    start: 0
+    end: 6
+    voiceover: ¿Sabías que la Gran Muralla China no es una sola línea, sino una red
+      de más de 21.000 kilómetros?
+    onScreenText:
+      - 21.000 km
+      - La estructura más larga
+    imagePrompt: Aerial drone shot flying over the Great Wall winding through misty
+      mountains, epic scale, golden hour lighting, cinematic composition
+    motion: zoom-in lento
+  - id: scene-02
+    block: GANCHO
+    start: 6
+    end: 12
+    voiceover: Construida durante más de dos mil años, es el proyecto de ingeniería
+      más ambicioso de la historia humana.
+    onScreenText:
+      - 2.000 años de historia
+    imagePrompt: Close up of ancient stone bricks with moss, time-lapse effect of
+      clouds moving rapidly above, hyperrealistic texture
+    motion: paneo lateral
+  - id: scene-03
+    block: DESARROLLO
+    start: 12
+    end: 18
+    voiceover: Todo comenzó bajo el Primer Emperador, Qin Shi Huang, quien unificó
+      las defensas dispersas en el siglo III a.C.
+    onScreenText:
+      - Qin Shi Huang
+      - Siglo III a.C.
+    imagePrompt: Historical illustration style of Qin Shi Huang standing on a cliff
+      overlooking construction workers, dramatic lighting, ancient Chinese armor
+      details
+    motion: estático
+  - id: scene-04
+    block: DESARROLLO
+    start: 18
+    end: 24
+    voiceover: Pero la estructura que vemos hoy es mayoritariamente obra de la
+      Dinastía Ming, siglos después.
+    onScreenText:
+      - Dinastía Ming
+    imagePrompt: Wide shot of the iconic brick and stone wall with watchtowers,
+      clear blue sky, vibrant colors, architectural precision
+    motion: zoom-out
+  - id: scene-05
+    block: DESARROLLO
+    start: 24
+    end: 30
+    voiceover: Se estima que más de un millón de personas trabajaron en su
+      construcción, muchos bajo condiciones extremas.
+    onScreenText:
+      - +1 millón de trabajadores
+    imagePrompt: Silhouette of hundreds of workers carrying heavy stones up a steep
+      mountain path, sunset background, emotional and epic atmosphere
+    motion: paneo lateral
+  - id: scene-06
+    block: DESARROLLO
+    start: 30
+    end: 36
+    voiceover: No solo era un muro. Incluía torres de vigilancia, cuarteles y
+      sistemas de señalización con humo y fuego.
+    onScreenText:
+      - Sistema de alerta temprana
+    imagePrompt: Close up of a watchtower with smoke signals rising into the sky
+      during dusk, detailed architectural elements, cinematic depth of field
+    motion: zoom-in lento
+  - id: scene-07
+    block: DESARROLLO
+    start: 36
+    end: 42
+    voiceover: Su diseño seguía el terreno montañoso, aprovechando las alturas para
+      una defensa estratégica impenetrable.
+    onScreenText:
+      - Estrategia defensiva
+    imagePrompt: High angle shot showing the wall snaking along sharp mountain
+      ridges, vast landscape, sense of isolation and strength
+    motion: deriva
+  - id: scene-08
+    block: DESARROLLO
+    start: 42
+    end: 48
+    voiceover: Curiosamente, no se puede ver desde el espacio a simple vista, un
+      mito que ha perdurado por siglos.
+    onScreenText:
+      - Mito vs Realidad
+    imagePrompt: View from low earth orbit looking down at Earth, focusing on the
+      thin line of the wall barely visible among green mountains, realistic
+      space photography style
+    motion: estático
+  - id: scene-09
+    block: CIERRE
+    start: 48
+    end: 54
+    voiceover: Hoy, es Patrimonio de la Humanidad y un símbolo eterno de la
+      resiliencia y la ingeniería china.
+    onScreenText:
+      - Patrimonio de la Humanidad
+    imagePrompt: Beautiful sunrise over the Great Wall, tourists walking peacefully
+      in the distance, warm colors, hopeful and majestic mood
+    motion: paneo lateral
+  - id: scene-10
+    block: CIERRE
+    start: 54
+    end: 60
+    voiceover: ¿Conocías estos datos? Síguenos para más historias que transforman la
+      historia en imagen.
+    onScreenText:
+      - Síguenos
+      - Historia Visual
+    imagePrompt: Final epic wide shot of the wall disappearing into the horizon,
+      text overlay space, cinematic fade out effect
+    motion: zoom-out

@@ -1,0 +1,142 @@
+# Migrado de src/content/caso-numancia.ts (2026-06-11)
+channel: Historia Visual
+caseNumber: 1042
+title: "Numancia: la ciudad española que desafió a Roma"
+totalDuration: 120
+artDirection:
+  medium: Cinematic 2.5D animation
+  lineWork: Clean vector outlines with slight sketch texture
+  palette: Earthy ochres, dusty greys, and blood red accents
+  lighting: Harsh midday sun contrasting with deep, dramatic shadows
+  texture: Grainy film overlay and rough stone textures
+  mood: Epic, tragic, and resilient
+  composition: Low-angle shots emphasizing scale and defiance
+  humanTreatment: Stylized silhouettes and stoic expressions
+  constraints: No gore, no explicit violence, focus on atmosphere
+scenes:
+  - id: scene-01
+    block: GANCHO
+    start: 0
+    end: 10
+    voiceover: Imagina una ciudad que hizo temblar al imperio más poderoso de la
+      historia, no con ejércitos, sino con su negativa a rendirse jamás.
+    onScreenText:
+      - El Imperio Inquebrantable
+      - La Ciudad Imposible
+    imagePrompt: Epic wide shot of ancient Roman legions marching in formation
+      towards a small, isolated hilltop fortress, dramatic lighting, cinematic
+      composition
+    motion: zoom-in lento
+  - id: scene-02
+    block: GANCHO
+    start: 10
+    end: 20
+    voiceover: Nos encontramos en la meseta castellana, siglo II a.C. Numancia no
+      era solo una fortaleza; era el símbolo de la libertad celtíbera.
+    onScreenText:
+      - 206 a.C.
+      - La Meseta Castellana
+    imagePrompt: Aerial view of the Duero river valley, ancient stone walls on a
+      hill, golden hour sunlight, historical atmosphere
+    motion: paneo lateral
+  - id: scene-03
+    block: DESARROLLO
+    start: 20
+    end: 30
+    voiceover: Roma había conquistado todo el Mediterráneo, pero Numancia se negaba
+      a pagar tributo. Para Escipión, esto no era una guerra, era una cuestión
+      de honor.
+    onScreenText:
+      - Nunca Rendirse
+      - Honor vs. Conquista
+    imagePrompt: Close up of a Roman general's face looking determined, storm clouds
+      gathering in the background, intense mood
+    motion: zoom-in lento
+  - id: scene-04
+    block: DESARROLLO
+    start: 30
+    end: 40
+    voiceover: El cónsul Publio Cornelio Escipión Emiliano construyó una doble
+      muralla de circunvalación. Una jaula de piedra para atrapar a los
+      valientes.
+    onScreenText:
+      - La Doble Muralla
+      - Asedio Total
+    imagePrompt: Diagrammatic animation of Roman siege walls surrounding a city,
+      soldiers building fortifications, tactical view
+    motion: paneo lateral
+  - id: scene-05
+    block: DESARROLLO
+    start: 40
+    end: 50
+    voiceover: Los años pasaron. La hambruna azotó la ciudad. Pero los numantinos no
+      abrieron las puertas. Su resistencia se convirtió en una leyenda viva.
+    onScreenText:
+      - Año 4 del Asedio
+      - Resistencia Absoluta
+    imagePrompt: Interior of a stone house, dark and cramped, people looking out of
+      windows with determination, dim lighting
+    motion: estático
+  - id: scene-06
+    block: DESARROLLO
+    start: 50
+    end: 60
+    voiceover: La historia registra que, ante la inevitabilidad de la caída, muchos
+      ciudadanos optaron por el suicidio colectivo antes que convertirse en
+      esclavos.
+    onScreenText:
+      - Libertad o Muerte
+      - El Sacrificio Final
+    imagePrompt: Silhouettes of people standing on the walls looking at the Roman
+      camp, solemn and tragic atmosphere, muted colors
+    motion: deriva
+  - id: scene-07
+    block: DESARROLLO
+    start: 60
+    end: 70
+    voiceover: Cuando finalmente cayó, Roma ordenó quemar la ciudad hasta sus
+      cimientos. Querían borrarla de la memoria, pero el fuego no pudo con su
+      espíritu.
+    onScreenText:
+      - 133 a.C.
+      - Ciudad Destruída
+    imagePrompt: Fire consuming ancient stone structures, smoke rising into the sky,
+      dramatic and chaotic scene, high contrast
+    motion: shake
+  - id: scene-08
+    block: DESARROLLO
+    start: 70
+    end: 80
+    voiceover: Aunque Roma ganó la batalla, Numancia ganó la guerra moral. Se
+      convirtió en el mito fundacional de la resistencia española contra la
+      opresión.
+    onScreenText:
+      - Victoria Moral
+      - Mito de Resistencia
+    imagePrompt: Ancient ruins of Numancia in modern day, sunlight hitting the
+      stones, peaceful but powerful atmosphere
+    motion: paneo lateral
+  - id: scene-09
+    block: CIERRE
+    start: 80
+    end: 90
+    voiceover: Hoy, Numancia no es solo tierra quemada. Es un recordatorio eterno de
+      que la dignidad humana puede desafiar incluso al imperio más fuerte.
+    onScreenText:
+      - Dignidad Eterna
+      - Legado Indestructible
+    imagePrompt: Sunset over the archaeological site, long shadows, golden light,
+      inspiring and reflective mood
+    motion: zoom-out
+  - id: scene-10
+    block: CIERRE
+    start: 90
+    end: 100
+    voiceover: Si te inspiran las historias de valentía inquebrantable, suscríbete y
+      descubre más secretos ocultos de la historia.
+    onScreenText:
+      - Suscríbete
+      - Más Historia
+    imagePrompt: Clean end screen layout with channel logo and subscribe button,
+      historical background texture, minimalist design
+    motion: estático

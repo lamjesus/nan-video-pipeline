@@ -67,6 +67,8 @@ export const config = {
     images: resolve(ROOT, 'assets', 'images'),
     output: resolve(ROOT, 'assets', 'output'),
     content: resolve(ROOT, 'src', 'content'),
+    // Casos (storyboards) como DATOS en YAML — editables sin tocar código.
+    cases: resolve(ROOT, 'content'),
     // Imágenes por caso: los scene-id se repiten entre casos; un directorio
     // plano hace que un caso pise al otro. Única fuente de esta convención
     // (la usan visión al guardar y compose al descubrir).

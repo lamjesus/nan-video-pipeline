@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { parse, stringify } from 'yaml';
 import {
   extractJson,
   validateStoryboard,
@@ -139,5 +140,24 @@ describe('validateStoryboard', () => {
     const result = validateStoryboard(sb);
     expect(result.valid).toBe(false);
     expect(result.errors.join('\n')).toContain('artDirection.palette');
+  });
+
+  it('accepts other scene counts when requireSceneCount is false (modo cargador)', () => {
+    const sb = makeStoryboard();
+    sb.scenes = sb.scenes.slice(0, 9); // caso-ejemplo tiene 9 escenas
+    expect(validateStoryboard(sb, { requireSceneCount: false }).valid).toBe(true);
+    expect(validateStoryboard(sb).valid).toBe(false);
+  });
+
+  it('still rejects empty scenes when the count is relaxed', () => {
+    const sb = makeStoryboard({ scenes: [] });
+    expect(validateStoryboard(sb, { requireSceneCount: false }).valid).toBe(false);
+  });
+
+  it('survives a YAML round-trip (formato de content/<slug>.yml)', () => {
+    const sb = makeStoryboard();
+    const round = parse(stringify(sb)) as unknown;
+    expect(validateStoryboard(round).valid).toBe(true);
+    expect(round).toEqual(sb);
   });
 });

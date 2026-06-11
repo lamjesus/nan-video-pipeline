@@ -3,9 +3,12 @@
 // Uso: yarn script "La erupción del Vesubio" [slug]
 //      (slug opcional; por defecto "caso-generado")
 //
-// El caso generado se carga sin registro manual: `yarn vision <slug>` etc.
-// funcionan directamente (ver el fallback de load.ts).
-import { writeFile } from 'node:fs/promises';
+// El caso generado es un fichero de DATOS (content/<slug>.yml), editable a
+// mano; el cargador lo valida al usarlo. `yarn vision <slug>` etc. funcionan
+// directamente, sin registro manual.
+import { writeFile, mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { stringify } from 'yaml';
 import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
 import { config } from '../config/index.js';
@@ -154,14 +157,14 @@ async function main() {
     process.exit(1);
   }
 
-  const path = `${config.paths.content}/${slug}.ts`;
-  const fileContent =
-    `// Generado por \`yarn script\` — tema: "${tema}". Regenerar sobrescribe este archivo.\n` +
-    `import type { Storyboard } from '../lib/types.js';\n\n` +
-    `export const storyboard: Storyboard = ${JSON.stringify(storyboard, null, 2)};\n`;
-  await writeFile(path, fileContent);
+  const outPath = resolve(config.paths.cases, `${slug}.yml`);
+  const header =
+    `# Generado por \`yarn script\` — tema: "${tema}". Regenerar sobrescribe este archivo.\n` +
+    `# Editable a mano: el cargador valida la estructura al usarlo.\n`;
+  await mkdir(config.paths.cases, { recursive: true });
+  await writeFile(outPath, header + stringify(storyboard), 'utf-8');
 
-  console.log(`Guion guardado en ${path} (${storyboard.scenes.length} escenas, ${storyboard.totalDuration}s)`);
+  console.log(`Guion guardado en ${outPath} (${storyboard.scenes.length} escenas, ${storyboard.totalDuration}s)`);
   console.log(`Siguiente: yarn vision ${slug} · yarn voice ${slug}`);
 }
 

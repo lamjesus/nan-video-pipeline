@@ -1,38 +1,66 @@
-// Cargador de casos. Selecciona qué storyboard procesar según el primer
-// argumento de la línea de comandos (p.ej. `yarn voice caso-ejemplo`).
-// Para añadir un caso nuevo: impórtalo y agrégalo al mapa CASES.
+// Cargador de casos. Los casos son DATOS (content/<slug>.yml), no código:
+// se parsean y validan al cargar — nada generado se ejecuta jamás.
+// Selecciona el caso por el primer argumento de la CLI (p.ej. `yarn voice caso-x`).
+import { readFile, readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { parse } from 'yaml';
+import { config } from '../config/index.js';
+import { validateStoryboard } from '../pipeline/script-util.js';
 import type { Storyboard } from '../lib/types.js';
 
-const CASES: Record<string, () => Promise<{ storyboard: Storyboard }>> = {
-  'caso-ejemplo': () => import('./caso-ejemplo.js'),
-  // 'caso-XX': () => import('./caso-XX.js'),
-};
+const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 export async function loadStoryboard(): Promise<Storyboard> {
-  const arg = process.argv[2] ?? 'caso-ejemplo';
-  const loader = CASES[arg];
-  const mod = loader ? await loader() : await loadGenerated(arg);
-  console.log(`> Caso cargado: ${arg} (${mod.storyboard.title})`);
-  return mod.storyboard;
-}
-
-// Los casos generados con `yarn script` (src/content/<slug>.ts) se cargan sin
-// registro manual en CASES. La ruta se construye en runtime (tsc no la
-// resuelve) y el formato del slug se valida para no salir de src/content/.
-async function loadGenerated(slug: string): Promise<{ storyboard: Storyboard }> {
-  const disponibles = Object.keys(CASES).join(', ');
-  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-    throw new Error(`Caso desconocido: "${slug}". Disponibles: ${disponibles}`);
+  const slug = currentCaseSlug();
+  if (!SLUG_RE.test(slug)) {
+    throw new Error(`Caso desconocido: "${slug}". Disponibles: ${await disponibles()}`);
   }
+
+  const file = resolve(config.paths.cases, `${slug}.yml`);
+  let raw: string;
   try {
-    return (await import(`./${slug}.js`)) as { storyboard: Storyboard };
+    raw = await readFile(file, 'utf-8');
   } catch {
     throw new Error(
-      `Caso desconocido: "${slug}". Disponibles: ${disponibles} ` +
+      `Caso desconocido: "${slug}". Disponibles: ${await disponibles()} ` +
         `(o genera uno nuevo con: yarn script "<tema>" ${slug})`,
     );
   }
+
+  const data = parse(raw) as unknown;
+  // La regla de las 10 escenas es de GENERACIÓN; al cargar se valida la
+  // estructura con el recuento relajado (caso-ejemplo tiene 9 y es legítimo).
+  const v = validateStoryboard(data, { requireSceneCount: false });
+  if (!v.valid) {
+    throw new Error(
+      `ERROR: el caso "${slug}" no es un Storyboard válido\n` +
+        `WHY:\n- ${v.errors.join('\n- ')}\n` +
+        `FIX: corrige content/${slug}.yml (o regenéralo: yarn script "<tema>" ${slug})`,
+    );
+  }
+
+  const storyboard = data as Storyboard;
+  console.log(`> Caso cargado: ${slug} (${storyboard.title})`);
+  return storyboard;
+}
+
+/** Slugs de los casos disponibles en content/. */
+export async function listCases(): Promise<string[]> {
+  try {
+    const files = await readdir(config.paths.cases);
+    return files
+      .filter((f) => f.endsWith('.yml'))
+      .map((f) => f.replace(/\.yml$/, ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+async function disponibles(): Promise<string> {
+  const cases = await listCases();
+  return cases.length > 0 ? cases.join(', ') : '(ninguno)';
 }
 
 /** Slug del caso actual, para nombrar archivos de salida. */

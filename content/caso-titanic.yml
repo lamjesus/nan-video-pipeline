@@ -1,0 +1,125 @@
+# Migrado de src/content/caso-titanic.ts (2026-06-11)
+channel: Historia Marítima
+caseNumber: 101
+title: El Hundimiento del Titanic
+totalDuration: 60
+artDirection:
+  medium: Cinematic Realism
+  lineWork: High Definition
+  palette: Deep Navy, Cold Steel, Warm Amber
+  lighting: Chiaroscuro, Moonlit
+  texture: Wet Metal, Rough Ice
+  mood: Melancholic, Tense, Epic
+  composition: Wide shots for scale, Close-ups for emotion
+  humanTreatment: Dramatic, Humanized
+  constraints: No gore, No explicit content
+scenes:
+  - id: scene-01
+    block: GANCHO
+    start: 0
+    end: 6
+    voiceover: El 'insumergible' se hundió en solo dos horas y cuarenta minutos.
+      ¿Cómo pudo ocurrir tal tragedia?
+    onScreenText:
+      - EL INSUMERGIBLE
+    imagePrompt: Close-up of a large ship's horn against a dark, starry night sky,
+      cinematic lighting, 8k resolution
+    motion: zoom-in lento
+  - id: scene-02
+    block: GANCHO
+    start: 6
+    end: 12
+    voiceover: Abril de 1912. El Titanic es la joya de la flota White Star Line, un
+      milagro de la ingeniería.
+    onScreenText:
+      - ABRIL 1912
+    imagePrompt: Wide shot of the Titanic sailing on calm blue waters, golden hour
+      lighting, majestic and grand
+    motion: paneo lateral
+  - id: scene-03
+    block: DESARROLLO
+    start: 12
+    end: 18
+    voiceover: La noche es oscura y fría. Los marineros avistan una enorme pared de
+      hielo justo frente al barco.
+    onScreenText:
+      - AVISTAMIENTO
+    imagePrompt: View from the bridge of the ship looking out at a massive iceberg
+      in the dark ocean, tense atmosphere
+    motion: shake
+  - id: scene-04
+    block: DESARROLLO
+    start: 18
+    end: 24
+    voiceover: El timonel gira el barco, pero el impacto es inevitable. El casco se
+      abre como un papel.
+    onScreenText:
+      - IMPACTO
+    imagePrompt: Side view of the Titanic colliding with ice, water spraying,
+      dramatic angle, high contrast
+    motion: shake
+  - id: scene-05
+    block: DESARROLLO
+    start: 24
+    end: 30
+    voiceover: No era un agujero grande, sino cinco grietas. El diseño solo resistía
+      cuatro compartimentos inundados.
+    onScreenText:
+      - 5 GRIETAS
+    imagePrompt: Technical diagram overlay on a dark background showing the five
+      flooded compartments of the ship
+    motion: estático
+  - id: scene-06
+    block: DESARROLLO
+    start: 30
+    end: 36
+    voiceover: El acero de la época era frágil con el frío. Los remaches se
+      rompieron como si fueran de tiza.
+    onScreenText:
+      - FRAGILIDAD
+    imagePrompt: Close-up of rusted ship rivets and steel plates, cold blue tones,
+      macro photography style
+    motion: zoom-in lento
+  - id: scene-07
+    block: DESARROLLO
+    start: 36
+    end: 42
+    voiceover: La arrogancia jugó un papel clave. Se ignoraron las advertencias de
+      icebergs y se navegaba a toda velocidad.
+    onScreenText:
+      - ARROGANCIA
+    imagePrompt: Silhouette of the captain on the bridge, looking ahead, dramatic
+      lighting, sense of urgency
+    motion: paneo lateral
+  - id: scene-08
+    block: DESARROLLO
+    start: 42
+    end: 48
+    voiceover: El barco se partió en dos. La popa se llenó de agua y cayó al fondo
+      del océano.
+    onScreenText:
+      - SE PARTIÓ
+    imagePrompt: Dark underwater scene, debris floating, the stern section sinking
+      into the abyss, eerie lighting
+    motion: deriva
+  - id: scene-09
+    block: CIERRE
+    start: 48
+    end: 54
+    voiceover: Más de 1500 vidas se perdieron. Una lección que cambió las leyes
+      marítimas para siempre.
+    onScreenText:
+      - 1500 VIDAS
+    imagePrompt: Calm ocean surface at dawn, a single lifeboat in the distance,
+      somber and reflective mood
+    motion: zoom-out
+  - id: scene-10
+    block: CIERRE
+    start: 54
+    end: 60
+    voiceover: ¿Qué más esconde el fondo del mar? Suscríbete para descubrirlo.
+    onScreenText:
+      - SUSCRÍBETE
+    imagePrompt: Text 'SUSCRÍBETE' over a blurred background of the Titanic wreck,
+      clean and modern typography
+    motion: estático
