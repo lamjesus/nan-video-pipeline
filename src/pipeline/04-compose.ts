@@ -38,7 +38,7 @@ async function main() {
   }
 
   // 4. Discover images per scene
-  const imageMap = await discoverImages(config.paths.images, storyboard.scenes);
+  const imageMap = await discoverImages(config.paths.imagesFor(slug), storyboard.scenes);
 
   // 5. Build manifest
   const manifest = buildManifest(

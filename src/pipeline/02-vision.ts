@@ -144,9 +144,9 @@ async function main() {
     elegidas[scene.id] = elegida?.url ?? null;
     console.log(`  Elegida: ${elegida?.url ?? '(sin imagen)'}`);
 
-    // 5. Guardar la ganadora (ya está en memoria, no se re-descarga)
+    // 5. Guardar la ganadora (ya está en memoria, no se re-descarga).
     if (elegida) {
-      const destDir = config.paths.images;
+      const destDir = config.paths.imagesFor(slug);
       await mkdir(destDir, { recursive: true });
       const destPath = `${destDir}/${scene.id}.${elegida.ext}`;
       try {

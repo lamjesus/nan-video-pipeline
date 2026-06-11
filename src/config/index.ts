@@ -67,6 +67,10 @@ export const config = {
     images: resolve(ROOT, 'assets', 'images'),
     output: resolve(ROOT, 'assets', 'output'),
     content: resolve(ROOT, 'src', 'content'),
+    // Imágenes por caso: los scene-id se repiten entre casos; un directorio
+    // plano hace que un caso pise al otro. Única fuente de esta convención
+    // (la usan visión al guardar y compose al descubrir).
+    imagesFor: (slug: string) => resolve(ROOT, 'assets', 'images', slug),
   },
 
   // Cluster NaN: una sola API OpenAI-compatible para todos los modelos.
