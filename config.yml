@@ -26,3 +26,6 @@ media:
   providers:
     - wikimedia
     - local
+  # Candidatas por proveedor y escena que evalúa el modelo de visión.
+  # Más candidatas = mejor selección pero más llamadas a gemma4 por escena.
+  candidates: 8

@@ -118,7 +118,7 @@ async function main() {
     const urls: string[] = [];
     for (const provider of providers) {
       try {
-        const results = await provider.search(query, 5);
+        const results = await provider.search(query, config.media.candidates);
         const found = results.map((c) => c.url).filter(Boolean);
         urls.push(...found);
         console.log(`  ${provider.name}: ${found.length} candidatas`);

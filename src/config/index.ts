@@ -41,7 +41,7 @@ interface FileConfig {
     embedding: string;
   };
   voice: { default: string };
-  media: { providers: string[] };
+  media: { providers: string[]; candidates?: number };
 }
 
 function loadFileConfig(): FileConfig {
@@ -92,5 +92,7 @@ export const config = {
   // Proveedores de media por defecto (override puntual con MEDIA_PROVIDERS).
   media: {
     providers: file.media.providers,
+    // Candidatas por proveedor y escena (config.yml > media.candidates).
+    candidates: file.media.candidates ?? 5,
   },
 } as const;
