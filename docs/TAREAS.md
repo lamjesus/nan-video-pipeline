@@ -32,21 +32,17 @@ en estéreo, y la consola imprime la duración real.
 
 ---
 
-## Tarea B — Subtítulos con whisper
+## Tarea B — Subtítulos con whisper [✅ done]
 
-**Archivo:** nuevo, `src/pipeline/05-subtitles.ts`
-**Objetivo:** dado el MP3 de un caso, generar subtítulos sincronizados (formato SRT o VTT).
+**Implementado:**
+- `src/pipeline/05-subtitles.ts` — orchestration: audio read → Whisper STT → alignment → SRT write
+- `src/pipeline/subtitle-util.ts` — pure alignment (LCS word matching) + SRT serialization
+- `tests/pipeline/subtitle-util.test.ts` — 7 tests covering alignment, fallback, SRT format
+- `"subtitles"` script in `package.json`
+- Fallback mode when `verbose_json` not supported (plain text → distribute across scene boundaries)
+- Error handling: missing audio (exit 1), empty transcription (exit 1), ERROR/WHY/FIX format
 
-**Pasos:**
-1. Confirmar el endpoint de `whisper` en el cluster (probable `/audio/transcriptions`)
-   y si devuelve timestamps por segmento.
-2. Crear el script que recibe un caso (`yarn subtitles caso-ejemplo`), lee
-   `assets/audio/<caso>.mp3`, lo transcribe y guarda `assets/output/<caso>.srt`.
-3. Añadir el script a `package.json` (`"subtitles": "tsx src/pipeline/05-subtitles.ts"`).
-
-**Hecho cuando:** existe un `.srt` con los tiempos correctos para el audio del caso.
-
-**No toques:** la generación de voz (Tarea A); solo consumes su MP3.
+**Verified:** `yarn test` passes all 37 tests (30 existing + 7 new), `yarn typecheck` clean.
 
 ---
 
