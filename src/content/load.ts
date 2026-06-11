@@ -29,9 +29,9 @@ export async function loadStoryboard(): Promise<Storyboard> {
   }
 
   const data = parse(raw) as unknown;
-  // La regla de las 10 escenas es de GENERACIÓN; al cargar se valida la
-  // estructura con el recuento relajado (caso-ejemplo tiene 9 y es legítimo).
-  const v = validateStoryboard(data, { requireSceneCount: false });
+  // El recuento de escenas es regla de GENERACIÓN; al cargar se valida solo
+  // la estructura (caso-ejemplo tiene 9, los golden pueden variar).
+  const v = validateStoryboard(data);
   if (!v.valid) {
     throw new Error(
       `ERROR: el caso "${slug}" no es un Storyboard válido\n` +

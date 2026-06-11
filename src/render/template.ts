@@ -46,14 +46,16 @@ ${overlays}
   <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="styles.css">
   ${srtHref ? `<link rel="preload" href="${srtHref}" as="fetch" crossorigin>` : ''}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 </head>
 <body>
   <script type="application/json" id="art-direction">
 ${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
   </script>
+  <div class="container">
 ${sceneSections}
   <div id="caption-container" class="caption-container"></div>
+  </div>
   <script>
     // SRT parser (browser-side)
     function parseSrt(content) {

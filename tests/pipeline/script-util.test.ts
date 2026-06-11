@@ -100,12 +100,19 @@ describe('validateStoryboard', () => {
     expect(result.errors.join('\n')).toContain('title');
   });
 
-  it('rejects wrong scene count', () => {
+  it('rejects wrong scene count when a count is required (modo generación)', () => {
     const sb = makeStoryboard();
     sb.scenes = sb.scenes.slice(0, 3);
-    const result = validateStoryboard(sb);
+    const result = validateStoryboard(sb, { sceneCount: REQUIRED_SCENES });
     expect(result.valid).toBe(false);
     expect(result.errors.join('\n')).toContain(`${REQUIRED_SCENES}`);
+  });
+
+  it('honours a custom scene count (casos golden con recuentos distintos)', () => {
+    const sb = makeStoryboard();
+    sb.scenes = sb.scenes.slice(0, 9);
+    expect(validateStoryboard(sb, { sceneCount: 9 }).valid).toBe(true);
+    expect(validateStoryboard(sb, { sceneCount: 12 }).valid).toBe(false);
   });
 
   it('rejects a scene with missing voiceover, with the scene index in the error', () => {
@@ -142,22 +149,22 @@ describe('validateStoryboard', () => {
     expect(result.errors.join('\n')).toContain('artDirection.palette');
   });
 
-  it('accepts other scene counts when requireSceneCount is false (modo cargador)', () => {
+  it('accepts any scene count by default (modo cargador)', () => {
     const sb = makeStoryboard();
     sb.scenes = sb.scenes.slice(0, 9); // caso-ejemplo tiene 9 escenas
-    expect(validateStoryboard(sb, { requireSceneCount: false }).valid).toBe(true);
-    expect(validateStoryboard(sb).valid).toBe(false);
+    expect(validateStoryboard(sb).valid).toBe(true);
+    expect(validateStoryboard(sb, { sceneCount: REQUIRED_SCENES }).valid).toBe(false);
   });
 
-  it('still rejects empty scenes when the count is relaxed', () => {
+  it('still rejects empty scenes in loader mode', () => {
     const sb = makeStoryboard({ scenes: [] });
-    expect(validateStoryboard(sb, { requireSceneCount: false }).valid).toBe(false);
+    expect(validateStoryboard(sb).valid).toBe(false);
   });
 
   it('survives a YAML round-trip (formato de content/<slug>.yml)', () => {
     const sb = makeStoryboard();
     const round = parse(stringify(sb)) as unknown;
-    expect(validateStoryboard(round).valid).toBe(true);
+    expect(validateStoryboard(round, { sceneCount: REQUIRED_SCENES }).valid).toBe(true);
     expect(round).toEqual(sb);
   });
 });

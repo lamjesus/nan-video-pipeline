@@ -17,17 +17,26 @@ import { extractJson, validateStoryboard, REQUIRED_SCENES } from './script-util.
 
 const tema = process.argv[2];
 const slug = process.argv[3] ?? 'caso-generado';
+const sceneCount = process.argv[4] ? parseInt(process.argv[4], 10) : REQUIRED_SCENES;
 const MAX_ATTEMPTS = 3;
 
 if (!tema) {
-  console.error('Uso: yarn script "<tema del video>" [slug]');
+  console.error('Uso: yarn script "<tema del video>" [slug] [escenas]');
   process.exit(1);
 }
 if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
   console.error(
     `ERROR: slug inválido: "${slug}"\n` +
-      'WHY: el slug nombra el archivo en src/content/ y los assets derivados\n' +
+      'WHY: el slug nombra el archivo en content/ y los assets derivados\n' +
       'FIX: usa minúsculas, dígitos y guiones (ej. caso-vesubio)',
+  );
+  process.exit(1);
+}
+if (!Number.isInteger(sceneCount) || sceneCount < 3 || sceneCount > 20) {
+  console.error(
+    `ERROR: número de escenas inválido: "${process.argv[4]}"\n` +
+      'WHY: el guion necesita entre 3 y 20 escenas para un video corto coherente\n' +
+      `FIX: yarn script "<tema>" ${slug} 12`,
   );
   process.exit(1);
 }
@@ -58,7 +67,7 @@ Forma exacta:
   ]
 }
 Reglas:
-- Exactamente ${REQUIRED_SCENES} escenas, con ids "scene-01" a "scene-${REQUIRED_SCENES}".
+- Exactamente ${sceneCount} escenas, con ids "scene-01" a "scene-${String(sceneCount).padStart(2, '0')}".
 - Tiempos contiguos: la primera escena empieza en 0, cada escena empieza donde
   acaba la anterior y el end de la última es igual a totalDuration.
 - La narración (voiceover) va en español; los imagePrompt en inglés.
@@ -128,7 +137,7 @@ async function main() {
       continue;
     }
 
-    const validation = validateStoryboard(parsed);
+    const validation = validateStoryboard(parsed, { sceneCount });
     if (!validation.valid) {
       lastErrors = validation.errors;
       messages.push(

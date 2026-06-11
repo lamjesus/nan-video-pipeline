@@ -11,11 +11,12 @@ export interface ValidationResult {
 
 export interface ValidateOptions {
   /**
-   * Exigir exactamente REQUIRED_SCENES escenas. Es la regla de GENERACIÓN
-   * (yarn script); el cargador valida con `false` porque un caso curado a
-   * mano puede tener otro número (caso-ejemplo tiene 9).
+   * Si se indica, exige exactamente ese número de escenas — la regla de
+   * GENERACIÓN (yarn script valida contra el recuento pedido, 10 por
+   * defecto). El cargador no lo pasa: un caso curado o golden puede tener
+   * cualquier número ≥ 1 (caso-ejemplo tiene 9).
    */
-  requireSceneCount?: boolean;
+  sceneCount?: number;
 }
 
 const ART_DIRECTION_FIELDS = [
@@ -64,7 +65,7 @@ export function validateStoryboard(
   data: unknown,
   options: ValidateOptions = {},
 ): ValidationResult {
-  const { requireSceneCount = true } = options;
+  const { sceneCount } = options;
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
     return { valid: false, errors: ['la raíz debe ser un objeto JSON'] };
   }
@@ -93,9 +94,9 @@ export function validateStoryboard(
   if (!Array.isArray(scenes)) {
     errors.push('scenes: falta o no es un array');
   } else {
-    if (requireSceneCount && scenes.length !== REQUIRED_SCENES) {
+    if (sceneCount !== undefined && scenes.length !== sceneCount) {
       errors.push(
-        `scenes: se esperaban exactamente ${REQUIRED_SCENES} escenas y llegaron ${scenes.length}`,
+        `scenes: se esperaban exactamente ${sceneCount} escenas y llegaron ${scenes.length}`,
       );
     } else if (scenes.length === 0) {
       errors.push('scenes: no puede estar vacío');
