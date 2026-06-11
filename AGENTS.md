@@ -5,34 +5,43 @@
 ## Mapa del repo
 
 ```
-config.yml         — Modelos + voz + providers (ajustable sin tocar TS)
+config.yml         — Modelos + voz + providers + candidatas (ajustable sin tocar TS)
+content/           — Casos (storyboards) en YAML: DATOS editables, no código
 src/
-  config/          — Carga config.yml + rutas + acceso a la API
-  content/         — Storyboards (caso-ejemplo, load.ts)
+  config/          — Carga config.yml + .env + rutas + acceso a la API
+  content/load.ts  — Cargador: parsea content/<slug>.yml y valida la estructura
   lib/
     types.ts       — Tipos del dominio (Storyboard, Scene, ArtDirection)
     nan-client.ts  — Cliente OpenAI compartido para el cluster NaN
-    nan-call.ts    — Wrapper con retry + semáforo + throttle
-    media/         — Proveedores de imágenes (Tarea C)
-      provider.ts  — Interfaces Candidate / MediaProvider
-      wikimedia.ts — Wikimedia Commons (default, sin key)
-      local.ts     — Pool local (fallback offline)
-      pexels.ts    — Pexels (opt-in, requiere PEXELS_API_KEY)
-      index.ts     — Selector por env MEDIA_PROVIDERS
+    nan-call.ts    — Throttle GLOBAL del proceso (máx 3 en vuelo, 60 rpm) + retry
+    ffprobe.ts     — Duración real del audio
+    manifest.ts    — Tipos + builder puro del manifest de render
+    media/         — Proveedores de imágenes (wikimedia default, local, pexels opt-in)
   pipeline/
-    00-orchestrator.ts — Orquestador (encadena etapas)
-    01-script.ts       — Guion con qwen3.6 (Tarea D)
-    02-vision.ts       — Selección visual con gemma4 + base64 (Tarea C)
-    03-voice.ts        — Voz con kokoro (Tarea A)
+    00-orchestrator.ts — Orquestador (encadena etapas; en construcción)
+    01-script.ts       — Guion qwen3.6 → content/<slug>.yml (validado, con retry)
+    script-util.ts     — Puro: extractJson + validateStoryboard
+    02-vision.ts       — Selección visual gemma4 → assets/images/<slug>/
+    vision-util.ts     — Puro: search terms, ext/mime, ranking
+    03-voice.ts        — Voz kokoro → assets/audio/<slug>.mp3
+    04-compose.ts      — Compose → renders/<slug>/ (manifest + HTML + assets + preview)
+    compose-util.ts    — Puro: copy plan, reescalado al audio real, manifest portable
+    05-subtitles.ts    — Subtítulos whisper → assets/output/<slug>.srt
+    subtitle-util.ts   — Puro: alineación LCS + chunking estilo CapCut
+  render/
+    motion.ts      — Motion en español → presets GSAP
+    srt.ts         — Parser SRT
+    template.ts    — index.html + styles.css deterministas (9:16, para HyperFrames)
+    preview.ts     — preview.html reproducible con doble click (audio + captions)
+renders/           — Workspaces de render por caso (artefactos, gitignored)
 scripts/
   doctor.ts        — Preflight: env, ffmpeg, NaN API, vitest
   models-check.ts  — Smoke test de cada modelo del cluster
-tests/
-  lib/media/       — Tests TDD de media providers
+tests/             — vitest: lógica pura de cada etapa
 docs/
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
-  TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, User-Agent…)
-  caso-uso-1.md    — Demo de la selección visual
+  TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, límite de 3, User-Agent…)
+  casos-uso/       — Casos de uso documentados (golden cases)
   sessions/        — Bitácora por sesión (memoria del equipo)
 ```
 
@@ -45,18 +54,25 @@ yarn doctor
 # Smoke test de modelos
 yarn models:check
 
-# Pipeline completo
+# Pipeline completo (orquestador, en construcción)
 yarn produce "<tema>"
 
-# Etapas individuales
-yarn script "<tema>"     # Generar guion
-yarn vision caso-ejemplo  # Seleccionar imágenes
-yarn voice caso-ejemplo   # Generar voz
+# Etapas por caso (slug = nombre del caso, p.ej. caso-ejemplo)
+yarn script "<tema>" [slug] [escenas]  # guion → content/<slug>.yml (10 escenas por defecto)
+yarn vision <slug>     # 1 imagen por escena → assets/images/<slug>/
+yarn voice <slug>      # narración → assets/audio/<slug>.mp3
+yarn subtitles <slug>  # SRT estilo CapCut → assets/output/<slug>.srt
+yarn compose <slug>    # workspace de render → renders/<slug>/ (abre preview.html)
 
 # Tests
 yarn test
 yarn typecheck
 ```
+
+> ⚠️ **Límite del cluster: máximo 3 peticiones simultáneas a la API.** Dentro de
+> un proceso ya lo garantiza `nan-call.ts`; entre procesos no hay coordinación,
+> así que los casos se lanzan en **máximo 2 carriles paralelos**
+> (ver `docs/TROUBLESHOOTING.md`).
 
 ## Modelos del cluster NaN
 
@@ -87,6 +103,9 @@ FIX: cómo solucionarlo
 
 ## Convenciones
 
+- Casos = **datos** (`content/<slug>.yml`), nunca código: los genera `yarn script`,
+  se editan a mano y el cargador los valida al usarlos. Los artefactos generados
+  (`assets/*`, `renders/`) no se versionan.
 - Gestor de paquetes: **yarn** (no npm). Lockfile: `yarn.lock`.
 - Commits y ramas: Conventional Commits, **en inglés**, sin atribución a herramientas
   de IA ni referencias a fases internas (ej. `feat/media-providers`, no `feat/fase-3`).
@@ -101,7 +120,7 @@ FIX: cómo solucionarlo
    objetivo, archivo, criterio de "hecho"; respeta el dueño marcado).
 2. Antes de tocar el cluster, mira **`docs/TROUBLESHOOTING.md`**: recoge los fallos
    ya descubiertos (mimo ciego, User-Agent de Wikimedia, pexels…) para no repetirlos.
-3. Para ver un caso real corriendo, **`docs/caso-uso-1.md`**.
+3. Para ver un caso real corriendo, **`docs/casos-uso/`** (flujo común + fichas).
 4. Al cerrar una sesión de trabajo no trivial, deja una entrada en **`docs/sessions/`**
    (qué cambió y por qué) — es la memoria compartida del equipo.
 5. No cambies la forma de `Storyboard` (`src/lib/types.ts`) sin avisar: todas las

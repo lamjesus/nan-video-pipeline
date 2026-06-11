@@ -106,7 +106,7 @@ Todo lo de detalle vive en [`docs/`](./docs/):
 |-----------|----------|
 | [`docs/TAREAS.md`](./docs/TAREAS.md) | Reparto de trabajo: objetivos y criterio de "hecho" por pieza |
 | [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md) | Fallos del cluster ya descubiertos y su solución (mimo ciego, User-Agent, pexels…) |
-| [`docs/caso-uso-1.md`](./docs/caso-uso-1.md) | Demo real de la selección visual (qué corre en local vs. qué necesita el cluster) |
+| [`docs/casos-uso/`](./docs/casos-uso/README.md) | Casos de uso: flujo completo por caso, tiempos y fichas (demo de selección visual incluida) |
 | [`docs/sessions/`](./docs/sessions/) | Bitácora por sesión: la memoria compartida del equipo |
 
 ## Estado

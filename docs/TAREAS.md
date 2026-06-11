@@ -12,23 +12,16 @@ otra pieza, usa datos de ejemplo (el `caso-ejemplo`) mientras tanto.
 
 ---
 
-## Tarea A — Voz con kokoro
+## Tarea A — Voz con kokoro [✅ verificada e2e 2026-06-11]
 
-**Archivo:** `src/pipeline/03-voice.ts`
-**Objetivo:** que `yarn voice caso-ejemplo` genere un MP3 con la narración en español.
+**Verificado:** el código del "stub" funcionaba tal cual — nadie lo había
+ejecutado. `yarn voice caso-ejemplo` llama a `/audio/speech` de kokoro, genera
+`assets/audio/caso-ejemplo.mp3` en estéreo (ffmpeg) e imprime la duración real
+(58.5s). Añadido `mkdir` defensivo para clones limpios.
 
-**Pasos:**
-1. Confirmar en la documentación del cluster el endpoint real de `kokoro`
-   (puede ser `/audio/speech` u otro) y el formato de respuesta (binario / base64).
-2. Ajustar la llamada `fetch` del stub a ese endpoint y formato.
-3. Probar las voces `em_alex` (masculina) y `ef_dora` (femenina); dejar como
-   default la que suene mejor para narración (se cambia en `.env`, `NAN_VOICE_ID`).
-4. Mantener el paso de FFmpeg (re-encode a estéreo) y la medición de duración.
-
-**Hecho cuando:** corre `yarn voice caso-ejemplo`, se crea `assets/audio/caso-ejemplo.mp3`
-en estéreo, y la consola imprime la duración real.
-
-**No toques:** los tipos (`types.ts`) ni el cargador (`load.ts`).
+**Pendiente (decisión de equipo):** elegir la voz por defecto — probar
+`em_alex` (actual) vs `ef_dora` con `NAN_VOICE_ID` en `.env` y fijar la
+ganadora en `config.yml`.
 
 ---
 
@@ -61,14 +54,18 @@ en estéreo, y la consola imprime la duración real.
   `assets/images/<scene.id>.<ext>`
 - **Evaluación por visión:** `gemma4` (fallback `qwen3.6`) con la imagen en base64
   (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué,
-  en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`caso-uso-1.md`](./caso-uso-1.md).
+  en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`casos-uso/caso-uso-1-vision.md`](./casos-uso/caso-uso-1-vision.md).
   Modelos configurables en `config.yml`.
 - Tests TDD: 30 tests (16 providers + 14 de lógica pura en `vision-util.ts`;
   freepik eliminado — su API no es gratuita)
+- (2026-06-11) Imágenes **por caso** en `assets/images/<slug>/` — los scene-id
+  se repiten entre casos y el directorio plano hacía que un caso pisara al otro.
+  Candidatas por proveedor configurables en `config.yml` → `media.candidates`
+  (8). La etapa ahora **falla en alto** si alguna escena queda sin imagen.
 
 **Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
 → 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
-confirma que `gemma4` acepta el base64 array. Detalle en `caso-uso-1.md`.
+confirma que `gemma4` acepta el base64 array. Detalle en `casos-uso/caso-uso-1-vision.md`.
 
 **Limitación conocida:** la selección es tan buena como las candidatas; términos
 heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords con

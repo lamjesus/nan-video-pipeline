@@ -66,6 +66,24 @@ seguro es `wikimedia,local` (ver `config.yml`).
 
 ---
 
+## La API del cluster admite máximo 3 peticiones en paralelo
+
+**Síntoma:** lanzando varios casos del pipeline a la vez, el cluster degrada o
+da errores intermitentes.
+
+**Causa:** el cluster NaN tiene un límite duro de **3 peticiones simultáneas**
+(todas las modalidades juntas). Para colmo, el throttle original de
+`nan-call.ts` creaba un semáforo nuevo por cada llamada, así que en la práctica
+no limitaba nada (hallazgo P1-B de la auditoría 2026-06-11).
+
+**Fix:** `src/lib/nan-call.ts` mantiene un semáforo **global por proceso**
+(máx 3 en vuelo, 60 rpm). Como las etapas de un caso llaman a la API en serie
+(~1 petición en vuelo por caso), los casos se lanzan en **máximo 2 carriles
+paralelos** — nunca 3+ procesos del pipeline a la vez (un semáforo en memoria
+no coordina procesos distintos).
+
+---
+
 ## No hay CI en GitHub Actions
 
 **Síntoma:** la PR no ejecuta checks automáticos (typecheck/test), o aparecía un
@@ -128,4 +146,4 @@ importar y exige credenciales, porque la **evaluación** por visión las necesit
 host que devuelva 404 rápido evitas reintentos lentos. La búsqueda y descarga
 corren de verdad; la evaluación cae al fallback neutro (coge la primera
 candidata). Útil para ver la tubería, no la calidad de selección. Ver
-`docs/caso-uso-1.md`.
+`docs/casos-uso/caso-uso-1-vision.md`.
