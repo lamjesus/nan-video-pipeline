@@ -159,8 +159,19 @@ async function main() {
     }
   }
 
-  console.log('\n✅ Selección visual completa.');
+  // Fallo en alto si falta alguna imagen: una escena sin imagen = escena en
+  // negro en el video. El orquestador solo ve el exit code (P1-C auditoría).
   const total = Object.values(elegidas).filter(Boolean).length;
+  if (total < storyboard.scenes.length) {
+    const missing = storyboard.scenes.filter((s) => !elegidas[s.id]).map((s) => s.id);
+    console.error(
+      `ERROR: faltan imágenes para ${missing.length} escena(s): ${missing.join(', ')}\n` +
+        'WHY: ningún proveedor devolvió candidatas válidas o falló la descarga/guardado\n' +
+        `FIX: añade imágenes al pool local (assets/images/_pool/) o reintenta yarn vision ${slug}`,
+    );
+    process.exit(1);
+  }
+  console.log('\n✅ Selección visual completa.');
   console.log(`Imágenes descargadas: ${total}/${storyboard.scenes.length}`);
 }
 
