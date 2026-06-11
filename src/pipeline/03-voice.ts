@@ -5,7 +5,7 @@
 //
 // ESTADO: stub. Falta confirmar con la doc el endpoint exacto de kokoro
 // (puede ser nan.audio.speech.create o un fetch a /audio/speech).
-import { writeFile } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { config } from '../config/index.js';
@@ -46,6 +46,8 @@ async function main() {
 
   const rawPath = `${config.paths.audio}/${slug}-raw.mp3`;
   const finalPath = `${config.paths.audio}/${slug}.mp3`;
+  // En un clone limpio assets/audio/ puede no existir (sólo viaja el .gitkeep).
+  await mkdir(config.paths.audio, { recursive: true });
   await writeFile(rawPath, buffer);
 
   // Re-encode a estéreo estándar (el motor de render lo necesita).
