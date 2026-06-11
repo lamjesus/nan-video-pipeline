@@ -84,6 +84,22 @@ no coordina procesos distintos).
 
 ---
 
+## `yarn voice` crashea esporádicamente con exit code 3221226505 (Windows)
+
+**Síntoma:** la etapa de voz muere con exit code `3221226505` (`0xC0000409`,
+STATUS_STACK_BUFFER_OVERRUN) sin mensaje útil; las etapas siguientes fallan en
+cascada con "Audio file not found".
+
+**Causa:** crash nativo transitorio (ffmpeg o node en el re-encode). Observado
+1 vez en 12 ejecuciones (batería del 2026-06-11, `caso-milgram`); el reintento
+inmediato funcionó a la primera. No reproducible de momento.
+
+**Fix:** reintentar `yarn voice <slug>` y seguir la cadena. Si se volviera
+frecuente: separar el re-encode de ffmpeg a un paso reintentable o capturar el
+exit code para reintentar automáticamente dentro de la etapa.
+
+---
+
 ## No hay CI en GitHub Actions
 
 **Síntoma:** la PR no ejecuta checks automáticos (typecheck/test), o aparecía un
