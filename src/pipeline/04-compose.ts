@@ -11,6 +11,7 @@ import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import { getAudioDuration } from '../lib/ffprobe.js';
 import { discoverImages, buildManifest, validateManifest } from '../lib/manifest.js';
+import { generateHtml, generateCss } from '../render/template.js';
 
 async function main() {
   const storyboard = await loadStoryboard();
@@ -65,6 +66,13 @@ async function main() {
     JSON.stringify(manifest, null, 2),
   );
   console.log(`✅ Manifest written: render-${slug}/manifest.json`);
+
+  // 8. Generate HTML + CSS from manifest
+  const html = generateHtml(manifest);
+  const css = generateCss(manifest);
+  await writeFile(resolve(renderDir, 'index.html'), html);
+  await writeFile(resolve(renderDir, 'styles.css'), css);
+  console.log(`✅ HTML/CSS written: render-${slug}/index.html, styles.css`);
 }
 
 main().catch((err) => {
