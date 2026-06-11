@@ -4,6 +4,16 @@ import { basename } from 'node:path';
 import { resolveMotion } from './motion.js';
 import type { Manifest } from '../lib/manifest.js';
 
+// El título y los onScreenText vienen de un LLM: sin escapar pueden romper el
+// HTML (o colarse un "</body>" que confunda al postprocesado del preview).
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /**
  * Generates a complete HTML string from a Manifest.
  * Deterministic: same manifest → byte-identical output.
@@ -16,7 +26,7 @@ export function generateHtml(manifest: Manifest): string {
       const motion = resolveMotion(scene.motion);
       const imgSrc = scene.image ? `images/${basename(scene.image)}` : '';
       const overlays = scene.onScreenText
-        .map((text) => `    <div class="overlay-text">${text}</div>`)
+        .map((text) => `    <div class="overlay-text">${escapeHtml(text)}</div>`)
         .join('\n');
 
       return `  <section class="scene" data-motion="${motion}" data-scene="${scene.id}" data-start="${scene.start}" data-end="${scene.end}">
@@ -33,14 +43,14 @@ ${overlays}
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="styles.css">
   ${srtHref ? `<link rel="preload" href="${srtHref}" as="fetch" crossorigin>` : ''}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
   <script type="application/json" id="art-direction">
-${JSON.stringify(artDirection)}
+${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
   </script>
 ${sceneSections}
   <div id="caption-container" class="caption-container"></div>
