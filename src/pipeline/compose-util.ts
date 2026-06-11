@@ -30,6 +30,26 @@ export function buildCopyPlan(manifest: Manifest): CopyEntry[] {
   return plan;
 }
 
+/**
+ * Versión portable del manifest para escribir en disco: las rutas pasan de
+ * absolutas (máquina del que compuso) a relativas al workspace (audio/,
+ * captions/, images/), que es lo que el runner de HyperFrames —u otra
+ * máquina— puede consumir tras la copia de assets.
+ */
+export function toWorkspaceManifest(manifest: Manifest): Manifest {
+  return {
+    ...manifest,
+    audio: { ...manifest.audio, path: `audio/${basename(manifest.audio.path)}` },
+    subtitle: {
+      path: manifest.subtitle.path ? `captions/${basename(manifest.subtitle.path)}` : null,
+    },
+    scenes: manifest.scenes.map((s) => ({
+      ...s,
+      image: s.image ? `images/${basename(s.image)}` : null,
+    })),
+  };
+}
+
 export function rescaleScenesToAudio(manifest: Manifest): Manifest {
   const duration = manifest.audio.duration;
   const scenes = manifest.scenes;

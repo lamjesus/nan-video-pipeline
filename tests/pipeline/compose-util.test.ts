@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCopyPlan, rescaleScenesToAudio } from '../../src/pipeline/compose-util.ts';
+import { buildCopyPlan, rescaleScenesToAudio, toWorkspaceManifest } from '../../src/pipeline/compose-util.ts';
 import type { Manifest, ManifestScene } from '../../src/lib/manifest.ts';
 
 function makeScene(i: number, overrides: Partial<ManifestScene> = {}): ManifestScene {
@@ -96,5 +96,28 @@ describe('rescaleScenesToAudio', () => {
     const original = makeManifest();
     rescaleScenesToAudio(original);
     expect(original.scenes[2].end).toBe(30);
+  });
+});
+
+describe('toWorkspaceManifest', () => {
+  it('rewrites absolute source paths to workspace-relative ones', () => {
+    const ws = toWorkspaceManifest(makeManifest());
+    expect(ws.audio.path).toBe('audio/caso-test.mp3');
+    expect(ws.subtitle.path).toBe('captions/caso-test.srt');
+    expect(ws.scenes[0].image).toBe('images/scene-01.jpg');
+  });
+
+  it('preserves nulls for missing subtitle and images', () => {
+    const m = makeManifest({ subtitle: { path: null } });
+    m.scenes[1] = makeScene(1, { image: null });
+    const ws = toWorkspaceManifest(m);
+    expect(ws.subtitle.path).toBeNull();
+    expect(ws.scenes[1].image).toBeNull();
+  });
+
+  it('does not mutate the original manifest', () => {
+    const original = makeManifest();
+    toWorkspaceManifest(original);
+    expect(original.audio.path).toBe('/repo/assets/audio/caso-test.mp3');
   });
 });
