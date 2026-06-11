@@ -10,6 +10,7 @@
     "vision": "tsx src/pipeline/02-vision.ts",
     "voice": "tsx src/pipeline/03-voice.ts",
     "compose": "tsx src/pipeline/04-compose.ts",
+    "render": "tsx src/pipeline/04-compose.ts",
     "subtitles": "tsx src/pipeline/05-subtitles.ts",
     "produce": "tsx src/pipeline/00-orchestrator.ts",
     "load": "tsx src/content/load.ts",

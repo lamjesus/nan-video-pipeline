@@ -2,7 +2,7 @@
 // Pure functions: no fs, no side effects — fully testable.
 import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { Scene, Storyboard } from './types.js';
+import type { ArtDirection, Scene, Storyboard } from './types.js';
 
 // --- Types ---
 
@@ -23,6 +23,7 @@ export interface Manifest {
   title: string;
   audio: { path: string; duration: number | null };
   subtitle: { path: string | null };
+  artDirection: ArtDirection;
   scenes: ManifestScene[];
   generatedAt: string; // ISO timestamp
 }
@@ -85,6 +86,7 @@ export function buildManifest(
     title: storyboard.title,
     audio: { path: audioPath, duration: audioDuration },
     subtitle: { path: subtitlePath },
+    artDirection: storyboard.artDirection,
     scenes,
     generatedAt: new Date().toISOString(),
   };
