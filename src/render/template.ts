@@ -153,8 +153,9 @@ body {
   position: absolute;
   color: #fff;
   font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(1rem, 3vw, 1.5rem);
-  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  font-size: clamp(1.1rem, 3.2vw, 1.7rem);
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.6);
   padding: 1rem;
   pointer-events: none;
 }
@@ -162,6 +163,8 @@ body {
 .overlay-text:first-of-type { top: 10%; left: 5%; }
 .overlay-text:nth-of-type(2) { top: 18%; left: 5%; }
 
+/* Captions estilo CapCut: grandes, bold y con contorno para que contrasten
+   sobre cualquier imagen (stroke en Chromium + sombras como fallback). */
 .caption-container {
   position: absolute;
   bottom: 8%;
@@ -171,8 +174,16 @@ body {
   text-align: center;
   color: #fff;
   font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(0.85rem, 2.5vw, 1.2rem);
-  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  font-size: clamp(1.3rem, 4.5vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 5px rgba(0,0,0,0.85);
+  text-shadow:
+    0 2px 3px rgba(0,0,0,0.95),
+    0 0 10px rgba(0,0,0,0.8),
+    0 4px 20px rgba(0,0,0,0.6);
   pointer-events: none;
   z-index: 10;
 }`;
