@@ -78,23 +78,27 @@ heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords c
 
 ---
 
-## Tarea D — Guion con qwen3.6
+## Tarea D — Guion con qwen3.6 [Manu ✅]
 
-**Archivo:** `src/pipeline/01-script.ts`
-**Objetivo:** que `yarn script "<tema>"` produzca un storyboard tipado válido.
+**Implementado:**
+- `src/pipeline/script-util.ts` — lógica pura: `extractJson` (tolera `<think>`,
+  vallas markdown y prosa) y `validateStoryboard` (10 escenas, campos requeridos,
+  tiempos por escena; errores con ruta de campo, p.ej. `scenes[3].voiceover`).
+- `src/pipeline/01-script.ts` — retry con feedback de validación al modelo
+  (3 intentos), `reasoning_config` desactivado (con fallback si el cluster lo
+  rechaza), slug opcional (`yarn script "<tema>" [slug]`), `createNanCall` y
+  errores ERROR/WHY/FIX.
+- `src/content/load.ts` — los casos generados se cargan **sin registro manual**
+  (import dinámico con slug validado). Fix: el guard de auto-ejecución no
+  funcionaba en Windows (`yarn load` era un no-op).
+- 14 tests TDD en `tests/pipeline/script-util.test.ts`.
 
-**Pasos:**
-1. Afinar el prompt del sistema para que el JSON salga siempre con la forma de
-   `Storyboard` (10 escenas, todos los campos).
-2. Añadir validación: comprobar que el JSON parseado tiene `scenes` con 10 items
-   y los campos requeridos; si no, reintentar o avisar con claridad.
-3. Confirmar cómo desactivar el modo de razonamiento en `qwen3.6` para ir más
-   rápido (revisar `reasoning_config` en la doc).
+**Verificado e2e (2026-06-11):** `yarn script "La biblioteca de Alejandría"
+caso-alejandria` → Storyboard válido al primer intento (10 escenas, 45s); el
+cluster acepta `reasoning_config`. `yarn load caso-alejandria` carga por fallback.
 
-**Hecho cuando:** dado un tema, se crea `src/content/caso-generado.ts` que compila
-y el cargador puede importar (tras registrarlo en `load.ts`).
-
-**No toques:** la selección visual ni la voz; solo produces el storyboard.
+**Pendiente (fuera de esta tarea):** mejorar los search terms de visión con
+qwen3.6 (limitación documentada en Tarea C).
 
 ---
 
