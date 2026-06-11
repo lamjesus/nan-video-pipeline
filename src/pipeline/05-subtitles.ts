@@ -14,7 +14,7 @@ import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
-import { alignSegments, toSRT } from './subtitle-util.js';
+import { alignSegments, chunkSegments, toSRT } from './subtitle-util.js';
 import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-util.js';
 
 // --- Whisper call ---
@@ -106,11 +106,14 @@ async function main() {
     );
   }
 
-  // 7. Write SRT
-  const srt = toSRT(aligned);
+  // 7. Chunk into short CapCut-style captions that refresh with the voice
+  const chunked = chunkSegments(aligned);
+
+  // 8. Write SRT
+  const srt = toSRT(chunked);
   await mkdir(config.paths.output, { recursive: true });
   await writeFile(`${config.paths.output}/${slug}.srt`, srt, 'utf-8');
-  console.log(`✅ Subtítulos: ${config.paths.output}/${slug}.srt (${aligned.length} bloques)`);
+  console.log(`✅ Subtítulos: ${config.paths.output}/${slug}.srt (${chunked.length} bloques cortos)`);
 }
 
 main().catch((err) => {

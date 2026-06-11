@@ -323,3 +323,52 @@ function parseTimestamp(ts: string): number {
     parseInt(ms, 10) / 1000
   );
 }
+
+// --- Chunking estilo CapCut -------------------------------------------------
+
+export interface ChunkOptions {
+  maxChars?: number; // máximo de caracteres visibles por bloque de subtítulo
+}
+
+/**
+ * Trocea segmentos alineados en bloques cortos que se van refrescando con la
+ * voz (estilo CapCut), en vez de un párrafo largo estático. Empaqueta palabras
+ * sin romperlas hasta maxChars y reparte el tiempo de cada segmento de forma
+ * proporcional a la longitud de cada bloque. Reindexa 1..n (formato SRT).
+ */
+export function chunkSegments(
+  segments: AlignedSegment[],
+  options: ChunkOptions = {},
+): AlignedSegment[] {
+  const maxChars = options.maxChars ?? 42;
+  const out: AlignedSegment[] = [];
+
+  for (const seg of segments) {
+    const words = seg.text.split(/\s+/).filter(Boolean);
+    if (words.length === 0) continue;
+
+    const chunks: string[] = [];
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (candidate.length > maxChars && current) {
+        chunks.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) chunks.push(current);
+
+    const duration = seg.end - seg.start;
+    const totalChars = chunks.reduce((n, c) => n + c.length, 0);
+    let t = seg.start;
+    for (const chunk of chunks) {
+      const dt = totalChars > 0 ? (duration * chunk.length) / totalChars : 0;
+      out.push({ index: 0, start: t, end: t + dt, text: chunk });
+      t += dt;
+    }
+  }
+
+  return out.map((s, i) => ({ ...s, index: i + 1 }));
+}
