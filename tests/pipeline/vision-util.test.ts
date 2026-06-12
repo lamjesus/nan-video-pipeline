@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   deriveSearchTerms,
+  buildSearchQueriesPrompt,
+  parseSearchQueries,
   extFromUrl,
   mimeFromExt,
   bestByScore,
@@ -25,6 +27,87 @@ describe('deriveSearchTerms', () => {
   it('devuelve [] si todo son stopwords o ruido', () => {
     expect(deriveSearchTerms('the of in a to')).toEqual([]);
     expect(deriveSearchTerms('   ')).toEqual([]);
+  });
+});
+
+describe('buildSearchQueriesPrompt', () => {
+  const scenes = [
+    { id: 'scene-01', imagePrompt: 'Wide aerial shot of a hilltop city' },
+    { id: 'scene-02', imagePrompt: 'Roman general overlooking an army camp' },
+  ];
+
+  it('incluye cada escena (id + imagePrompt) y el tema', () => {
+    const prompt = buildSearchQueriesPrompt(scenes, 'Numancia');
+    expect(prompt).toContain('scene-01');
+    expect(prompt).toContain('Wide aerial shot of a hilltop city');
+    expect(prompt).toContain('scene-02');
+    expect(prompt).toContain('Numancia');
+  });
+
+  it('pide JSON y prohíbe vocabulario de cámara/estilo', () => {
+    const prompt = buildSearchQueriesPrompt(scenes, 'Numancia');
+    expect(prompt.toLowerCase()).toContain('json');
+    // La regla clave: las queries son de SUJETO, no de encuadre.
+    expect(prompt.toLowerCase()).toMatch(/aerial|cinematic|wide/);
+  });
+});
+
+describe('parseSearchQueries', () => {
+  const IDS = ['scene-01', 'scene-02'];
+
+  it('parsea un mapa JSON limpio y recorta espacios', () => {
+    const raw = '{"scene-01": "  Numantia hilltop city ", "scene-02": "Scipio Aemilianus siege"}';
+    const { queries, errors } = parseSearchQueries(raw, IDS);
+    expect(errors).toEqual([]);
+    expect(queries['scene-01']).toBe('Numantia hilltop city');
+    expect(queries['scene-02']).toBe('Scipio Aemilianus siege');
+  });
+
+  it('tolera bloques <think> y vallas markdown alrededor', () => {
+    const raw =
+      '<think>pensando…</think>\nAquí tienes:\n```json\n' +
+      '{"scene-01": "Numantia", "scene-02": "Roman siege"}\n```';
+    const { queries, errors } = parseSearchQueries(raw, IDS);
+    expect(errors).toEqual([]);
+    expect(queries['scene-01']).toBe('Numantia');
+  });
+
+  it('acepta un array de palabras y lo une con espacios', () => {
+    const raw = '{"scene-01": ["Numantia", "ruins"], "scene-02": "Roman siege"}';
+    const { queries, errors } = parseSearchQueries(raw, IDS);
+    expect(errors).toEqual([]);
+    expect(queries['scene-01']).toBe('Numantia ruins');
+  });
+
+  it('nombra la escena que falta en el error (feedback de retry)', () => {
+    const raw = '{"scene-01": "Numantia"}';
+    const { errors } = parseSearchQueries(raw, IDS);
+    expect(errors.some((e) => e.includes('scene-02'))).toBe(true);
+  });
+
+  it('rechaza valores vacíos o no-string nombrando la escena', () => {
+    const raw = '{"scene-01": "", "scene-02": 42}';
+    const { errors } = parseSearchQueries(raw, IDS);
+    expect(errors.some((e) => e.includes('scene-01'))).toBe(true);
+    expect(errors.some((e) => e.includes('scene-02'))).toBe(true);
+  });
+
+  it('rechaza queries desbocadas (>100 chars)', () => {
+    const raw = `{"scene-01": "${'palabra '.repeat(20)}", "scene-02": "ok query"}`;
+    const { errors } = parseSearchQueries(raw, IDS);
+    expect(errors.some((e) => e.includes('scene-01'))).toBe(true);
+  });
+
+  it('ignora claves extra que no son escenas', () => {
+    const raw = '{"scene-01": "Numantia", "scene-02": "Roman siege", "nota": "extra"}';
+    const { queries, errors } = parseSearchQueries(raw, IDS);
+    expect(errors).toEqual([]);
+    expect(Object.keys(queries).sort()).toEqual(IDS);
+  });
+
+  it('JSON inválido → errores no vacíos', () => {
+    const { errors } = parseSearchQueries('esto no es JSON', IDS);
+    expect(errors.length).toBeGreaterThan(0);
   });
 });
 

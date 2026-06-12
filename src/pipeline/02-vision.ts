@@ -10,9 +10,10 @@
 // devuelve HTML. Detalle completo en docs/TROUBLESHOOTING.md > mimo-v2.5.
 import { writeFile, mkdir } from 'node:fs/promises';
 import { nan } from '../lib/nan-client.js';
+import { createNanCall } from '../lib/nan-call.js';
 import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
-import type { Scene } from '../lib/types.js';
+import type { Scene, Storyboard } from '../lib/types.js';
 
 // Wikimedia (y muchos CDNs) bloquean peticiones sin User-Agent identificable.
 const USER_AGENT =
@@ -24,10 +25,50 @@ import { selectProvider } from '../lib/media/index.js';
 // --- Lógica pura (con tests en tests/pipeline/vision-util.test.ts) ---
 import {
   deriveSearchTerms,
+  buildSearchQueriesPrompt,
+  parseSearchQueries,
   extFromUrl,
   mimeFromExt,
   bestByScore,
 } from './vision-util.js';
+
+// --- Queries de búsqueda con qwen3.6 (UNA llamada para todas las escenas) ---
+// La heurística de stopwords producía queries de encuadre ("wide aerial shot")
+// porque el imagePrompt empieza por la dirección de cámara. El modelo extrae
+// el sujeto de cada escena; si falla tras los retries, se degrada a la
+// heurística por escena (el pipeline nunca se cae por esto).
+const QUERY_ATTEMPTS = 3;
+
+async function generateSearchQueries(
+  storyboard: Storyboard,
+): Promise<Record<string, string> | null> {
+  const scenes = storyboard.scenes.map((s) => ({ id: s.id, imagePrompt: s.imagePrompt }));
+  const sceneIds = scenes.map((s) => s.id);
+  let feedback = '';
+
+  for (let attempt = 1; attempt <= QUERY_ATTEMPTS; attempt++) {
+    const prompt = buildSearchQueriesPrompt(scenes, storyboard.title) + feedback;
+    try {
+      const call = createNanCall(() =>
+        nan.chat.completions.create({
+          model: config.models.text,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1000,
+        }),
+      );
+      const res = await call();
+      const raw = res.choices[0]?.message?.content ?? '';
+      const { queries, errors } = parseSearchQueries(raw, sceneIds);
+      if (errors.length === 0) return queries;
+      console.warn(`  queries (intento ${attempt}/${QUERY_ATTEMPTS}): ${errors.length} error(es)`);
+      feedback = `\n\nTu respuesta anterior tenía estos errores; corrígelos:\n- ${errors.join('\n- ')}`;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`  queries (intento ${attempt}/${QUERY_ATTEMPTS}): ${msg}`);
+    }
+  }
+  return null;
+}
 
 // Trae los bytes de una candidata. Soporta file:// (pool local) y http(s).
 // El User-Agent es obligatorio: sin él Wikimedia devuelve HTML, no la imagen.
@@ -74,7 +115,10 @@ async function puntuar(scene: Scene, cand: Candidate): Promise<number> {
   const modelos = [config.models.visionEval, config.models.visionEvalFallback];
   for (const model of modelos) {
     try {
-      const res = await nan.chat.completions.create({ model, messages, max_tokens: 10 });
+      const call = createNanCall(() =>
+        nan.chat.completions.create({ model, messages, max_tokens: 10 }),
+      );
+      const res = await call();
       const txt = res.choices[0]?.message?.content ?? '';
       const score = parseInt(txt.trim(), 10);
       if (!isNaN(score)) return Math.max(1, Math.min(10, score));
@@ -106,13 +150,22 @@ async function main() {
   const providers = await selectProvider();
   console.log(`Proveedores activos: ${providers.map((p) => p.name).join(', ')}`);
 
+  // Queries de búsqueda por escena con qwen3.6 (una llamada para el caso).
+  const llmQueries = await generateSearchQueries(storyboard);
+  console.log(
+    llmQueries
+      ? `Queries de búsqueda: qwen3.6 (${Object.keys(llmQueries).length} escenas)`
+      : 'Queries de búsqueda: heurística (qwen3.6 no disponible)',
+  );
+
   for (const scene of storyboard.scenes) {
     console.log(`\n--- ${scene.id}: ${scene.imagePrompt.slice(0, 60)}...`);
 
-    // 1. Derivar términos de búsqueda
+    // 1. Query de búsqueda: qwen3.6 → heurística → imagePrompt crudo
     const terms = deriveSearchTerms(scene.imagePrompt);
-    console.log(`  Términos: ${terms.join(', ') || '(usando fallback)'}`);
-    const query = terms.length > 0 ? terms.join(' ') : scene.imagePrompt;
+    const query =
+      llmQueries?.[scene.id] ?? (terms.length > 0 ? terms.join(' ') : scene.imagePrompt);
+    console.log(`  Query: ${query}`);
 
     // 2. Buscar URLs candidatas en todos los providers
     const urls: string[] = [];
