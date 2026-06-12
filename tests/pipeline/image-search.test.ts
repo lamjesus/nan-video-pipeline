@@ -10,6 +10,7 @@ import {
   extFromUrl,
   mimeFromExt,
   bestByScore,
+  generifyQuery,
 } from '../../src/pipeline/image-search.ts';
 
 describe('deriveSearchTerms', () => {
@@ -264,5 +265,28 @@ describe('bestByScore', () => {
       { item: 'b', score: 7 },
     ]);
     expect(best).toBe('a');
+  });
+});
+
+describe('generifyQuery', () => {
+  it('quita nombres de marcas conocidas', () => {
+    expect(generifyQuery('Antropic company logo')).toBe('company logo');
+  });
+
+  it('quita nombres de marcas en el medio', () => {
+    expect(generifyQuery('Claude neural interface')).toBe('neural interface');
+  });
+
+  it('mantiene el query original si todo se quita', () => {
+    // "Anthropic" alone → can't generify → returns original
+    expect(generifyQuery('Anthropic')).toBe('Anthropic');
+  });
+
+  it('no toca queries genéricas', () => {
+    expect(generifyQuery('server room data center')).toBe('server room data center');
+  });
+
+  it('maneja múltiples marcas', () => {
+    expect(generifyQuery('OpenAI Google headquarters')).toBe('headquarters');
   });
 });
