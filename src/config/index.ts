@@ -39,9 +39,12 @@ interface FileConfig {
     tts: string;
     stt: string;
     embedding: string;
+    // Reranker anunciado pero aún no desplegado (ver TROUBLESHOOTING.md);
+    // models:check lo sondea.
+    reranker: string;
   };
   voice: { default: string };
-  media: { providers: string[]; candidates?: number };
+  media: { providers: string[]; candidates?: number; shortlist?: number };
 }
 
 function loadFileConfig(): FileConfig {
@@ -94,5 +97,8 @@ export const config = {
     providers: file.media.providers,
     // Candidatas por proveedor y escena (config.yml > media.candidates).
     candidates: file.media.candidates ?? 5,
+    // Candidatas que pasan a descarga+visión tras el pre-ranking por texto
+    // (config.yml > media.shortlist; 0 = sin pre-ranking).
+    shortlist: file.media.shortlist ?? 0,
   },
 } as const;

@@ -35,6 +35,27 @@ describe la imagen real. Configurable en `config.yml` → `models.visionEval` /
 
 ---
 
+## El modelo `rerank` (Qwen3-Reranker-8B) NO está desplegado
+
+**Síntoma:** se anunció un reranker en el cluster, pero cualquier llamada de
+rerank falla con `404 page not found` (texto plano).
+
+**Causa:** a fecha 2026-06-11 el modelo **no está expuesto**: `GET /v1/models`
+lista exactamente 7 modelos (deepseek-v4-flash, gemma4, kokoro, mimo-v2.5,
+qwen3-embedding, qwen3.6, whisper) y ninguna ruta de rerank existe — probadas
+`/v1/rerank`, `/rerank` y `/v2/rerank` (formato Cohere/Jina, el que soportan
+litellm y vLLM) y `/v1/score`, `/score` (cross-encoders de vLLM). El `404` en
+texto plano viene del **gateway** (cuando litellm conoce la ruta pero no el
+modelo responde un JSON de error), así que el anuncio se adelantó al despliegue.
+
+**Fix:** `yarn models:check` incluye una sonda de rerank que hoy reporta
+"no desplegado" sin contar como fallo. Cuando el cluster lo exponga, la sonda
+pasará a ✅ y mostrará el formato de respuesta; entonces se puede cambiar el
+backend del pre-ranking de candidatas (hoy `qwen3-embedding` por similitud de
+coseno, ver `config.yml > media.shortlist`) al endpoint de rerank real.
+
+---
+
 ## Wikimedia devuelve HTML / error en vez de la imagen
 
 **Síntoma:** la descarga de una imagen de Wikimedia falla, o devuelve HTML en

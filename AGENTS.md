@@ -84,7 +84,8 @@ yarn typecheck
 | mimo-v2.5 | `POST /v1/chat/completions` | Visión legacy — CIEGO (ver `docs/TROUBLESHOOTING.md`) |
 | kokoro | `POST /v1/audio/speech` | TTS (español) |
 | whisper | `POST /v1/audio/transcriptions` | STT (subtítulos) |
-| qwen3-embedding | `POST /v1/embeddings` | Embeddings (RAG) |
+| qwen3-embedding | `POST /v1/embeddings` | Embeddings (RAG + pre-ranking de candidatas) |
+| rerank | *(sin ruta aún)* | Anunciado (Qwen3-Reranker-8B), **NO desplegado** — `yarn models:check` lo sondea (ver `docs/TROUBLESHOOTING.md`) |
 
 ## Configuración
 

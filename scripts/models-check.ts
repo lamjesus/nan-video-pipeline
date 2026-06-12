@@ -218,6 +218,59 @@ async function checkEmbedding(): Promise<void> {
   }
 }
 
+// --- rerank: Qwen3-Reranker-8B (anunciado, aún NO desplegado a 2026-06-11) ---
+// Sonda el formato Cohere/Jina en POST /v1/rerank. Mientras el gateway no
+// exponga la ruta responde `404 page not found` (texto plano) — se reporta
+// como "no desplegado", no como fallo inesperado. Ver docs/TROUBLESHOOTING.md.
+async function checkRerank(): Promise<void> {
+  const baseUrl = config.nan.baseUrl();
+  const apiKey = config.nan.apiKey();
+  const model = config.models.reranker;
+
+  try {
+    const res = await fetch(`${baseUrl}/rerank`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        query: 'Ancient Roman siege of a hilltop city',
+        documents: ['Numantia', 'Tulip mania', 'Roman siege warfare'],
+        top_n: 3,
+      }),
+    });
+
+    const text = await res.text();
+    if (res.status === 404) {
+      record({
+        model,
+        ok: false,
+        detail: 'aún NO desplegado (404 del gateway, esperado) — ver TROUBLESHOOTING.md',
+      });
+      return;
+    }
+    if (!res.ok) {
+      record({ model, ok: false, detail: `HTTP ${res.status}: ${text.slice(0, 200)}` });
+      return;
+    }
+
+    const data = JSON.parse(text) as { results?: { index: number; relevance_score: number }[] };
+    const top = data.results?.[0];
+    record({
+      model,
+      ok: Boolean(top),
+      detail: top
+        ? `ok → ¡DESPLEGADO! top: index ${top.index}, score ${top.relevance_score}`
+        : `respuesta 200 sin results: ${text.slice(0, 200)}`,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    record({ model, ok: false, detail: msg });
+  }
+}
+
 // --- Main ---
 async function main(): Promise<void> {
   console.log('🔍 NaN Video Pipeline — Model Smoke Check\n');
@@ -227,6 +280,7 @@ async function main(): Promise<void> {
   await checkTTS();
   await checkSTT();
   await checkEmbedding();
+  await checkRerank();
 
   console.log('');
   const failures = results.filter((r) => !r.ok);

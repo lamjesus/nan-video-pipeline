@@ -14,7 +14,12 @@ models:
   visionEvalFallback: qwen3.6   # si visionEval falla, se usa este
   tts: kokoro                   # texto a voz
   stt: whisper                  # voz a texto (subtítulos)
-  embedding: qwen3-embedding    # embeddings vectoriales (RAG)
+  embedding: qwen3-embedding    # embeddings vectoriales (RAG + pre-ranking de candidatas)
+  # Reranker anunciado (Qwen3-Reranker-8B) — aún NO desplegado a 2026-06-11:
+  # el gateway no expone ninguna ruta de rerank (ver docs/TROUBLESHOOTING.md).
+  # `yarn models:check` lo sondea; cuando pase a ✅, cambiar aquí el backend
+  # del pre-ranking.
+  reranker: rerank
 
 # Voz por defecto de kokoro. Override puntual con la env NAN_VOICE_ID.
 voice:
@@ -29,3 +34,7 @@ media:
   # Candidatas por proveedor y escena que evalúa el modelo de visión.
   # Más candidatas = mejor selección pero más llamadas a gemma4 por escena.
   candidates: 8
+  # Pre-ranking por texto (título de la candidata vs imagePrompt) ANTES de
+  # descargar: solo las `shortlist` mejores bajan y pasan por gemma4.
+  # Hoy usa qwen3-embedding (similitud de coseno); 0 = desactivado.
+  shortlist: 5
