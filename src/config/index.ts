@@ -44,7 +44,7 @@ interface FileConfig {
     reranker: string;
   };
   voice: { default: string };
-  media: { providers: string[]; candidates?: number; shortlist?: number };
+  media: { providers: string[]; candidates?: number; shortlist?: number; mode?: string };
 }
 
 function loadFileConfig(): FileConfig {
@@ -100,5 +100,8 @@ export const config = {
     // Candidatas que pasan a descarga+visión tras el pre-ranking por texto
     // (config.yml > media.shortlist; 0 = sin pre-ranking).
     shortlist: file.media.shortlist ?? 0,
+    // Modo de imágenes SIN validar (config.yml > media.mode; override puntual
+    // con la env MEDIA_MODE). Lo valida resolveMediaMode en la etapa de visión.
+    mode: () => process.env.MEDIA_MODE ?? file.media.mode,
   },
 } as const;

@@ -74,6 +74,29 @@ yarn typecheck
 > así que los casos se lanzan en **máximo 2 carriles paralelos**
 > (ver `docs/TROUBLESHOOTING.md`).
 
+## Imágenes locales (generadas fuera / colocadas a mano)
+
+Dos modos para la etapa de visión (`config.yml` → `media.mode`, override
+puntual con la env `MEDIA_MODE`):
+
+- **`auto`** (default): busca candidatas en los providers (Wikimedia…),
+  qwen3.6 genera la query de cada escena, qwen3-embedding pre-rankea por
+  título (solo el top `media.shortlist` se descarga) y gemma4 elige sobre
+  los píxeles reales.
+- **`local`**: cero red. Para imágenes **generadas con IA externa** (u otra
+  fuente manual). Dos formas de colocarlas, combinables:
+  1. **Por escena (determinista):** `assets/images/<slug>/<scene-id>.jpg`
+     (también png/gif/webp/svg) — se usa tal cual, sin búsqueda ni visión.
+  2. **Pool con nombres descriptivos:** `assets/images/_pool/` — p. ej.
+     `numancia_hilltop-fog.jpg`. El nombre se convierte en texto y se
+     empareja a cada escena con el mismo pre-ranking + gemma4 (el pool
+     entero entra al ranking, no solo los primeros N). El cluster sí se usa
+     para emparejar; el modo offline real es otra cosa (TROUBLESHOOTING).
+
+En **ambos modos**, si la imagen de una escena ya existe en
+`assets/images/<slug>/`, la etapa la **respeta** y no busca; regenerar =
+borrarla o `yarn vision <slug> --force`.
+
 ## Modelos del cluster NaN
 
 | Modelo | Endpoint | Uso |

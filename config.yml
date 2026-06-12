@@ -28,6 +28,15 @@ voice:
 # Proveedores de imagen por defecto, en orden de prioridad.
 # Override puntual con la env MEDIA_PROVIDERS (csv).
 media:
+  # Modo de imágenes (override puntual con la env MEDIA_MODE):
+  #   auto  — búsqueda en providers (Wikimedia…) + selección con gemma4.
+  #   local — cero red: imágenes generadas fuera (IA externa) y colocadas a
+  #           mano. Por escena: assets/images/<slug>/<scene-id>.jpg se usa tal
+  #           cual; el resto se empareja contra assets/images/_pool/ por nombre
+  #           de fichero descriptivo. Ver AGENTS.md > Imágenes locales.
+  # En AMBOS modos, una imagen ya colocada para una escena se respeta
+  # (regenerar = borrarla o `yarn vision <slug> --force`).
+  mode: auto
   providers:
     - wikimedia
     - local

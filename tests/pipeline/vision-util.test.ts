@@ -5,6 +5,8 @@ import {
   parseSearchQueries,
   cosineSimilarity,
   shortlistByCosine,
+  resolveMediaMode,
+  findSceneOverride,
   extFromUrl,
   mimeFromExt,
   bestByScore,
@@ -158,6 +160,49 @@ describe('shortlistByCosine', () => {
 
   it('lista vacía → []', () => {
     expect(shortlistByCosine(q, [], 3)).toEqual([]);
+  });
+});
+
+describe('resolveMediaMode', () => {
+  it('sin valor → auto', () => {
+    expect(resolveMediaMode(undefined)).toBe('auto');
+    expect(resolveMediaMode('')).toBe('auto');
+  });
+
+  it('acepta auto y local, con espacios y mayúsculas', () => {
+    expect(resolveMediaMode('auto')).toBe('auto');
+    expect(resolveMediaMode('local')).toBe('local');
+    expect(resolveMediaMode(' LOCAL ')).toBe('local');
+  });
+
+  it('modo desconocido → error que nombra los válidos', () => {
+    expect(() => resolveMediaMode('remoto')).toThrow(/auto.*local|local.*auto/s);
+  });
+});
+
+describe('findSceneOverride', () => {
+  it('encuentra la imagen colocada para la escena', () => {
+    expect(findSceneOverride(['scene-01.jpg', 'scene-02.png'], 'scene-01')).toBe('scene-01.jpg');
+  });
+
+  it('con varias extensiones gana la de mayor prioridad (jpg primero)', () => {
+    expect(findSceneOverride(['scene-01.png', 'scene-01.jpg'], 'scene-01')).toBe('scene-01.jpg');
+  });
+
+  it('extensión insensible a mayúsculas, devuelve el nombre real', () => {
+    expect(findSceneOverride(['scene-01.PNG'], 'scene-01')).toBe('scene-01.PNG');
+  });
+
+  it('no confunde scene-01 con scene-010', () => {
+    expect(findSceneOverride(['scene-010.jpg'], 'scene-01')).toBeNull();
+  });
+
+  it('ignora extensiones que no son de imagen', () => {
+    expect(findSceneOverride(['scene-01.txt'], 'scene-01')).toBeNull();
+  });
+
+  it('sin ficheros → null', () => {
+    expect(findSceneOverride([], 'scene-01')).toBeNull();
   });
 });
 

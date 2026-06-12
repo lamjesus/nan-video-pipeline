@@ -8,7 +8,7 @@
 // (fallback `qwen3.6`) pasando la imagen en BASE64 dentro del formato array
 // OpenAI (no markdown, no URL remota). Además Wikimedia exige User-Agent o
 // devuelve HTML. Detalle completo en docs/TROUBLESHOOTING.md > mimo-v2.5.
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readdir } from 'node:fs/promises';
 import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
 import { config } from '../config/index.js';
@@ -28,6 +28,8 @@ import {
   buildSearchQueriesPrompt,
   parseSearchQueries,
   shortlistByCosine,
+  resolveMediaMode,
+  findSceneOverride,
   extFromUrl,
   mimeFromExt,
   bestByScore,
@@ -190,20 +192,52 @@ async function main() {
   const slug = currentCaseSlug();
   const elegidas: Record<string, string | null> = {};
 
-  // Inicializar providers
-  const providers = await selectProvider();
+  // Modo de imágenes (auto = providers; local = colocadas a mano, cero red)
+  // y flag --force (ignora las ya colocadas y regenera).
+  const mode = resolveMediaMode(config.media.mode());
+  const force = process.argv.includes('--force');
+  console.log(`Modo de imágenes: ${mode}${force ? ' (--force: regenera overrides)' : ''}`);
+
+  // Imágenes ya colocadas para este caso → override por escena (ambos modos).
+  const destDir = config.paths.imagesFor(slug);
+  let colocadas: string[] = [];
+  try {
+    colocadas = await readdir(destDir);
+  } catch {
+    // sin directorio = sin overrides
+  }
+
+  // Inicializar providers (modo local: solo el pool, da igual MEDIA_PROVIDERS)
+  const providers = await selectProvider(mode);
   console.log(`Proveedores activos: ${providers.map((p) => p.name).join(', ')}`);
 
+  // En modo local, el pool ENTERO entra al pre-ranking por nombre de fichero
+  // (no solo los primeros N): el shortlist ya corta lo que baja a visión.
+  const searchLimit = mode === 'local' ? 1000 : config.media.candidates;
+
   // Queries de búsqueda por escena con qwen3.6 (una llamada para el caso).
-  const llmQueries = await generateSearchQueries(storyboard);
-  console.log(
-    llmQueries
-      ? `Queries de búsqueda: qwen3.6 (${Object.keys(llmQueries).length} escenas)`
-      : 'Queries de búsqueda: heurística (qwen3.6 no disponible)',
-  );
+  // Si todas las escenas tienen override, la llamada sobra.
+  const hayPendientes =
+    force || storyboard.scenes.some((s) => !findSceneOverride(colocadas, s.id));
+  const llmQueries = hayPendientes ? await generateSearchQueries(storyboard) : null;
+  if (hayPendientes) {
+    console.log(
+      llmQueries
+        ? `Queries de búsqueda: qwen3.6 (${Object.keys(llmQueries).length} escenas)`
+        : 'Queries de búsqueda: heurística (qwen3.6 no disponible)',
+    );
+  }
 
   for (const scene of storyboard.scenes) {
     console.log(`\n--- ${scene.id}: ${scene.imagePrompt.slice(0, 60)}...`);
+
+    // 0. Override: imagen ya colocada para la escena → se respeta tal cual.
+    const override = force ? null : findSceneOverride(colocadas, scene.id);
+    if (override) {
+      elegidas[scene.id] = `${destDir}/${override}`;
+      console.log(`  Override: ${override} ya colocada (regenera con --force o borrándola)`);
+      continue;
+    }
 
     // 1. Query de búsqueda: qwen3.6 → heurística → imagePrompt crudo
     const terms = deriveSearchTerms(scene.imagePrompt);
@@ -215,7 +249,7 @@ async function main() {
     const encontradas: FoundCandidate[] = [];
     for (const provider of providers) {
       try {
-        const results = await provider.search(query, config.media.candidates);
+        const results = await provider.search(query, searchLimit);
         const valid = results.filter((c) => c.url);
         encontradas.push(...valid.map((c) => ({ url: c.url, title: c.title ?? '' })));
         console.log(`  ${provider.name}: ${valid.length} candidatas`);
@@ -254,7 +288,6 @@ async function main() {
 
     // 5. Guardar la ganadora (ya está en memoria, no se re-descarga).
     if (elegida) {
-      const destDir = config.paths.imagesFor(slug);
       await mkdir(destDir, { recursive: true });
       const destPath = `${destDir}/${scene.id}.${elegida.ext}`;
       try {
@@ -275,7 +308,8 @@ async function main() {
     console.error(
       `ERROR: faltan imágenes para ${missing.length} escena(s): ${missing.join(', ')}\n` +
         'WHY: ningún proveedor devolvió candidatas válidas o falló la descarga/guardado\n' +
-        `FIX: añade imágenes al pool local (assets/images/_pool/) o reintenta yarn vision ${slug}`,
+        `FIX: añade imágenes al pool (assets/images/_pool/), colócalas por escena ` +
+        `(assets/images/${slug}/<scene-id>.jpg) o reintenta yarn vision ${slug}`,
     );
     process.exit(1);
   }

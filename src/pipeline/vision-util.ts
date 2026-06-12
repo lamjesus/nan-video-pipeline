@@ -145,6 +145,44 @@ export function shortlistByCosine<T>(
     .map(({ item }) => item);
 }
 
+// --- Modo de imágenes y override por escena ---
+// `auto`: búsqueda en providers (Wikimedia…). `local`: cero red — imágenes
+// generadas fuera (IA externa) y colocadas a mano; ver AGENTS.md > Imágenes
+// locales. En AMBOS modos, una imagen ya colocada en
+// assets/images/<slug>/<scene-id>.<ext> se respeta y no se busca.
+
+export type MediaMode = 'auto' | 'local';
+
+/** Valida el modo (config.yml > media.mode / env MEDIA_MODE). Vacío → auto. */
+export function resolveMediaMode(raw: string | undefined): MediaMode {
+  const mode = (raw ?? '').trim().toLowerCase();
+  if (mode === '' || mode === 'auto') return 'auto';
+  if (mode === 'local') return 'local';
+  throw new Error(
+    `ERROR: modo de imágenes desconocido: "${raw}"\n` +
+      `WHY: los modos soportados son "auto" (búsqueda en providers) y ` +
+      `"local" (imágenes colocadas a mano)\n` +
+      `FIX: corrige config.yml > media.mode o la env MEDIA_MODE`,
+  );
+}
+
+// Prioridad de extensiones para el override (la primera que exista gana).
+const OVERRIDE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] as const;
+
+/**
+ * Busca en un listado de directorio la imagen ya colocada para una escena:
+ * exactamente `<scene-id>.<ext>` (extensión insensible a mayúsculas).
+ * Devuelve el nombre REAL del fichero, o null si no hay override.
+ */
+export function findSceneOverride(files: string[], sceneId: string): string | null {
+  const byLower = new Map(files.map((f) => [f.toLowerCase(), f]));
+  for (const ext of OVERRIDE_EXTS) {
+    const hit = byLower.get(`${sceneId.toLowerCase()}.${ext}`);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 // Extensión de imagen a partir de la URL (jpg por defecto).
 export function extFromUrl(url: string): string {
   const match = url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i);

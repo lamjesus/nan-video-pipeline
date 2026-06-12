@@ -2,7 +2,21 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { LocalProvider } from '../../../src/lib/media/local.ts';
+import { LocalProvider, filenameToText } from '../../../src/lib/media/local.ts';
+
+describe('filenameToText', () => {
+  it('quita la extensión y convierte separadores en espacios', () => {
+    expect(filenameToText('roman_siege-walls.v2.png')).toBe('roman siege walls v2');
+  });
+
+  it('conserva nombres con espacios', () => {
+    expect(filenameToText('IMG 1234.JPG')).toBe('IMG 1234');
+  });
+
+  it('funciona sin extensión', () => {
+    expect(filenameToText('foo_bar')).toBe('foo bar');
+  });
+});
 
 describe('LocalProvider', () => {
   let tmpDir: string;
@@ -54,5 +68,12 @@ describe('LocalProvider', () => {
     const results = await provider.search('', 5);
     expect(results).toHaveLength(1);
     expect(results[0].url).toContain('img.jpg');
+  });
+
+  it('el título es el nombre normalizado (para el matching por texto)', async () => {
+    await writeFile(join(tmpDir, 'numancia_hilltop-fog.jpg'), 'data');
+
+    const results = await provider.search('', 5);
+    expect(results[0].title).toBe('numancia hilltop fog');
   });
 });

@@ -7,7 +7,13 @@ import { WikimediaProvider } from './wikimedia.js';
 import { LocalProvider } from './local.js';
 import { config } from '../../config/index.js';
 
-export async function selectProvider(): Promise<MediaProvider[]> {
+export async function selectProvider(mode: 'auto' | 'local' = 'auto'): Promise<MediaProvider[]> {
+  // Modo local: cero red — solo el pool de imágenes colocadas a mano,
+  // da igual lo que diga MEDIA_PROVIDERS (ver AGENTS.md > Imágenes locales).
+  if (mode === 'local') {
+    return [new LocalProvider()];
+  }
+
   // Default desde config.yml; override puntual con la env MEDIA_PROVIDERS (csv).
   const envProviders = (process.env.MEDIA_PROVIDERS ?? config.media.providers.join(','))
     .split(',')
