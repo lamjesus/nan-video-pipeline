@@ -55,3 +55,8 @@ distintos a propósito):
   **10 escenas** generadas (estresa la búsqueda con tema abstracto)
 - [`caso-numancia.md`](./caso-numancia.md) — Numancia · histórico España ·
   **12 escenas** generadas (ejercita el recuento parametrizado)
+
+Y el caso de uso transversal del modo local:
+
+- [`caso-uso-local.md`](./caso-uso-local.md) — imágenes generadas fuera
+  (FLUX) colocadas por escena o emparejadas desde el pool
