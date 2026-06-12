@@ -191,6 +191,9 @@ async function main() {
   const storyboard = await loadStoryboard();
   const slug = currentCaseSlug();
   const elegidas: Record<string, string | null> = {};
+  // URLs ya ganadoras en escenas anteriores: la misma imagen repetida en dos
+  // escenas del video canta mucho (el mismo cráter salía en la 03 y la 06).
+  const usadas = new Set<string>();
 
   // Modo de imágenes (auto = providers; local = colocadas a mano, cero red)
   // y flag --force (ignora las ya colocadas y regenera).
@@ -261,6 +264,11 @@ async function main() {
     // La misma URL puede venir de dos providers: deduplicar antes de rankear.
     let pool = [...new Map(encontradas.map((c) => [c.url, c])).values()];
 
+    // No repetir imagen entre escenas (mejor repetir que dejar la escena sin
+    // imagen: si el filtro vacía el pool, se permite la repetición).
+    const sinUsar = pool.filter((c) => !usadas.has(c.url));
+    if (sinUsar.length > 0) pool = sinUsar;
+
     // 2.5 Pre-ranking por título antes de descargar: solo el top-K baja.
     if (config.media.shortlist > 0 && pool.length > config.media.shortlist) {
       const ranked = await prerankByTitle(query, pool, config.media.shortlist);
@@ -284,6 +292,7 @@ async function main() {
     // 4. Elegir la mejor con el modelo de visión (gemma4 → qwen3.6)
     const elegida = await elegirMejor(scene, candidatas);
     elegidas[scene.id] = elegida?.url ?? null;
+    if (elegida) usadas.add(elegida.url);
     console.log(`  Elegida: ${elegida?.url ?? '(sin imagen)'}`);
 
     // 5. Guardar la ganadora (ya está en memoria, no se re-descarga).
