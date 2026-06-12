@@ -1,10 +1,11 @@
 // PASO 0 · Orquestador. Ejecuta el pipeline completo de principio a fin.
 // Uso: yarn produce "La erupción del Vesubio"
 //
-// ESTADO: stub que encadena las etapas. Cada etapa se invoca como subproceso
-// para mantenerlas desacopladas. Ajustar a medida que las piezas se completen.
+// Pipeline de 7 etapas: script → vision → voice → subtitles → compose → render → mux.
+// Stages 1-4 use `step()` (yarn tsx). Stages 5-7 use direct function calls.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { runRender, muxAudio } from './render-runner.js';
 
 const exec = promisify(execFile);
 const tema = process.argv[2];
@@ -25,20 +26,26 @@ async function step(label: string, args: string[]) {
 
 async function main() {
   // 1. Guion
-  await step('1/4 · Guion', ['src/pipeline/01-script.ts', tema]);
+  await step('1/7 · Guion', ['src/pipeline/01-script.ts', tema]);
   // A partir de aquí el caso generado debe estar registrado en load.ts.
   const slug = 'caso-generado';
 
   // 2. Selección visual
-  await step('2/4 · Visión', ['src/pipeline/02-vision.ts', slug]);
+  await step('2/7 · Visión', ['src/pipeline/02-vision.ts', slug]);
   // 3. Voz
-  await step('3/4 · Voz', ['src/pipeline/03-voice.ts', slug]);
-  // 4. Render (HyperFrames) — se monta sobre renders/<slug>/
-  console.log('\n=== 4/4 · Render ===');
-  console.log('Genera el workspace con `yarn compose <slug>` (renders/<slug>/), luego:');
-  console.log('  cd renders/<slug> && npx hyperframes render . --output ../../assets/output/<slug>.mp4');
+  await step('3/7 · Voz', ['src/pipeline/03-voice.ts', slug]);
+  // 4. Subtítulos
+  await step('4/7 · Subtítulos', ['src/pipeline/05-subtitles.ts', slug]);
+  // 5. Composición — genera workspace renders/<slug>/ (manifest + HTML + assets)
+  await step('5/7 · Composición', ['src/pipeline/04-compose.ts', slug]);
+  // 6. Render — HyperFrames extrae frames → renders/<slug>/video-silent.mp4
+  console.log('\n=== 6/7 · Render ===');
+  await runRender(slug);
+  // 7. Mux audio — ffmpeg combina video + audio → assets/output/<slug>.mp4
+  console.log('\n=== 7/7 · Mux audio ===');
+  await muxAudio(slug);
 
-  console.log('\nPipeline terminado.');
+  console.log(`\n✅ Video completo: assets/output/${slug}.mp4`);
 }
 
 main().catch((err) => {
