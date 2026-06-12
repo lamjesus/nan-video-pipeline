@@ -3,6 +3,8 @@ import {
   deriveSearchTerms,
   buildSearchQueriesPrompt,
   parseSearchQueries,
+  cosineSimilarity,
+  shortlistByCosine,
   extFromUrl,
   mimeFromExt,
   bestByScore,
@@ -108,6 +110,54 @@ describe('parseSearchQueries', () => {
   it('JSON inválido → errores no vacíos', () => {
     const { errors } = parseSearchQueries('esto no es JSON', IDS);
     expect(errors.length).toBeGreaterThan(0);
+  });
+});
+
+describe('cosineSimilarity', () => {
+  it('vectores idénticos → 1, ortogonales → 0', () => {
+    expect(cosineSimilarity([1, 0], [1, 0])).toBeCloseTo(1);
+    expect(cosineSimilarity([1, 0], [0, 1])).toBeCloseTo(0);
+  });
+
+  it('es invariante a la magnitud', () => {
+    expect(cosineSimilarity([1, 1], [5, 5])).toBeCloseTo(1);
+  });
+
+  it('vector cero → 0 (no NaN)', () => {
+    expect(cosineSimilarity([0, 0], [1, 0])).toBe(0);
+  });
+
+  it('dimensiones distintas → error claro', () => {
+    expect(() => cosineSimilarity([1, 0], [1, 0, 0])).toThrow(/dimensi/i);
+  });
+});
+
+describe('shortlistByCosine', () => {
+  const q = [1, 0];
+  const items = [
+    { item: 'lejos', vector: [0, 1] },
+    { item: 'cerca', vector: [1, 0] },
+    { item: 'medio', vector: [1, 1] },
+  ];
+
+  it('ordena por similitud descendente y corta a topK', () => {
+    expect(shortlistByCosine(q, items, 2)).toEqual(['cerca', 'medio']);
+  });
+
+  it('topK mayor que la lista → todos, ordenados', () => {
+    expect(shortlistByCosine(q, items, 10)).toEqual(['cerca', 'medio', 'lejos']);
+  });
+
+  it('en empate respeta el orden de entrada (estable)', () => {
+    const tied = [
+      { item: 'a', vector: [1, 0] },
+      { item: 'b', vector: [2, 0] },
+    ];
+    expect(shortlistByCosine(q, tied, 2)).toEqual(['a', 'b']);
+  });
+
+  it('lista vacía → []', () => {
+    expect(shortlistByCosine(q, [], 3)).toEqual([]);
   });
 });
 

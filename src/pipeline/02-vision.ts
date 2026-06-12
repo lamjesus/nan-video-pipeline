@@ -27,6 +27,7 @@ import {
   deriveSearchTerms,
   buildSearchQueriesPrompt,
   parseSearchQueries,
+  shortlistByCosine,
   extFromUrl,
   mimeFromExt,
   bestByScore,
@@ -89,6 +90,49 @@ interface Candidate {
   url: string;
   ext: string;
   buffer: Buffer;
+}
+
+// Candidata aún sin descargar: lo que devuelven los providers (URL + título).
+interface FoundCandidate {
+  url: string;
+  title: string;
+}
+
+// --- Pre-ranking por título ANTES de descargar (qwen3-embedding) ---
+// Una sola llamada a /embeddings con [query, ...títulos]; solo el top-K baja
+// y pasa por gemma4. Si el embedding falla, se devuelve null y la etapa sigue
+// con todas las candidatas (como antes del pre-rank). Backend intercambiable:
+// cuando el cluster exponga `rerank` (ver TROUBLESHOOTING), cambiar aquí.
+async function prerankByTitle(
+  query: string,
+  candidates: FoundCandidate[],
+  topK: number,
+): Promise<FoundCandidate[] | null> {
+  try {
+    const call = createNanCall(() =>
+      nan.embeddings.create({
+        model: config.models.embedding,
+        input: [query, ...candidates.map((c) => c.title || '(sin título)')],
+      }),
+    );
+    const res = await call();
+    // El orden de data[] no está garantizado por la API: reordenar por index.
+    const vectors = res.data
+      .slice()
+      .sort((a, b) => a.index - b.index)
+      .map((d) => d.embedding);
+    const [queryVec, ...candVecs] = vectors;
+    if (!queryVec || candVecs.length !== candidates.length) return null;
+    return shortlistByCosine(
+      queryVec,
+      candidates.map((c, i) => ({ item: c, vector: candVecs[i] })),
+      topK,
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`  pre-rank no disponible (${msg}); se evalúan todas las candidatas`);
+    return null;
+  }
 }
 
 // --- Puntúa UNA candidata (1-10) según encaja con la escena ---
@@ -167,23 +211,34 @@ async function main() {
       llmQueries?.[scene.id] ?? (terms.length > 0 ? terms.join(' ') : scene.imagePrompt);
     console.log(`  Query: ${query}`);
 
-    // 2. Buscar URLs candidatas en todos los providers
-    const urls: string[] = [];
+    // 2. Buscar candidatas (URL + título) en todos los providers
+    const encontradas: FoundCandidate[] = [];
     for (const provider of providers) {
       try {
         const results = await provider.search(query, config.media.candidates);
-        const found = results.map((c) => c.url).filter(Boolean);
-        urls.push(...found);
-        console.log(`  ${provider.name}: ${found.length} candidatas`);
+        const valid = results.filter((c) => c.url);
+        encontradas.push(...valid.map((c) => ({ url: c.url, title: c.title ?? '' })));
+        console.log(`  ${provider.name}: ${valid.length} candidatas`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn(`  ${provider.name}: error - ${msg}`);
       }
     }
+    // La misma URL puede venir de dos providers: deduplicar antes de rankear.
+    let pool = [...new Map(encontradas.map((c) => [c.url, c])).values()];
+
+    // 2.5 Pre-ranking por título antes de descargar: solo el top-K baja.
+    if (config.media.shortlist > 0 && pool.length > config.media.shortlist) {
+      const ranked = await prerankByTitle(query, pool, config.media.shortlist);
+      if (ranked) {
+        console.log(`  Pre-rank: ${pool.length} → ${ranked.length} candidatas (por título)`);
+        pool = ranked;
+      }
+    }
 
     // 3. Descargar los bytes UNA vez (el modelo de visión los evalúa en base64)
     const candidatas: Candidate[] = [];
-    for (const url of urls) {
+    for (const { url } of pool) {
       try {
         candidatas.push({ url, ext: extFromUrl(url), buffer: await fetchImageBuffer(url) });
       } catch (err) {

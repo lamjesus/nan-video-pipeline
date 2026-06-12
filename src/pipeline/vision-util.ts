@@ -107,6 +107,44 @@ export function parseSearchQueries(
   return { queries, errors };
 }
 
+// --- Pre-ranking de candidatas por texto (qwen3-embedding) ---
+// Re-rankear por título ANTES de descargar: solo el top-K baja y pasa por
+// gemma4 → menos descargas y menos llamadas de visión. El backend será el
+// modelo `rerank` cuando el cluster lo exponga (hoy: similitud de coseno).
+
+/** Similitud de coseno. Vector cero → 0 (no NaN); dimensiones distintas → error. */
+export function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length) {
+    throw new Error(`cosineSimilarity: dimensiones distintas (${a.length} vs ${b.length})`);
+  }
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  if (na === 0 || nb === 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+/**
+ * Top-K items por similitud de coseno con el vector de la query.
+ * Orden descendente, estable en empates (sort de Array es estable en ES2019+).
+ */
+export function shortlistByCosine<T>(
+  queryVec: number[],
+  items: { item: T; vector: number[] }[],
+  topK: number,
+): T[] {
+  return items
+    .map(({ item, vector }) => ({ item, score: cosineSimilarity(queryVec, vector) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK)
+    .map(({ item }) => item);
+}
+
 // Extensión de imagen a partir de la URL (jpg por defecto).
 export function extFromUrl(url: string): string {
   const match = url.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i);
