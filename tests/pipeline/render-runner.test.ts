@@ -104,6 +104,9 @@ describe('runRender', () => {
         resolve(CWD, 'renders', 'caso-test'),
         '--output',
         resolve(CWD, 'renders', 'caso-test', 'video-silent.mp4'),
+        '--workers',
+        '1',
+        '--low-memory-mode',
       ],
       expect.any(Function),
     );

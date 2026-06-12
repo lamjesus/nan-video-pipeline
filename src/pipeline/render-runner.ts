@@ -61,6 +61,9 @@ export async function runRender(slug: string): Promise<void> {
       renderDir,
       '--output',
       resolve(renderDir, 'video-silent.mp4'),
+      '--workers',
+      '1',
+      '--low-memory-mode',
     ]);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);

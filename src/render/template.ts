@@ -54,11 +54,44 @@ ${overlays}${caption ? '\n' + caption : ''}
   <script type="application/json" id="art-direction">
 ${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
   </script>
-  <div class="container" data-composition-id="${slug}" data-duration="${totalDuration}" data-width="1080" data-height="1920" data-start="0">
+  <div class="container" data-composition-id="main" data-duration="${manifest.audio.duration ?? manifest.scenes[manifest.scenes.length - 1].end}">
 ${sceneSections}
   </div>
   <script>
-    const tl = gsap.timeline({ paused: true });
+    // SRT parser (browser-side)
+    function parseSrt(content) {
+      if (!content || !content.trim()) return [];
+      return content.split(/\\n\\n+/).filter(b => b.trim()).map(block => {
+        const m = /(\\d+)\\n(\\d{2}:\\d{2}:\\d{2},\\d{3})\\s*-->\\s*(\\d{2}:\\d{2}:\\d{2},\\d{3})\\n([\\s\\S]+)/.exec(block.trim());
+        if (!m) return null;
+        const ts = (s) => { const p = s.replace(',','.').split(':'); return +p[0]*3600 + +p[1]*60 + +p[2]; };
+        return { index: +m[1], start: ts(m[2]), end: ts(m[3]), text: m[4].trim() };
+      }).filter(Boolean);
+    }
+
+    // Load captions
+    let captions = [];
+    ${srtHref ? `fetch('${srtHref}').then(r => r.text()).then(t => { captions = parseSrt(t); }).catch(() => {});` : ''}
+
+    const captionEl = document.getElementById('caption-container');
+    let currentCaption = '';
+    function updateCaption(time) {
+      const active = captions.find(c => time >= c.start && time <= c.end);
+      const text = active ? active.text : '';
+      if (text !== currentCaption) {
+        captionEl.style.opacity = '0';
+        setTimeout(() => {
+          captionEl.textContent = text;
+          captionEl.style.opacity = '1';
+        }, 50);
+        currentCaption = text;
+      }
+    }
+
+    const tl = gsap.timeline({
+      paused: false,
+      onUpdate: () => updateCaption(tl.time()),
+    });
     const scenes = document.querySelectorAll('.scene');
     scenes.forEach((scene) => {
       const start = parseFloat(scene.dataset.start);
@@ -69,27 +102,26 @@ ${sceneSections}
       tl.to(scene, { opacity: 1, duration: 0 }, start);
       switch (motion) {
         case 'zoom-in':
-          tl.fromTo(img, { scale: 1.15 }, { scale: 1, duration, ease: 'power1.out' }, start);
+          tl.fromTo(img, { scale: 1.08, xPercent: -2 }, { scale: 1, xPercent: 0, duration, ease: 'power1.out' }, start);
           break;
         case 'zoom-out':
-          tl.fromTo(img, { scale: 1 }, { scale: 1.15, duration, ease: 'power1.out' }, start);
+          tl.fromTo(img, { scale: 1, xPercent: 0 }, { scale: 1.08, xPercent: 2, duration, ease: 'power1.out' }, start);
           break;
         case 'pan-left':
-          tl.fromTo(img, { x: '0%' }, { x: '-15%', duration, ease: 'power1.out' }, start);
+          tl.fromTo(img, { x: '5%', xPercent: 0 }, { x: '-5%', xPercent: 0, duration, ease: 'power1.out' }, start);
+          break;
+        case 'pan-right':
+          tl.fromTo(img, { x: '-5%', xPercent: 0 }, { x: '5%', xPercent: 0, duration, ease: 'power1.out' }, start);
           break;
         case 'shake':
-          tl.to(img, { x: '+=5', duration: 0.1, repeat: Math.floor(duration / 0.2), yoyo: true }, start);
+          tl.to(img, { x: '+=8', duration: 0.08, repeat: Math.floor(duration / 0.16), yoyo: true, ease: 'steps(2)' }, start);
           break;
         case 'pan-slow':
-          tl.fromTo(img, { x: '0%' }, { x: '-8%', duration, ease: 'none' }, start);
+          tl.fromTo(img, { xPercent: 3 }, { xPercent: -3, duration, ease: 'none' }, start);
           break;
       }
       tl.to(scene, { opacity: 0, duration: 0.3 }, end - 0.3);
     });
-
-    // Register timeline for HyperFrames (must be an object, not array)
-    window.__timelines = window.__timelines || {};
-    window.__timelines["${slug}"] = tl;
   </script>
 </body>
 </html>`;
@@ -118,6 +150,7 @@ body {
   max-width: calc(100vh * 9 / 16);
   aspect-ratio: 9 / 16;
   overflow: hidden;
+  background: #000;
 }
 
 .scene {
@@ -134,44 +167,62 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .overlay-text {
   position: absolute;
   color: #fff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(1.1rem, 3.2vw, 1.7rem);
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.6);
-  padding: 1rem;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(1.2rem, 3.5vw, 1.9rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 8px rgba(0,0,0,0.95),
+    0 2px 4px rgba(0,0,0,0.9),
+    3px 3px 0 rgba(0,0,0,0.5);
+  padding: 0.5rem 1rem;
   pointer-events: none;
+  line-height: 1.3;
 }
 
-.overlay-text:first-of-type { top: 10%; left: 5%; }
-.overlay-text:nth-of-type(2) { top: 18%; left: 5%; }
+.overlay-text:first-of-type {
+  top: 6%;
+  left: 4%;
+  color: #ffcc00;
+}
+.overlay-text:nth-of-type(2) {
+  top: 13%;
+  left: 4%;
+  font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+  color: #fff;
+  font-weight: 600;
+}
 
-/* Captions estilo CapCut: grandes, bold y con contorno para que contrasten
-   sobre cualquier imagen (stroke en Chromium + sombras como fallback). */
-.caption {
+/* Captions estilo CapCut: fondo oscuro semitransparente, texto blanco,
+   borde redondeado, animación suave de entrada/salida. */
+.caption-container {
   position: absolute;
-  bottom: 8%;
+  bottom: 6%;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
+  width: 92%;
   text-align: center;
   color: #fff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(1.3rem, 4.5vw, 2.1rem);
-  font-weight: 800;
-  line-height: 1.25;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.35;
   letter-spacing: 0.01em;
-  paint-order: stroke fill;
-  -webkit-text-stroke: 5px rgba(0,0,0,0.85);
-  text-shadow:
-    0 2px 3px rgba(0,0,0,0.95),
-    0 0 10px rgba(0,0,0,0.8),
-    0 4px 20px rgba(0,0,0,0.6);
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
   pointer-events: none;
   z-index: 10;
+  transition: opacity 0.1s ease;
+  -webkit-text-stroke: 2px rgba(0,0,0,0.6);
+  paint-order: stroke fill;
 }`;
 }

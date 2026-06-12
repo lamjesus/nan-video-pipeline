@@ -1,0 +1,118 @@
+# Guion sobre la comunidad NaN — basado en la documentación oficial (PDFs)
+# Fuentes: Introducción, Empezar, Modelos, Agents, API, Apps, Ejemplos
+# NO usar yarn script para este caso (el modelo alucina temas ajenos)
+channel: NaN Community
+caseNumber: 1
+title: La comunidad que te da GPUs para construir con IA
+totalDuration: 60
+artDirection:
+  medium: Dark cinematic graphic novel illustration, editorial comic art
+  lineWork: Bold ink outlines, heavy cross-hatching in shadows
+  palette: Desaturated charcoal blacks, slate greys, deep blues, muted red accents
+  lighting: Low-key chiaroscuro, dramatic single light source, volumetric haze
+  texture: Heavy film grain, halftone dithering, cinematic vignette
+  mood: Ominous, somber, sense of hidden power
+  composition: Cinematic wide framing, strong depth, dramatic negative space
+  humanTreatment: Human presence through silhouettes and distant figures, faces obscured
+  constraints: No text, no watermark, no logos, no gore
+scenes:
+  - id: scene-01
+    block: GANCHO
+    start: 0
+    end: 6
+    voiceover: "Imaginá tener acceso a GPUs de inferencia sin pagar una suscripción carísima. En la comunidad NaN, las GPUs no son un lujo, son tu infraestructura."
+    onScreenText:
+      - "La comunidad NaN"
+      - "GPUs para construir"
+    imagePrompt: A dark server room with rows of glowing GPU racks, volumetric light beams cutting through haze, cinematic perspective from the entrance
+    motion: zoom-in lento
+  - id: scene-02
+    block: GANCHO
+    start: 6
+    end: 12
+    voiceover: "Todo funciona con una API compatible con OpenAI. Un base URL, una API key, y cualquier herramienta que acepte OpenAI funciona sin cambios. Cursor, Cline, Aider, Open Code."
+    onScreenText:
+      - "API compatible con OpenAI"
+      - "Base URL y API Key"
+    imagePrompt: A dark desk with multiple screens showing code editors with API configuration snippets visible on screen
+    motion: paneo lateral
+  - id: scene-03
+    block: DESARROLLO
+    start: 12
+    end: 18
+    voiceover: "El modelo principal es qwen3.6, un MoE de 35B parámetros con 3B activos por token, contexto de 256K tokens, tool calling, reasoning y visión multimodal. Con speculative decoding, el doble de throughput."
+    onScreenText:
+      - "Qwen 3.6"
+      - "35B parámetros"
+    imagePrompt: Abstract visualization of a neural network with glowing nodes and connections, dark background with blue and gold light, cinematic data flow
+    motion: estático
+  - id: scene-04
+    block: DESARROLLO
+    start: 18
+    end: 24
+    voiceover: "Si necesitás más potencia, deepseek-v4-flash tiene 284B parámetros y un millón de tokens de contexto. 500 millones de tokens gratis por miembro cada mes."
+    onScreenText:
+      - "DeepSeek V4 Flash"
+      - "284B parámetros"
+    imagePrompt: A massive data center with an endless row of server racks stretching into darkness, dramatic perspective from low angle
+    motion: zoom-in lento
+  - id: scene-05
+    block: DESARROLLO
+    start: 24
+    end: 30
+    voiceover: "Pero NaN no es solo texto. gemma4 ve imágenes. kokoro genera voz con 67 voice packs. whisper transcribe audio en 99 idiomas. Todo en el mismo cluster."
+    onScreenText:
+      - "Visión, Voz y Audio"
+      - "Todo en un solo cluster"
+    imagePrompt: A split composition showing three panels, an eye for vision, a waveform for audio, and text characters for text, all in dark graphic novel style with red accent light
+    motion: shake
+  - id: scene-06
+    block: DESARROLLO
+    start: 30
+    end: 36
+    voiceover: "Y si querés ir más allá, NaN Cloud te da microVMs reales: máquinas virtuales con su propio kernel Linux, 20 GB de disco persistente, 1 vCPU, 2 GiB RAM, acceso root completo, aisladas del host."
+    onScreenText:
+      - "MicroVMs con QEMU y KVM"
+      - "Kernel propio y Root access"
+    imagePrompt: A dark room with a single terminal screen showing a Linux shell prompt, cables connecting to a small physical server box, dramatic side lighting
+    motion: estático
+  - id: scene-07
+    block: DESARROLLO
+    start: 36
+    end: 42
+    voiceover: "Desplegás agentes de IA como Hermes conectados a Telegram. Terminal web, subida de archivos, logs en vivo, métricas de CPU y RAM. Todo en su propia microVM."
+    onScreenText:
+      - "Agentes IA en Telegram"
+      - "Hermes y MicroVM"
+    imagePrompt: A smartphone screen showing a Telegram chat with a bot, the phone resting on a dark desk next to a server rack, cinematic low light
+    motion: paneo lateral
+  - id: scene-08
+    block: DESARROLLO
+    start: 42
+    end: 48
+    voiceover: "O desplegás apps desde GitHub: tu Dockerfile, tu repositorio, y NaN construye la imagen, la publica con HTTPS y te da un dominio público. Cada git push dispara una nueva build."
+    onScreenText:
+      - "Deploy desde GitHub"
+      - "Dockerfile y HTTPS"
+    imagePrompt: A GitHub repository page on screen with a green Deploy button glowing, dark background with code snippets floating around, cinematic composition
+    motion: zoom-in lento
+  - id: scene-09
+    block: CIERRE
+    start: 48
+    end: 54
+    voiceover: "100 rpm, 5 concurrentes por API key. Tool calling, reasoning, structured outputs, streaming. Sin burocracia, solo tecnología."
+    onScreenText:
+      - "Sin burocracia"
+      - "Solo tecnología"
+    imagePrompt: A group of silhouettes around a table with laptops, warm lamp light overhead, dark room, sense of collaboration and focus, cinematic composition
+    motion: deriva lenta
+  - id: scene-10
+    block: CIERRE
+    start: 54
+    end: 60
+    voiceover: "Si algo acepta base URL y API key, funciona con NaN. Entrá a la comunidad y empezá a construir."
+    onScreenText:
+      - "Si acepta OpenAI, funciona"
+      - "nan.builders"
+    imagePrompt: A dark doorway with bright light coming through, a single person standing at the threshold, cinematic wide shot, sense of opportunity and entry
+    motion: zoom-out

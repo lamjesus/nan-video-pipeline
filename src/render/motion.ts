@@ -22,7 +22,10 @@ export function resolveMotion(motionString: string): MotionPreset {
   // Check "zoom-out" before "zoom" — first match wins
   if (s.includes('zoom-out')) return 'zoom-out';
   if (s.includes('zoom') || s.includes('escala')) return 'zoom-in';
-  if (s.includes('pan')) return 'pan-left';
+  if (s.includes('pan')) {
+    if (s.includes('derecha') || s.includes('right')) return 'pan-right';
+    return 'pan-left';
+  }
   if (s.includes('shake')) return 'shake';
   if (s.includes('deriva') || s.includes('drift')) return 'pan-slow';
 
