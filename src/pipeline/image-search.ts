@@ -211,3 +211,25 @@ export function bestByScore<T>(scored: { item: T; score: number }[]): T | null {
   }
   return best.item;
 }
+
+// --- Generic query fallback ---
+// When Wikimedia returns 0 candidates for a specific query (e.g. "Antropic
+// company logo"), strip brand names and convert to a generic searchable form.
+// Brand names → empty string; keep concrete nouns and visual descriptors.
+
+// Words likely to be brand/company names (not in Wikimedia)
+const BRAND_PATTERNS = /^(anthropic|antropic|claude|chatgpt|openai|google|meta|apple|microsoft|tesla|nvidia|amazon|netflix|spotify|tiktok|youtube|facebook|instagram|twitter|x\.com)$/i;
+
+/**
+ * Strip brand names from a query and build a generic fallback.
+ * "Antropic company logo" → "company logo"
+ * "Antropic office building" → "office building"
+ * "Claude 5 neural interface" → "neural interface"
+ * Falls back to the full prompt subject if everything is stripped.
+ */
+export function generifyQuery(query: string): string {
+  const words = query.split(/\s+/).filter(Boolean);
+  const generic = words.filter((w) => !BRAND_PATTERNS.test(w)).join(' ').trim();
+  if (generic.length >= 3) return generic;
+  return query; // can't generify — return original
+}
