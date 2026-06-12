@@ -38,4 +38,11 @@ describe('selectProvider', () => {
     const names = providers.map((p) => p.name);
     expect(names).not.toContain('pexels');
   });
+
+  it('en modo local solo devuelve el provider local (ignora MEDIA_PROVIDERS)', async () => {
+    process.env.MEDIA_PROVIDERS = 'wikimedia,local';
+    const providers = await selectProvider('local');
+    expect(providers).toHaveLength(1);
+    expect(providers[0].name).toBe('local');
+  });
 });

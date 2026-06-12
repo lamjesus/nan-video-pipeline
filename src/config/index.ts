@@ -39,9 +39,12 @@ interface FileConfig {
     tts: string;
     stt: string;
     embedding: string;
+    // Reranker anunciado pero aún no desplegado (ver TROUBLESHOOTING.md);
+    // models:check lo sondea.
+    reranker: string;
   };
   voice: { default: string };
-  media: { providers: string[] };
+  media: { providers: string[]; candidates?: number; shortlist?: number; mode?: string };
 }
 
 function loadFileConfig(): FileConfig {
@@ -67,6 +70,12 @@ export const config = {
     images: resolve(ROOT, 'assets', 'images'),
     output: resolve(ROOT, 'assets', 'output'),
     content: resolve(ROOT, 'src', 'content'),
+    // Casos (storyboards) como DATOS en YAML — editables sin tocar código.
+    cases: resolve(ROOT, 'content'),
+    // Imágenes por caso: los scene-id se repiten entre casos; un directorio
+    // plano hace que un caso pise al otro. Única fuente de esta convención
+    // (la usan visión al guardar y compose al descubrir).
+    imagesFor: (slug: string) => resolve(ROOT, 'assets', 'images', slug),
   },
 
   // Cluster NaN: una sola API OpenAI-compatible para todos los modelos.
@@ -86,5 +95,13 @@ export const config = {
   // Proveedores de media por defecto (override puntual con MEDIA_PROVIDERS).
   media: {
     providers: file.media.providers,
+    // Candidatas por proveedor y escena (config.yml > media.candidates).
+    candidates: file.media.candidates ?? 5,
+    // Candidatas que pasan a descarga+visión tras el pre-ranking por texto
+    // (config.yml > media.shortlist; 0 = sin pre-ranking).
+    shortlist: file.media.shortlist ?? 0,
+    // Modo de imágenes SIN validar (config.yml > media.mode; override puntual
+    // con la env MEDIA_MODE). Lo valida resolveMediaMode en la etapa de visión.
+    mode: () => process.env.MEDIA_MODE ?? file.media.mode,
   },
 } as const;

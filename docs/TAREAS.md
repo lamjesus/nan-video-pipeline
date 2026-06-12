@@ -12,23 +12,16 @@ otra pieza, usa datos de ejemplo (el `caso-ejemplo`) mientras tanto.
 
 ---
 
-## Tarea A — Voz con kokoro
+## Tarea A — Voz con kokoro [✅ verificada e2e 2026-06-11]
 
-**Archivo:** `src/pipeline/03-voice.ts`
-**Objetivo:** que `yarn voice caso-ejemplo` genere un MP3 con la narración en español.
+**Verificado:** el código del "stub" funcionaba tal cual — nadie lo había
+ejecutado. `yarn voice caso-ejemplo` llama a `/audio/speech` de kokoro, genera
+`assets/audio/caso-ejemplo.mp3` en estéreo (ffmpeg) e imprime la duración real
+(58.5s). Añadido `mkdir` defensivo para clones limpios.
 
-**Pasos:**
-1. Confirmar en la documentación del cluster el endpoint real de `kokoro`
-   (puede ser `/audio/speech` u otro) y el formato de respuesta (binario / base64).
-2. Ajustar la llamada `fetch` del stub a ese endpoint y formato.
-3. Probar las voces `em_alex` (masculina) y `ef_dora` (femenina); dejar como
-   default la que suene mejor para narración (se cambia en `.env`, `NAN_VOICE_ID`).
-4. Mantener el paso de FFmpeg (re-encode a estéreo) y la medición de duración.
-
-**Hecho cuando:** corre `yarn voice caso-ejemplo`, se crea `assets/audio/caso-ejemplo.mp3`
-en estéreo, y la consola imprime la duración real.
-
-**No toques:** los tipos (`types.ts`) ni el cargador (`load.ts`).
+**Pendiente (decisión de equipo):** elegir la voz por defecto — probar
+`em_alex` (actual) vs `ef_dora` con `NAN_VOICE_ID` en `.env` y fijar la
+ganadora en `config.yml`.
 
 ---
 
@@ -36,8 +29,8 @@ en estéreo, y la consola imprime la duración real.
 
 **Implementado:**
 - `src/pipeline/05-subtitles.ts` — orchestration: audio read → Whisper STT → alignment → SRT write
-- `src/pipeline/subtitle-util.ts` — pure alignment (LCS word matching) + SRT serialization
-- `tests/pipeline/subtitle-util.test.ts` — 7 tests covering alignment, fallback, SRT format
+- `src/pipeline/subtitle-alignment.ts` — pure alignment (LCS word matching) + SRT serialization
+- `tests/pipeline/subtitle-alignment.test.ts` — 7 tests covering alignment, fallback, SRT format
 - `"subtitles"` script in `package.json`
 - Fallback mode when `verbose_json` not supported (plain text → distribute across scene boundaries)
 - Error handling: missing audio (exit 1), empty transcription (exit 1), ERROR/WHY/FIX format
@@ -60,41 +53,52 @@ en estéreo, y la consola imprime la duración real.
 - Descarga de candidatas (con `User-Agent`) y guardado de la elegida en
   `assets/images/<scene.id>.<ext>`
 - **Evaluación por visión:** `gemma4` (fallback `qwen3.6`) con la imagen en base64
-  (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué,
-  en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`caso-uso-1.md`](./caso-uso-1.md).
+  (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué
+  y el contraste con/sin evaluación, en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md).
   Modelos configurables en `config.yml`.
-- Tests TDD: 30 tests (16 providers + 14 de lógica pura en `vision-util.ts`;
+- Tests TDD: 30 tests (16 providers + 14 de lógica pura en `image-search.ts`;
   freepik eliminado — su API no es gratuita)
+- (2026-06-11) Imágenes **por caso** en `assets/images/<slug>/` — los scene-id
+  se repiten entre casos y el directorio plano hacía que un caso pisara al otro.
+  Candidatas por proveedor configurables en `config.yml` → `media.candidates`
+  (8). La etapa ahora **falla en alto** si alguna escena queda sin imagen.
 
 **Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
 → 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
-confirma que `gemma4` acepta el base64 array. Detalle en `caso-uso-1.md`.
+confirma que `gemma4` acepta el base64 array.
 
-**Limitación conocida:** la selección es tan buena como las candidatas; términos
-heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords con
-`qwen3.6` (Tarea D) y generar imágenes al pool (Tarea I).
+**Limitación conocida (resuelta 2026-06-11):** la selección es tan buena como las
+candidatas; los términos heurísticos débiles (ej. `scene-01`) traían archivo malo.
+Resuelto con queries por escena con `qwen3.6` + pre-ranking por título con
+`qwen3-embedding` (solo el top `media.shortlist` pasa a visión) + modo de imágenes
+locales (`media.mode`, ver AGENTS.md > Imágenes locales). Para temas sin archivo
+(técnicos/nicho) el remedio es el modo local; la GUI del pool sigue siendo la Tarea I.
 
 **No toques:** el guion (Tarea D); consumes el storyboard ya cargado.
 
 ---
 
-## Tarea D — Guion con qwen3.6
+## Tarea D — Guion con qwen3.6 [Manu ✅]
 
-**Archivo:** `src/pipeline/01-script.ts`
-**Objetivo:** que `yarn script "<tema>"` produzca un storyboard tipado válido.
+**Implementado:**
+- `src/pipeline/storyboard-validation.ts` — lógica pura: `extractJson` (tolera `<think>`,
+  vallas markdown y prosa) y `validateStoryboard` (10 escenas, campos requeridos,
+  tiempos por escena; errores con ruta de campo, p.ej. `scenes[3].voiceover`).
+- `src/pipeline/01-script.ts` — retry con feedback de validación al modelo
+  (3 intentos), `reasoning_config` desactivado (con fallback si el cluster lo
+  rechaza), slug opcional (`yarn script "<tema>" [slug]`), `createNanCall` y
+  errores ERROR/WHY/FIX.
+- `src/content/load.ts` — los casos generados se cargan **sin registro manual**
+  (import dinámico con slug validado). Fix: el guard de auto-ejecución no
+  funcionaba en Windows (`yarn load` era un no-op).
+- 14 tests TDD en `tests/pipeline/storyboard-validation.test.ts`.
 
-**Pasos:**
-1. Afinar el prompt del sistema para que el JSON salga siempre con la forma de
-   `Storyboard` (10 escenas, todos los campos).
-2. Añadir validación: comprobar que el JSON parseado tiene `scenes` con 10 items
-   y los campos requeridos; si no, reintentar o avisar con claridad.
-3. Confirmar cómo desactivar el modo de razonamiento en `qwen3.6` para ir más
-   rápido (revisar `reasoning_config` en la doc).
+**Verificado e2e (2026-06-11):** `yarn script "La biblioteca de Alejandría"
+caso-alejandria` → Storyboard válido al primer intento (10 escenas, 45s); el
+cluster acepta `reasoning_config`. `yarn load caso-alejandria` carga por fallback.
 
-**Hecho cuando:** dado un tema, se crea `src/content/caso-generado.ts` que compila
-y el cargador puede importar (tras registrarlo en `load.ts`).
-
-**No toques:** la selección visual ni la voz; solo produces el storyboard.
+**Pendiente (fuera de esta tarea):** mejorar los search terms de visión con
+qwen3.6 (limitación documentada en Tarea C).
 
 ---
 

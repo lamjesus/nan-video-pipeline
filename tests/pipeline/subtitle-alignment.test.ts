@@ -3,11 +3,11 @@ import {
   alignSegments,
   toSRT,
   parseSRT,
-} from '../../src/pipeline/subtitle-util.ts';
+} from '../../src/pipeline/subtitle-alignment.ts';
 import type {
   VoiceoverSegment,
   TranscriptionSegment,
-} from '../../src/pipeline/subtitle-util.ts';
+} from '../../src/pipeline/subtitle-alignment.ts';
 
 describe('alignSegments', () => {
   it('happy path: aligns canonical text onto Whisper timing', () => {

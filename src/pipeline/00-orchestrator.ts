@@ -33,10 +33,10 @@ async function main() {
   await step('2/4 · Visión', ['src/pipeline/02-vision.ts', slug]);
   // 3. Voz
   await step('3/4 · Voz', ['src/pipeline/03-voice.ts', slug]);
-  // 4. Render (HyperFrames) — se monta sobre render-<slug>/
+  // 4. Render (HyperFrames) — se monta sobre renders/<slug>/
   console.log('\n=== 4/4 · Render ===');
-  console.log('Monta render-<slug>/ con el index.html y los assets, luego:');
-  console.log('  cd render-<slug> && npx hyperframes render . --output ../assets/output/<slug>.mp4');
+  console.log('Genera el workspace con `yarn compose <slug>` (renders/<slug>/), luego:');
+  console.log('  cd renders/<slug> && npx hyperframes render . --output ../../assets/output/<slug>.mp4');
 
   console.log('\nPipeline terminado.');
 }

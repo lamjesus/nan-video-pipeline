@@ -153,118 +153,66 @@ export function alignSegments(
     timingMap.set(ci, { start: rawWords[ri].start, end: rawWords[ri].end });
   }
 
-  // Group consecutive matched words into segments
-  const aligned: AlignedSegment[] = [];
-  let currentGroup: { canonicalIndices: number[]; start: number; end: number } | null = null;
-
+  // Una sola pasada en orden canónico: runs consecutivos de palabras CON y
+  // SIN timing. Los runs con match toman el timing de Whisper; los runs sin
+  // match se colocan EN SU POSICIÓN, en la ventana entre el final del vecino
+  // anterior y el inicio del siguiente (no al final de la escena, que rompía
+  // el orden y generaba solapes — hallazgo P1-A de la auditoría 2026-06-11).
+  type WordRun = { indices: number[]; matched: boolean };
+  const runs: WordRun[] = [];
   for (let ci = 0; ci < canonicalWords.length; ci++) {
-    const timing = timingMap.get(ci);
-    if (timing) {
-      if (currentGroup && ci === currentGroup.canonicalIndices[currentGroup.canonicalIndices.length - 1] + 1) {
-        // Continue current group
-        currentGroup.canonicalIndices.push(ci);
-        currentGroup.end = timing.end;
-      } else {
-        // Start new group
-        if (currentGroup) {
-          aligned.push(finalizeGroup(currentGroup, canonicalWords));
-        }
-        currentGroup = {
-          canonicalIndices: [ci],
-          start: timing.start,
-          end: timing.end,
-        };
-      }
-    }
-  }
-  if (currentGroup) {
-    aligned.push(finalizeGroup(currentGroup, canonicalWords));
-  }
-
-  // Distribute unmatched words proportionally within their scene's time range
-  const matchedIndices = new Set(
-    aligned.flatMap((s) => s.text.split(' ').map(() => -1)), // just to trigger
-  );
-  // Actually, track which canonical words got matched
-  const matchedSet = new Set<number>();
-  for (const seg of aligned) {
-    const segWords = words(seg.text);
-    // Find which canonical words contributed to this segment
-    // We need to reconstruct from the groups
-  }
-
-  // Simpler approach: find unmatched words and distribute them
-  const allMatchedCanonicalIndices = new Set<number>();
-  // Re-run grouping to collect matched indices
-  let group2: number[] | null = null;
-  const allGroups: number[][] = [];
-  for (let ci = 0; ci < canonicalWords.length; ci++) {
-    if (timingMap.has(ci)) {
-      if (group2 && ci === group2[group2.length - 1] + 1) {
-        group2.push(ci);
-      } else {
-        if (group2) allGroups.push(group2);
-        group2 = [ci];
-      }
-    }
-  }
-  if (group2) allGroups.push(group2);
-  for (const g of allGroups) {
-    for (const idx of g) allMatchedCanonicalIndices.add(idx);
-  }
-
-  // Find unmatched word runs per scene
-  const unmatchedByScene = new Map<number, number[]>();
-  for (let ci = 0; ci < canonicalWords.length; ci++) {
-    if (!allMatchedCanonicalIndices.has(ci)) {
-      const scene = canonicalWords[ci].voIndex;
-      if (!unmatchedByScene.has(scene)) unmatchedByScene.set(scene, []);
-      unmatchedByScene.get(scene)!.push(ci);
+    const matched = timingMap.has(ci);
+    const prev = runs[runs.length - 1];
+    if (prev && prev.matched === matched) {
+      prev.indices.push(ci);
+    } else {
+      runs.push({ indices: [ci], matched });
     }
   }
 
-  // Insert unmatched segments at appropriate positions
+  // Ventana mínima para que un run sin match sea su propio bloque; si no hay
+  // hueco temporal, sus palabras se fusionan con el segmento vecino.
+  const MIN_WINDOW = 0.2;
+
   const result: AlignedSegment[] = [];
-  for (const seg of aligned) {
-    // Find which scene this segment belongs to (by text content)
-    // and insert any unmatched words from that scene before this segment
-    // Actually, let's just append unmatched at the end distributed across scenes
-    result.push(seg);
+  let pendingPrefix = ''; // run inicial sin hueco propio → se antepone al siguiente
+
+  const textOf = (run: WordRun) => run.indices.map((i) => canonicalWords[i].word).join(' ');
+
+  for (let k = 0; k < runs.length; k++) {
+    const run = runs[k];
+    if (run.matched) {
+      const first = timingMap.get(run.indices[0])!;
+      const last = timingMap.get(run.indices[run.indices.length - 1])!;
+      const text = pendingPrefix ? `${pendingPrefix} ${textOf(run)}` : textOf(run);
+      pendingPrefix = '';
+      result.push({ index: 0, start: first.start, end: last.end, text });
+    } else {
+      const firstIdx = run.indices[0];
+      const lastIdx = run.indices[run.indices.length - 1];
+      const prevSeg = result[result.length - 1] ?? null;
+      const nextMatched = runs.slice(k + 1).find((r) => r.matched);
+      const windowStart = prevSeg ? prevSeg.end : voiceoverSegments[canonicalWords[firstIdx].voIndex].start;
+      const windowEnd = nextMatched
+        ? timingMap.get(nextMatched.indices[0])!.start
+        : voiceoverSegments[canonicalWords[lastIdx].voIndex].end;
+
+      if (windowEnd - windowStart >= MIN_WINDOW) {
+        result.push({ index: 0, start: windowStart, end: windowEnd, text: textOf(run) });
+      } else if (prevSeg) {
+        prevSeg.text = `${prevSeg.text} ${textOf(run)}`;
+      } else {
+        pendingPrefix = pendingPrefix ? `${pendingPrefix} ${textOf(run)}` : textOf(run);
+      }
+    }
+  }
+  // Borde: todo sin match y sin hueco (no debería ocurrir con MIN_WINDOW bajo)
+  if (pendingPrefix && result.length === 0) {
+    const vo = voiceoverSegments[0];
+    result.push({ index: 0, start: vo.start, end: vo.end, text: pendingPrefix });
   }
 
-  // Append unmatched words as separate segments distributed in scene time ranges
-  for (const [sceneIdx, unmatchedIndices] of unmatchedByScene) {
-    const vo = voiceoverSegments[sceneIdx];
-    if (!vo) continue;
-    const unmatchedText = unmatchedIndices.map((i) => canonicalWords[i].word).join(' ');
-    if (!unmatchedText) continue;
-    // Place at the end of the scene's time range
-    const duration = vo.end - vo.start;
-    const segmentDuration = duration / Math.max(unmatchedIndices.length / 3, 1);
-    result.push({
-      index: 0,
-      start: vo.end - segmentDuration,
-      end: vo.end,
-      text: unmatchedText,
-    });
-  }
-
-  // Sort by start time and re-index
-  result.sort((a, b) => a.start - b.start);
   return result.map((s, i) => ({ ...s, index: i + 1 }));
-}
-
-function finalizeGroup(
-  group: { canonicalIndices: number[]; start: number; end: number },
-  canonicalWords: Array<{ word: string; voIndex: number }>,
-): AlignedSegment {
-  const text = group.canonicalIndices.map((i) => canonicalWords[i].word).join(' ');
-  return {
-    index: 0,
-    start: group.start,
-    end: group.end,
-    text,
-  };
 }
 
 /**
@@ -322,4 +270,53 @@ function parseTimestamp(ts: string): number {
     parseInt(s, 10) +
     parseInt(ms, 10) / 1000
   );
+}
+
+// --- Chunking estilo CapCut -------------------------------------------------
+
+export interface ChunkOptions {
+  maxChars?: number; // máximo de caracteres visibles por bloque de subtítulo
+}
+
+/**
+ * Trocea segmentos alineados en bloques cortos que se van refrescando con la
+ * voz (estilo CapCut), en vez de un párrafo largo estático. Empaqueta palabras
+ * sin romperlas hasta maxChars y reparte el tiempo de cada segmento de forma
+ * proporcional a la longitud de cada bloque. Reindexa 1..n (formato SRT).
+ */
+export function chunkSegments(
+  segments: AlignedSegment[],
+  options: ChunkOptions = {},
+): AlignedSegment[] {
+  const maxChars = options.maxChars ?? 42;
+  const out: AlignedSegment[] = [];
+
+  for (const seg of segments) {
+    const words = seg.text.split(/\s+/).filter(Boolean);
+    if (words.length === 0) continue;
+
+    const chunks: string[] = [];
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (candidate.length > maxChars && current) {
+        chunks.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) chunks.push(current);
+
+    const duration = seg.end - seg.start;
+    const totalChars = chunks.reduce((n, c) => n + c.length, 0);
+    let t = seg.start;
+    for (const chunk of chunks) {
+      const dt = totalChars > 0 ? (duration * chunk.length) / totalChars : 0;
+      out.push({ index: 0, start: t, end: t + dt, text: chunk });
+      t += dt;
+    }
+  }
+
+  return out.map((s, i) => ({ ...s, index: i + 1 }));
 }

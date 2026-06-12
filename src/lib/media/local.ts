@@ -8,6 +8,17 @@ import type { Candidate, MediaProvider } from './provider.js';
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 
+/**
+ * Nombre de fichero → texto descriptivo para el matching por embeddings:
+ * quita la extensión de imagen y convierte separadores ([-_.]) en espacios.
+ * Un pool con nombres descriptivos ("numancia_hilltop-fog.jpg") se puede
+ * emparejar por escena igual que los títulos de Wikimedia.
+ */
+export function filenameToText(name: string): string {
+  const base = name.replace(/\.(jpg|jpeg|png|gif|webp|svg)$/i, '');
+  return base.replace(/[-_.]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export class LocalProvider implements MediaProvider {
   name = 'local';
   private poolDir: string;
@@ -29,7 +40,7 @@ export class LocalProvider implements MediaProvider {
       .slice(0, limit)
       .map((f) => ({
         url: pathToFileURL(join(this.poolDir, f)).href,
-        title: f,
+        title: filenameToText(f),
         source: 'local' as const,
       }));
 

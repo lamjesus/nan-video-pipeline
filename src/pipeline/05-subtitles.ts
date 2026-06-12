@@ -1,4 +1,4 @@
-// PASO 4 · Generación de subtítulos con Whisper STT del cluster.
+// PASO 5 · Generación de subtítulos con Whisper STT del cluster.
 // Transcribe el audio generado por la etapa de voz, alinea el texto canónico
 // del voiceover con los timestamps de Whisper, y escribe un archivo SRT.
 // Uso: yarn subtitles caso-ejemplo
@@ -14,8 +14,8 @@ import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
-import { alignSegments, toSRT } from './subtitle-util.js';
-import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-util.js';
+import { alignSegments, chunkSegments, toSRT } from './subtitle-alignment.js';
+import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-alignment.js';
 
 // --- Whisper call ---
 
@@ -67,7 +67,7 @@ function parseWhisperResponse(res: any): TranscriptionSegment[] {
 async function main() {
   const storyboard = await loadStoryboard();
   const slug = currentCaseSlug();
-  const audioPath = `${config.paths.audio}/${slug}.mp3`;
+  const audioPath = path.resolve(config.paths.audio, `${slug}.mp3`);
 
   // 1. Check audio exists
   if (!existsSync(audioPath)) {
@@ -106,11 +106,16 @@ async function main() {
     );
   }
 
-  // 7. Write SRT
-  const srt = toSRT(aligned);
+  // 7. Chunk into short CapCut-style captions that refresh with the voice
+  // (42 chars ≈ una línea de subtítulo; el default vive en chunkSegments)
+  const chunked = chunkSegments(aligned);
+
+  // 8. Write SRT
+  const srt = toSRT(chunked);
+  const srtPath = path.resolve(config.paths.output, `${slug}.srt`);
   await mkdir(config.paths.output, { recursive: true });
-  await writeFile(`${config.paths.output}/${slug}.srt`, srt, 'utf-8');
-  console.log(`✅ Subtítulos: ${config.paths.output}/${slug}.srt (${aligned.length} bloques)`);
+  await writeFile(srtPath, srt, 'utf-8');
+  console.log(`✅ Subtítulos: ${srtPath} (${chunked.length} bloques cortos)`);
 }
 
 main().catch((err) => {

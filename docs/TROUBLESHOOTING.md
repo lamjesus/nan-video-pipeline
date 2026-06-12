@@ -35,6 +35,27 @@ describe la imagen real. Configurable en `config.yml` → `models.visionEval` /
 
 ---
 
+## El modelo `rerank` (Qwen3-Reranker-8B) NO está desplegado
+
+**Síntoma:** se anunció un reranker en el cluster, pero cualquier llamada de
+rerank falla con `404 page not found` (texto plano).
+
+**Causa:** a fecha 2026-06-11 el modelo **no está expuesto**: `GET /v1/models`
+lista exactamente 7 modelos (deepseek-v4-flash, gemma4, kokoro, mimo-v2.5,
+qwen3-embedding, qwen3.6, whisper) y ninguna ruta de rerank existe — probadas
+`/v1/rerank`, `/rerank` y `/v2/rerank` (formato Cohere/Jina, el que soportan
+litellm y vLLM) y `/v1/score`, `/score` (cross-encoders de vLLM). El `404` en
+texto plano viene del **gateway** (cuando litellm conoce la ruta pero no el
+modelo responde un JSON de error), así que el anuncio se adelantó al despliegue.
+
+**Fix:** `yarn models:check` incluye una sonda de rerank que hoy reporta
+"no desplegado" sin contar como fallo. Cuando el cluster lo exponga, la sonda
+pasará a ✅ y mostrará el formato de respuesta; entonces se puede cambiar el
+backend del pre-ranking de candidatas (hoy `qwen3-embedding` por similitud de
+coseno, ver `config.yml > media.shortlist`) al endpoint de rerank real.
+
+---
+
 ## Wikimedia devuelve HTML / error en vez de la imagen
 
 **Síntoma:** la descarga de una imagen de Wikimedia falla, o devuelve HTML en
@@ -63,6 +84,40 @@ tests). **Pexels** sí es gratis pero **opt-in**: requiere `PEXELS_API_KEY`.
 **Fix:** Pexels sólo se activa si hay key (`MEDIA_PROVIDERS` lo incluye **y**
 existe `PEXELS_API_KEY`). Sin key, el selector lo salta sin romper. El default
 seguro es `wikimedia,local` (ver `config.yml`).
+
+---
+
+## La API del cluster admite máximo 3 peticiones en paralelo
+
+**Síntoma:** lanzando varios casos del pipeline a la vez, el cluster degrada o
+da errores intermitentes.
+
+**Causa:** el cluster NaN tiene un límite duro de **3 peticiones simultáneas**
+(todas las modalidades juntas). Para colmo, el throttle original de
+`nan-call.ts` creaba un semáforo nuevo por cada llamada, así que en la práctica
+no limitaba nada (hallazgo P1-B de la auditoría 2026-06-11).
+
+**Fix:** `src/lib/nan-call.ts` mantiene un semáforo **global por proceso**
+(máx 3 en vuelo, 60 rpm). Como las etapas de un caso llaman a la API en serie
+(~1 petición en vuelo por caso), los casos se lanzan en **máximo 2 carriles
+paralelos** — nunca 3+ procesos del pipeline a la vez (un semáforo en memoria
+no coordina procesos distintos).
+
+---
+
+## `yarn voice` crashea esporádicamente con exit code 3221226505 (Windows)
+
+**Síntoma:** la etapa de voz muere con exit code `3221226505` (`0xC0000409`,
+STATUS_STACK_BUFFER_OVERRUN) sin mensaje útil; las etapas siguientes fallan en
+cascada con "Audio file not found".
+
+**Causa:** crash nativo transitorio (ffmpeg o node en el re-encode). Observado
+1 vez en 12 ejecuciones (batería del 2026-06-11, `caso-milgram`); el reintento
+inmediato funcionó a la primera. No reproducible de momento.
+
+**Fix:** reintentar `yarn voice <slug>` y seguir la cadena. Si se volviera
+frecuente: separar el re-encode de ffmpeg a un paso reintentable o capturar el
+exit code para reintentar automáticamente dentro de la etapa.
 
 ---
 
@@ -126,6 +181,11 @@ importar y exige credenciales, porque la **evaluación** por visión las necesit
 
 **Fix:** exporta valores dummy (`NAN_BASE_URL`, `NAN_API_KEY`) — apuntando a un
 host que devuelva 404 rápido evitas reintentos lentos. La búsqueda y descarga
-corren de verdad; la evaluación cae al fallback neutro (coge la primera
-candidata). Útil para ver la tubería, no la calidad de selección. Ver
-`docs/caso-uso-1.md`.
+corren de verdad; toda la cadena de modelos degrada sin romper: las queries
+caen a la heurística de stopwords, el pre-ranking se salta (bajan todas las
+candidatas) y la evaluación coge la primera. Útil para ver la tubería, **no**
+la calidad de selección — el contraste medido (2026-06-10, demo de la Tarea C)
+fue elocuente: con `gemma4` eligiendo, 9/9 escenas razonables; con el fallback
+sin visión, `scene-01` acabó con la bandera del Vaticano, `scene-05` con una
+foto de Bonnie Tyler y `scene-07` con un PDF de "grey literature". El valor de
+la etapa está en que un modelo VEA la imagen (en base64, ver mimo-v2.5 arriba).

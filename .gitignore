@@ -7,10 +7,11 @@ assets/audio/*
 assets/images/*
 assets/output/*
 !assets/**/.gitkeep
-# Carpetas de render por caso
+# Workspaces de render por caso (artefactos generados)
+renders/
 render-*/
-# Casos generados en runtime
-src/content/caso-generado.ts
+# Caso scratch por defecto de `yarn script` (los casos con nombre SÍ se versionan)
+content/caso-generado.yml
 # Bitácora personal de trabajo (canónica en el vault; fuera de PRs)
 PROGRESS.md
 # Carpetas/ficheros de herramientas de IA (locales por desarrollador)
