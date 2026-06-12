@@ -1,73 +1,75 @@
-# Caso de uso — Imágenes locales (generadas fuera con IA)
+# Caso de uso — `caso-local` (imágenes 100% generadas fuera con IA)
 
-Valida el **modo local de imágenes** con material generado en un generador
-externo (probado con **FLUX.2 Klein 9B** del generador de la comunidad; sus
-inputs son *prompt*, *aspect ratio* y *variants* x1-x4). Se ejercita sobre
-`caso-redes`, el golden técnico cuyas candidatas de archivo son flojas — el
-caso para el que existe este modo.
+Caso **independiente** de los tres goldens: un cuarto caso cuyo material
+visual no sale de ningún archivo, sino de un **generador de imágenes externo**
+(probado con **FLUX.2 Klein 9B** del generador de la comunidad; inputs:
+*prompt*, *aspect ratio*, *variants* x1-x4). Demuestra el modo de imágenes
+locales de punta a punta: el generador produce **una imagen por prompt**, así
+que el caso son 10 prompts coherentes entre sí — la coherencia la da la
+`artDirection` del storyboard, que va pegada como sufijo en los 10.
+
+| | |
+|---|---|
+| **Slug** | `caso-local` |
+| **Tipo** | Futurista (sin archivo posible) · storyboard generado por qwen3.6 |
+| **Escenas** | **10** — guion en `content/caso-local.yml` (versionado) |
+| **Tema** | La ciudad del año 2100: cómo viviremos en el futuro |
 
 Referencia del modo: AGENTS.md > Imágenes locales.
 
-## Receta del prompt
+## Los 10 prompts (uno por escena)
 
-**Prompt = `imagePrompt` de la escena + la `artDirection` del caso** (la
-dirección de arte mantiene coherentes las escenas de un mismo video). Para
-`caso-redes` el sufijo de estilo es:
+**Sufijo de estilo común** (la `artDirection` de `content/caso-local.yml` —
+pégalo al final de TODOS):
 
-> 3D animation style, smooth and clean, electric blue and deep purple palette
-> with white highlights, neon glow, high contrast, glassy and metallic
-> textures, futuristic and educational mood, centered composition with depth
-> of field
+> Cinematic 3D animation style, clean vector edges, cyan, white and soft
+> green palette, natural daylight with bioluminescent accents, smooth glass,
+> living moss and polished metal textures, optimistic serene utopian mood,
+> wide composition with vertical emphasis, distant human silhouettes
 
-- **Aspect ratio: 9:16** (video vertical 1080×1920; si no está, el vertical
-  más cercano — el CSS recorta en `cover`).
-- **Variants:** x1 para el flujo A (eliges tú); x4 para el flujo B (elige
-  gemma4 entre tus variantes).
+**Aspect ratio: 9:16** (video vertical) · **variants: x1** (con x2-x4 eliges
+tú la mejor a ojo).
 
-Escenas sugeridas (las dos peores selecciones de archivo de 2026-06-11):
-
-| Escena | Prompt base (añadir el sufijo de estilo) |
+| Fichero destino | Prompt base (añadir el sufijo) |
 |---|---|
-| scene-04 | A grid of simple cat photos entering a translucent digital funnel, clean interface, bright lighting, minimalist style |
-| scene-05 | A digital label saying "Dog" next to a cat photo, with a large red X mark over it, clear and bold graphics |
+| `scene-01` | Wide shot of a futuristic utopian city with vertical gardens covering skyscrapers, bright blue sky, clean white architecture, cinematic lighting |
+| `scene-02` | Close up of a building facade covered in lush green plants and algae panels, sunlight filtering through leaves, hyperrealistic, bright colors |
+| `scene-03` | Sleek transparent pods moving on magnetic tracks between towers, no roads, no cars, futuristic design, soft focus background |
+| `scene-04` | Pedestrian street filled with trees, flowers and water features, people walking peacefully, no vehicles, bright natural lighting, wide angle |
+| `scene-05` | Solar panels integrated into glass windows, wind turbines shaped like flowers, clean energy grid visualization, bright and airy atmosphere |
+| `scene-06` | Interior of a high-rise building with hydroponic farms on every floor, people harvesting fresh vegetables, warm lighting, healthy atmosphere |
+| `scene-07` | Abstract visualization of data streams connecting people in a community center, holographic interfaces, diverse group of people interacting, futuristic but human-centric |
+| `scene-08` | Clean recycling facility with robotic arms sorting materials, sparkling clean environment, no trash visible, high-tech aesthetic |
+| `scene-09` | Sunset over the futuristic city, silhouettes of people enjoying a rooftop garden, golden hour lighting, peaceful and hopeful mood |
+| `scene-10` | Minimalist end screen with the text "FuturoVisión" on a clean white background with subtle green accents, professional design |
 
-## Flujo A — Override por escena (determinista, x1)
+## Flujo
 
-```powershell
-Remove-Item assets/images/caso-redes/scene-04.*          # la actual tiene prioridad
-Copy-Item tu-flux.png assets/images/caso-redes/scene-04.png
-yarn vision caso-redes        # debe loguear "Override: scene-04.png ya colocada"
-yarn compose caso-redes
-start renders/caso-redes/preview.html
-```
-
-Sin `MEDIA_MODE`: el override se respeta en **ambos** modos. Con las 10
-escenas cubiertas, `yarn vision` no hace ninguna llamada al cluster.
-
-## Flujo B — Pool con variantes (x4, gemma4 elige)
+La voz y los subtítulos del caso ya están generados (`assets/audio/caso-local.mp3`,
+`assets/output/caso-local.srt`); solo faltan las imágenes:
 
 ```powershell
-# Las 4 variantes al pool con nombre DESCRIPTIVO en inglés:
-# el nombre del fichero es lo que se matchea contra la query de la escena.
-Copy-Item v1.png assets/images/_pool/dog-label-cat-photo-red-x-mark-v1.png
-# ... v2, v3, v4 igual
+# 1. Genera las 10 imágenes y, al descargar cada una, renómbrala YA al id
+#    exacto de su escena (el generador da nombres aleatorios):
+#    assets/images/caso-local/scene-01.png … scene-10.png  (png o jpg)
+New-Item -ItemType Directory -Force assets/images/caso-local
 
-Remove-Item assets/images/caso-redes/scene-05.*          # libera SOLO esa escena
-$env:MEDIA_MODE = 'local'
-yarn vision caso-redes        # 9 overrides + scene-05 desde el pool (4 → gemma4)
-$env:MEDIA_MODE = $null
-yarn compose caso-redes && start renders/caso-redes/preview.html
+# 2. Visión = 10 overrides, 0 llamadas al cluster (las colocadas se respetan)
+yarn vision caso-local
+
+# 3. Workspace y preview
+yarn compose caso-local
+start renders/caso-local/preview.html
 ```
 
-En modo local **no hay red de búsqueda**, pero el cluster sí se usa:
-embeddings para emparejar pool↔escena y gemma4 para elegir variante.
+Si regeneras la voz o el guion, repite `yarn voice` / `yarn subtitles` antes
+de `compose`. (El override puntual sobre un golden y el pool con variantes x4
+son el mismo mecanismo — ver AGENTS.md > Imágenes locales.)
 
 ## Qué comprobar
 
-- Flujo A: el log dice `Override: …` para tu escena y `0` búsquedas; el
-  preview muestra tu imagen en la escena 4.
-- Flujo B: el log dice `Proveedores activos: local` y `Pre-rank`/`Elegida`
-  solo para la escena liberada; en el preview, una de tus 4 variantes.
-- Caso entero en local: `MEDIA_MODE=local` + `yarn vision caso-redes --force`
-  con un pool que cubra las 10 escenas; lo que no cubra **falla en alto** con
-  la lista de escenas sin imagen (no hay escenas en negro silenciosas).
+- El log de `yarn vision caso-local` dice `Override: scene-XX… ya colocada`
+  para las 10 y no hace ninguna búsqueda.
+- El preview muestra tus 10 imágenes, coherentes entre sí, recortadas en 9:16.
+- Si falta alguna escena, la etapa **falla en alto** con la lista exacta (no
+  hay escenas en negro silenciosas).

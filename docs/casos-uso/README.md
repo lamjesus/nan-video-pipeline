@@ -56,7 +56,8 @@ distintos a propósito):
 - [`caso-numancia.md`](./caso-numancia.md) — Numancia · histórico España ·
   **12 escenas** generadas (ejercita el recuento parametrizado)
 
-Y el caso de uso transversal del modo local:
+Y el cuarto caso, independiente, del modo de imágenes locales:
 
-- [`caso-uso-local.md`](./caso-uso-local.md) — imágenes generadas fuera
-  (FLUX) colocadas por escena o emparejadas desde el pool
+- [`caso-uso-local.md`](./caso-uso-local.md) — `caso-local` · futurista ·
+  **10 escenas** con imágenes 100% generadas fuera (FLUX): 10 prompts
+  coherentes (imagePrompt + artDirection), una imagen por escena
