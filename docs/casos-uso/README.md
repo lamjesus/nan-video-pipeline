@@ -35,10 +35,14 @@ de HyperFrames — nace pausado y sin audio a propósito; no es un reproductor.
 | Etapa | Duración típica | Cluster |
 |---|---|---|
 | script | ~30 s | 1-3 llamadas (retry con feedback) |
-| vision | ~2-4 min | ~8-16 evaluaciones de visión por escena |
+| vision | ~1.5-2.5 min | 1 llamada de queries (qwen3.6) + por escena: 1 embedding (pre-rank) y ~5 evaluaciones gemma4 |
 | voice | ~5-15 s | 1 llamada TTS |
 | subtitles | ~5 s a ~6 min | 1 transcripción (whisper, variable) |
 | compose | ~1-2 s | ninguna (100% local) |
+
+> `vision` **respeta las imágenes ya colocadas** en `assets/images/<slug>/`
+> (override por escena; regenerar = `--force` o borrarlas) y tiene un modo
+> 100% local para imágenes generadas fuera — ver AGENTS.md > Imágenes locales.
 
 ## Fichas
 

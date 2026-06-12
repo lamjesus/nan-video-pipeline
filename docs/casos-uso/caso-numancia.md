@@ -25,15 +25,21 @@ yarn subtitles caso-numancia
 yarn compose caso-numancia    # → renders/caso-numancia/ (abre preview.html)
 ```
 
-## Resultados medidos (2026-06-11)
+## Resultados medidos (2026-06-11, visión mejorada)
 
 - Guion: **12 escenas** válidas al primer intento (~24 s)
-- Imágenes: **12/12** (visión con 8 candidatas/proveedor: ~4 min)
+- Imágenes: **12/12, sin repetidas** (queries qwen3.6 + pre-rank 9-16→5).
+  Buenos aciertos de archivo (estatua de Viriato, ilustración de la guerra
+  numantina de una enciclopedia de 1911) y fallos de nicho: para "Scipio
+  Aemilianus bust" el archivo ofreció un busto de Aníbal — romano plausible,
+  persona equivocada. Para clavar personajes concretos: colocar la imagen a
+  mano en `assets/images/caso-numancia/scene-03.jpg` (override por escena).
 - Audio kokoro: **98.5 s** estéreo (guion decía 90 s → escenas reescaladas ×1.09)
 - Subtítulos: **42 bloques cortos**
 
 ## Notas
 
-- Con 12 escenas la visión es la etapa más cara (~20 s/escena con 8
-  candidatas). Si se itera mucho un caso, bajar `media.candidates` en
-  `config.yml` durante el desarrollo y subirlo para la pasada final.
+- El pre-rank por título acota la visión a ~5 evaluaciones gemma4 por escena
+  aunque `media.candidates` siga en 8 por proveedor: iterar un caso ya no
+  obliga a bajar candidatas en `config.yml` (el corte lo pone
+  `media.shortlist`).

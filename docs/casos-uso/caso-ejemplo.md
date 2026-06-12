@@ -23,16 +23,23 @@ yarn subtitles caso-ejemplo   # → assets/output/caso-ejemplo.srt
 yarn compose caso-ejemplo     # → renders/caso-ejemplo/ (abre preview.html)
 ```
 
-(No lleva `yarn script`: el guion curado ya está en `content/`.)
+(No lleva `yarn script`: el guion curado ya está en `content/`. Ojo: `vision`
+respeta las imágenes ya colocadas — para regenerarlas, `--force`.)
 
-## Resultados medidos (2026-06-11)
+## Resultados medidos (2026-06-11, visión mejorada)
 
-- Imágenes: **9/9** (Wikimedia, evaluadas por gemma4 en base64)
+- Imágenes: **9/9, todas distintas** (queries de sujeto con qwen3.6 + pre-rank
+  por título 14-16→5 + gemma4 sobre las top-5). Las queries pasaron de
+  "wide aerial shot" a "Mount Vesuvius eruption painting" → ganadoras de
+  archivo clásico: *The Last Day of Pompeii* (Brullov), *Destruction of
+  Pompeii and Herculaneum*, el Gargiulo de 1631, Herculano…
 - Audio kokoro: **58.5 s** estéreo (guion decía 90 s → escenas reescaladas ×0.65)
 - Subtítulos: **26 bloques cortos** estilo CapCut (whisper + alineación LCS)
-- Compose: ~1.5 s, sin cluster
+- Compose: ~1 s, sin cluster
+- Vision completa: ~100 s (1 llamada de queries + 1 embedding y ~5 gemma4
+  por escena, en serie)
 
 ## Notas
 
-- La escena 1 ("scene-01") tiene términos de búsqueda débiles — el caso que
-  motivó la mejora de search terms (pendiente) y la Tarea I (pool de imágenes).
+- La debilidad histórica de la escena 1 (search terms de encuadre) quedó
+  resuelta con las queries por modelo; era el caso que motivó la mejora.
