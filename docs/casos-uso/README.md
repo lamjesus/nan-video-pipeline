@@ -42,6 +42,17 @@ de HyperFrames — nace pausado y sin audio a propósito; no es un reproductor.
 
 ## Fichas
 
-- [`caso-uso-1-vision.md`](./caso-uso-1-vision.md) — demo original de la
-  selección visual (qué corre en local vs. qué necesita el cluster)
-- _(pendiente: fichas de los 3 casos golden con 9/10/12 escenas — en elección)_
+Los **3 casos golden** (versionados en `content/`, con recuentos de escenas
+distintos a propósito):
+
+- [`caso-ejemplo.md`](./caso-ejemplo.md) — Pompeya · histórico · **9 escenas**,
+  curado a mano (ejercita el reescalado al audio real)
+- [`caso-redes.md`](./caso-redes.md) — redes neuronales · técnico ·
+  **10 escenas** generadas (estresa la búsqueda con tema abstracto)
+- [`caso-numancia.md`](./caso-numancia.md) — Numancia · histórico España ·
+  **12 escenas** generadas (ejercita el recuento parametrizado)
+
+Y la demo original:
+
+- [`caso-uso-1-vision.md`](./caso-uso-1-vision.md) — selección visual (qué
+  corre en local vs. qué necesita el cluster)
