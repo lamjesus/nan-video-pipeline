@@ -27,6 +27,7 @@ function makeManifest(overrides?: Partial<Manifest>): Manifest {
         end: 5,
         voiceover: 'Bienvenidos',
         onScreenText: ['Año 79 d.C.'],
+        caption: 'Imagina una ciudad próspera',
         imagePrompt: 'A dark illustration',
         motion: 'zoom-in lento sobre la ciudad',
         image: '/abs/assets/images/scene-01.jpg',
@@ -38,6 +39,7 @@ function makeManifest(overrides?: Partial<Manifest>): Manifest {
         end: 12,
         voiceover: 'La historia continua',
         onScreenText: [],
+        caption: 'El Vesubio no avisa',
         imagePrompt: 'Mountain landscape',
         motion: 'paneo sobre la calle',
         image: '/abs/assets/images/scene-02.png',
@@ -80,7 +82,7 @@ describe('generateHtml', () => {
     expect(html).toContain('data-motion="zoom-in"');
     expect(html).toContain('data-scene="scene-01"');
     expect(html).toContain('data-start="0"');
-    expect(html).toContain('data-end="5"');
+    expect(html).toContain('data-duration="5"');
     expect(html).toContain('data-motion="pan-left"');
     expect(html).toContain('data-scene="scene-02"');
   });
@@ -95,9 +97,10 @@ describe('generateHtml', () => {
     expect(html).toContain('Año 79 d.C.');
   });
 
-  it('contains caption container', () => {
-    expect(html).toContain('id="caption-container"');
-    expect(html).toContain('class="caption-container"');
+  it('contains inline caption divs per scene', () => {
+    expect(html).toContain('class="caption"');
+    expect(html).toContain('Imagina una ciudad próspera');
+    expect(html).toContain('El Vesubio no avisa');
   });
 
   it('contains inline GSAP timeline script', () => {
@@ -123,8 +126,8 @@ describe('generateCss', () => {
     expect(css).toContain('.overlay-text');
   });
 
-  it('contains .caption-container class', () => {
-    expect(css).toContain('.caption-container');
+  it('contains .caption class', () => {
+    expect(css).toContain('.caption');
   });
 
   it('contains 9:16 aspect ratio container', () => {

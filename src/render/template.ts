@@ -19,7 +19,7 @@ function escapeHtml(s: string): string {
  * Deterministic: same manifest → byte-identical output.
  */
 export function generateHtml(manifest: Manifest): string {
-  const { title, artDirection, scenes } = manifest;
+  const { slug, title, artDirection, scenes } = manifest;
 
   const sceneSections = scenes
     .map((scene) => {
@@ -28,15 +28,18 @@ export function generateHtml(manifest: Manifest): string {
       const overlays = scene.onScreenText
         .map((text) => `    <div class="overlay-text">${escapeHtml(text)}</div>`)
         .join('\n');
+      const caption = scene.caption
+        ? `    <div class="caption">${escapeHtml(scene.caption)}</div>`
+        : '';
 
-      return `  <section class="scene" data-motion="${motion}" data-scene="${scene.id}" data-start="${scene.start}" data-end="${scene.end}">
+      return `  <section class="scene clip" id="${scene.id}" data-motion="${motion}" data-scene="${scene.id}" data-start="${scene.start}" data-duration="${scene.end - scene.start}">
     <img src="${imgSrc}" alt="${scene.id}" loading="lazy">
-${overlays}
+${overlays}${caption ? '\n' + caption : ''}
   </section>`;
     })
     .join('\n');
 
-  const srtHref = manifest.subtitle?.path ? `captions/${basename(manifest.subtitle.path)}` : '';
+  const totalDuration = scenes.length > 0 ? scenes[scenes.length - 1].end : 0;
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -45,7 +48,6 @@ ${overlays}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="styles.css">
-  ${srtHref ? `<link rel="preload" href="${srtHref}" as="fetch" crossorigin>` : ''}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -54,7 +56,6 @@ ${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
   </script>
   <div class="container" data-composition-id="main" data-duration="${manifest.audio.duration ?? manifest.scenes[manifest.scenes.length - 1].end}">
 ${sceneSections}
-  <div id="caption-container" class="caption-container"></div>
   </div>
   <script>
     // SRT parser (browser-side)
@@ -94,8 +95,8 @@ ${sceneSections}
     const scenes = document.querySelectorAll('.scene');
     scenes.forEach((scene) => {
       const start = parseFloat(scene.dataset.start);
-      const end = parseFloat(scene.dataset.end);
-      const duration = end - start;
+      const duration = parseFloat(scene.dataset.duration);
+      const end = start + duration;
       const img = scene.querySelector('img');
       const motion = scene.dataset.motion;
       tl.to(scene, { opacity: 1, duration: 0 }, start);
@@ -156,6 +157,10 @@ body {
   position: absolute;
   inset: 0;
   opacity: 0;
+}
+
+.scene.clip {
+  clip-path: inset(0);
 }
 
 .scene img {

@@ -33,6 +33,7 @@ import {
   extFromUrl,
   mimeFromExt,
   bestByScore,
+  generifyQuery,
 } from './image-search.js';
 
 // --- Queries de búsqueda con qwen3.6 (UNA llamada para todas las escenas) ---
@@ -244,12 +245,12 @@ async function main() {
 
     // 1. Query de búsqueda: qwen3.6 → heurística → imagePrompt crudo
     const terms = deriveSearchTerms(scene.imagePrompt);
-    const query =
+    let query =
       llmQueries?.[scene.id] ?? (terms.length > 0 ? terms.join(' ') : scene.imagePrompt);
     console.log(`  Query: ${query}`);
 
     // 2. Buscar candidatas (URL + título) en todos los providers
-    const encontradas: FoundCandidate[] = [];
+    let encontradas: FoundCandidate[] = [];
     for (const provider of providers) {
       try {
         const results = await provider.search(query, searchLimit);
@@ -259,6 +260,25 @@ async function main() {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn(`  ${provider.name}: error - ${msg}`);
+      }
+    }
+
+    // Fallback: si 0 candidatas, intentar con query genérica (quitar nombres propios)
+    if (encontradas.length === 0) {
+      const generic = generifyQuery(query);
+      if (generic !== query) {
+        console.log(`  Fallback query: ${generic}`);
+        for (const provider of providers) {
+          try {
+            const results = await provider.search(generic, searchLimit);
+            const valid = results.filter((c) => c.url);
+            encontradas.push(...valid.map((c) => ({ url: c.url, title: c.title ?? '' })));
+            console.log(`  ${provider.name}: ${valid.length} candidatas (fallback)`);
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.warn(`  ${provider.name}: error fallback - ${msg}`);
+          }
+        }
       }
     }
     // La misma URL puede venir de dos providers: deduplicar antes de rankear.
@@ -306,6 +326,21 @@ async function main() {
         const msg = err instanceof Error ? err.message : String(err);
         console.warn(`  Error guardando: ${msg}`);
       }
+    } else {
+      // Safety net: generate a dark placeholder SVG so the pipeline doesn't break.
+      // The placeholder shows the scene ID — enough to identify which scene failed.
+      await mkdir(destDir, { recursive: true });
+      const placeholder = Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+          <rect width="1080" height="1920" fill="#1a1a2e"/>
+          <text x="540" y="900" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="48" opacity="0.6">${scene.id}</text>
+          <text x="540" y="960" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="24" opacity="0.4">sin imagen</text>
+        </svg>`,
+      );
+      const placeholderPath = `${destDir}/${scene.id}.svg`;
+      await writeFile(placeholderPath, placeholder);
+      elegidas[scene.id] = placeholderPath;
+      console.log(`  Placeholder: ${placeholderPath}`);
     }
   }
 
