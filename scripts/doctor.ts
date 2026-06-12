@@ -144,6 +144,20 @@ async function checkNaN(): Promise<void> {
   }
 }
 
+// --- Check 4: HyperFrames availability ---
+async function checkHyperFrames(): Promise<void> {
+  try {
+    await exec('npx', ['hyperframes', '--version']);
+    record({ name: 'hyperframes (renderer)', ok: true });
+  } catch {
+    record({
+      name: 'hyperframes (renderer)',
+      ok: false,
+      error: 'No encontrado. Instala con: npm install -g hyperframes',
+    });
+  }
+}
+
 // --- Main ---
 async function main(): Promise<void> {
   console.log('🔍 NaN Video Pipeline — Doctor\n');
@@ -151,6 +165,7 @@ async function main(): Promise<void> {
   checkEnv();
   checkVitest();
   await checkFFmpeg();
+  await checkHyperFrames();
   await checkNaN();
 
   console.log('');
