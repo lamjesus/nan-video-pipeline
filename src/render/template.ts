@@ -19,7 +19,7 @@ function escapeHtml(s: string): string {
  * Deterministic: same manifest → byte-identical output.
  */
 export function generateHtml(manifest: Manifest): string {
-  const { title, artDirection, scenes } = manifest;
+  const { slug, title, artDirection, scenes } = manifest;
 
   const sceneSections = scenes
     .map((scene) => {
@@ -28,15 +28,18 @@ export function generateHtml(manifest: Manifest): string {
       const overlays = scene.onScreenText
         .map((text) => `    <div class="overlay-text">${escapeHtml(text)}</div>`)
         .join('\n');
+      const caption = scene.caption
+        ? `    <div class="caption">${escapeHtml(scene.caption)}</div>`
+        : '';
 
-      return `  <section class="scene" data-motion="${motion}" data-scene="${scene.id}" data-start="${scene.start}" data-end="${scene.end}">
+      return `  <section class="scene clip" id="${scene.id}" data-motion="${motion}" data-scene="${scene.id}" data-start="${scene.start}" data-duration="${scene.end - scene.start}">
     <img src="${imgSrc}" alt="${scene.id}" loading="lazy">
-${overlays}
+${overlays}${caption ? '\n' + caption : ''}
   </section>`;
     })
     .join('\n');
 
-  const srtHref = manifest.subtitle?.path ? `captions/${basename(manifest.subtitle.path)}` : '';
+  const totalDuration = scenes.length > 0 ? scenes[scenes.length - 1].end : 0;
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -45,45 +48,22 @@ ${overlays}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="styles.css">
-  ${srtHref ? `<link rel="preload" href="${srtHref}" as="fetch" crossorigin>` : ''}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
 </head>
 <body>
   <script type="application/json" id="art-direction">
 ${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
   </script>
-  <div class="container">
+  <div class="container" data-composition-id="${slug}" data-duration="${totalDuration}" data-width="1080" data-height="1920" data-start="0">
 ${sceneSections}
-  <div id="caption-container" class="caption-container"></div>
   </div>
   <script>
-    // SRT parser (browser-side)
-    function parseSrt(content) {
-      if (!content || !content.trim()) return [];
-      return content.split(/\\n\\n+/).filter(b => b.trim()).map(block => {
-        const m = /(\\d+)\\n(\\d{2}:\\d{2}:\\d{2},\\d{3})\\s*-->\\s*(\\d{2}:\\d{2}:\\d{2},\\d{3})\\n([\\s\\S]+)/.exec(block.trim());
-        if (!m) return null;
-        const ts = (s) => { const p = s.replace(',','.').split(':'); return +p[0]*3600 + +p[1]*60 + +p[2]; };
-        return { index: +m[1], start: ts(m[2]), end: ts(m[3]), text: m[4].trim() };
-      }).filter(Boolean);
-    }
-
-    // Load captions
-    let captions = [];
-    ${srtHref ? `fetch('${srtHref}').then(r => r.text()).then(t => { captions = parseSrt(t); }).catch(() => {});` : ''}
-
-    const captionEl = document.getElementById('caption-container');
-    function updateCaption(time) {
-      const active = captions.find(c => time >= c.start && time <= c.end);
-      captionEl.textContent = active ? active.text : '';
-    }
-
     const tl = gsap.timeline({ paused: true });
     const scenes = document.querySelectorAll('.scene');
     scenes.forEach((scene) => {
       const start = parseFloat(scene.dataset.start);
-      const end = parseFloat(scene.dataset.end);
-      const duration = end - start;
+      const duration = parseFloat(scene.dataset.duration);
+      const end = start + duration;
       const img = scene.querySelector('img');
       const motion = scene.dataset.motion;
       tl.to(scene, { opacity: 1, duration: 0 }, start);
@@ -107,8 +87,9 @@ ${sceneSections}
       tl.to(scene, { opacity: 0, duration: 0.3 }, end - 0.3);
     });
 
-    // Sync captions with timeline
-    tl.eventCallback('onUpdate', () => updateCaption(tl.time()));
+    // Register timeline for HyperFrames (must be an object, not array)
+    window.__timelines = window.__timelines || {};
+    window.__timelines["${slug}"] = tl;
   </script>
 </body>
 </html>`;
@@ -145,6 +126,10 @@ body {
   opacity: 0;
 }
 
+.scene.clip {
+  clip-path: inset(0);
+}
+
 .scene img {
   width: 100%;
   height: 100%;
@@ -167,7 +152,7 @@ body {
 
 /* Captions estilo CapCut: grandes, bold y con contorno para que contrasten
    sobre cualquier imagen (stroke en Chromium + sombras como fallback). */
-.caption-container {
+.caption {
   position: absolute;
   bottom: 8%;
   left: 50%;
