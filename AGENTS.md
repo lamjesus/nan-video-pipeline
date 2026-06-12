@@ -42,7 +42,6 @@ docs/
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
   TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, límite de 3, User-Agent…)
   casos-uso/       — Casos de uso documentados (golden cases)
-  sessions/        — Bitácora por sesión (memoria del equipo)
 ```
 
 ## Cómo usar
@@ -145,7 +144,5 @@ FIX: cómo solucionarlo
 2. Antes de tocar el cluster, mira **`docs/TROUBLESHOOTING.md`**: recoge los fallos
    ya descubiertos (mimo ciego, User-Agent de Wikimedia, pexels…) para no repetirlos.
 3. Para ver un caso real corriendo, **`docs/casos-uso/`** (flujo común + fichas).
-4. Al cerrar una sesión de trabajo no trivial, deja una entrada en **`docs/sessions/`**
-   (qué cambió y por qué) — es la memoria compartida del equipo.
-5. No cambies la forma de `Storyboard` (`src/lib/types.ts`) sin avisar: todas las
+4. No cambies la forma de `Storyboard` (`src/lib/types.ts`) sin avisar: todas las
    piezas dependen de ella.
