@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCopyPlan, rescaleScenesToAudio, toWorkspaceManifest } from '../../src/pipeline/compose-util.ts';
+import { buildCopyPlan, rescaleScenesToAudio, toWorkspaceManifest } from '../../src/pipeline/render-workspace.ts';
 import type { Manifest, ManifestScene } from '../../src/lib/manifest.ts';
 
 function makeScene(i: number, overrides: Partial<ManifestScene> = {}): ManifestScene {

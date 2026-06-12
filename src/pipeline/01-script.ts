@@ -13,7 +13,7 @@ import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
 import { config } from '../config/index.js';
 import type { Storyboard } from '../lib/types.js';
-import { extractJson, validateStoryboard, REQUIRED_SCENES } from './script-util.js';
+import { extractJson, validateStoryboard, REQUIRED_SCENES } from './storyboard-validation.js';
 
 const tema = process.argv[2];
 const slug = process.argv[3] ?? 'caso-generado';

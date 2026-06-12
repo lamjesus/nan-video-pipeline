@@ -4,7 +4,7 @@ import {
   extractJson,
   validateStoryboard,
   REQUIRED_SCENES,
-} from '../../src/pipeline/script-util.ts';
+} from '../../src/pipeline/storyboard-validation.ts';
 import type { Storyboard, Scene } from '../../src/lib/types.ts';
 
 // --- Fixtures ---------------------------------------------------------------

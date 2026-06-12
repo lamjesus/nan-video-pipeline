@@ -22,7 +22,7 @@ const USER_AGENT =
 // --- Media provider layer ---
 import { selectProvider } from '../lib/media/index.js';
 
-// --- Lógica pura (con tests en tests/pipeline/vision-util.test.ts) ---
+// --- Lógica pura (con tests en tests/pipeline/image-search.test.ts) ---
 import {
   deriveSearchTerms,
   buildSearchQueriesPrompt,
@@ -33,7 +33,7 @@ import {
   extFromUrl,
   mimeFromExt,
   bestByScore,
-} from './vision-util.js';
+} from './image-search.js';
 
 // --- Queries de búsqueda con qwen3.6 (UNA llamada para todas las escenas) ---
 // La heurística de stopwords producía queries de encuadre ("wide aerial shot")

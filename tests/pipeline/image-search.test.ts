@@ -10,7 +10,7 @@ import {
   extFromUrl,
   mimeFromExt,
   bestByScore,
-} from '../../src/pipeline/vision-util.ts';
+} from '../../src/pipeline/image-search.ts';
 
 describe('deriveSearchTerms', () => {
   it('quita stopwords y palabras cortas', () => {

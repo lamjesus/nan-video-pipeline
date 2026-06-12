@@ -29,8 +29,8 @@ ganadora en `config.yml`.
 
 **Implementado:**
 - `src/pipeline/05-subtitles.ts` — orchestration: audio read → Whisper STT → alignment → SRT write
-- `src/pipeline/subtitle-util.ts` — pure alignment (LCS word matching) + SRT serialization
-- `tests/pipeline/subtitle-util.test.ts` — 7 tests covering alignment, fallback, SRT format
+- `src/pipeline/subtitle-alignment.ts` — pure alignment (LCS word matching) + SRT serialization
+- `tests/pipeline/subtitle-alignment.test.ts` — 7 tests covering alignment, fallback, SRT format
 - `"subtitles"` script in `package.json`
 - Fallback mode when `verbose_json` not supported (plain text → distribute across scene boundaries)
 - Error handling: missing audio (exit 1), empty transcription (exit 1), ERROR/WHY/FIX format
@@ -56,7 +56,7 @@ ganadora en `config.yml`.
   (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué,
   en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`casos-uso/caso-uso-1-vision.md`](./casos-uso/caso-uso-1-vision.md).
   Modelos configurables en `config.yml`.
-- Tests TDD: 30 tests (16 providers + 14 de lógica pura en `vision-util.ts`;
+- Tests TDD: 30 tests (16 providers + 14 de lógica pura en `image-search.ts`;
   freepik eliminado — su API no es gratuita)
 - (2026-06-11) Imágenes **por caso** en `assets/images/<slug>/` — los scene-id
   se repiten entre casos y el directorio plano hacía que un caso pisara al otro.
@@ -78,7 +78,7 @@ heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords c
 ## Tarea D — Guion con qwen3.6 [Manu ✅]
 
 **Implementado:**
-- `src/pipeline/script-util.ts` — lógica pura: `extractJson` (tolera `<think>`,
+- `src/pipeline/storyboard-validation.ts` — lógica pura: `extractJson` (tolera `<think>`,
   vallas markdown y prosa) y `validateStoryboard` (10 escenas, campos requeridos,
   tiempos por escena; errores con ruta de campo, p.ej. `scenes[3].voiceover`).
 - `src/pipeline/01-script.ts` — retry con feedback de validación al modelo
@@ -88,7 +88,7 @@ heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords c
 - `src/content/load.ts` — los casos generados se cargan **sin registro manual**
   (import dinámico con slug validado). Fix: el guard de auto-ejecución no
   funcionaba en Windows (`yarn load` era un no-op).
-- 14 tests TDD en `tests/pipeline/script-util.test.ts`.
+- 14 tests TDD en `tests/pipeline/storyboard-validation.test.ts`.
 
 **Verificado e2e (2026-06-11):** `yarn script "La biblioteca de Alejandría"
 caso-alejandria` → Storyboard válido al primer intento (10 escenas, 45s); el

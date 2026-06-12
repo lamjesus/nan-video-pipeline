@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { alignSegments } from '../../src/pipeline/subtitle-util.ts';
-import type { VoiceoverSegment, TranscriptionSegment } from '../../src/pipeline/subtitle-util.ts';
+import { alignSegments } from '../../src/pipeline/subtitle-alignment.ts';
+import type { VoiceoverSegment, TranscriptionSegment } from '../../src/pipeline/subtitle-alignment.ts';
 
 // Regresión del hallazgo P1-A de la auditoría (2026-06-11): las palabras sin
 // match en Whisper se pegaban TODAS al final de su escena, rompiendo el orden

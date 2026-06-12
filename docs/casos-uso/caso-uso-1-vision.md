@@ -8,7 +8,7 @@ imágenes de archivo, se descargan y un modelo de visión elige la que mejor enc
 
 | Capa | Cómo se prueba | Necesita cluster |
 |------|----------------|------------------|
-| Lógica pura (search terms, ext/mime, ranking) | `yarn test` (14 tests en `vision-util.test.ts`) | No |
+| Lógica pura (search terms, ext/mime, ranking) | `yarn test` (14 tests en `image-search.test.ts`) | No |
 | Providers (Wikimedia, local, pexels) | `yarn test` (16 tests) | No |
 | Búsqueda + descarga (con User-Agent) | corrida real de `yarn vision` | No (Wikimedia es público) |
 | Evaluación por visión (`gemma4`) | corrida real de `yarn vision` | Sí (`NAN_API_KEY` + `gemma4`) |

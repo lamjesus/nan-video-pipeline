@@ -14,8 +14,8 @@ import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import { nan } from '../lib/nan-client.js';
 import { createNanCall } from '../lib/nan-call.js';
-import { alignSegments, chunkSegments, toSRT } from './subtitle-util.js';
-import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-util.js';
+import { alignSegments, chunkSegments, toSRT } from './subtitle-alignment.js';
+import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-alignment.js';
 
 // --- Whisper call ---
 

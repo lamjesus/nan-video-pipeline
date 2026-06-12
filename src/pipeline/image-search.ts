@@ -2,7 +2,7 @@
 // (02-vision.ts ejecuta main() al importarse, así que no se puede importar desde
 // un test sin disparar el pipeline; estas funciones sí son seguras de importar.)
 
-import { extractJson } from './script-util.js';
+import { extractJson } from './storyboard-validation.js';
 
 const STOPWORDS = new Set([
   'a', 'an', 'the', 'in', 'on', 'at', 'of', 'to', 'for', 'with', 'and', 'or',

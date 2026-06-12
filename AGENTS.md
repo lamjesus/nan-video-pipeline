@@ -18,16 +18,16 @@ src/
     manifest.ts    — Tipos + builder puro del manifest de render
     media/         — Proveedores de imágenes (wikimedia default, local, pexels opt-in)
   pipeline/
-    00-orchestrator.ts — Orquestador (encadena etapas; en construcción)
-    01-script.ts       — Guion qwen3.6 → content/<slug>.yml (validado, con retry)
-    script-util.ts     — Puro: extractJson + validateStoryboard
-    02-vision.ts       — Selección visual gemma4 → assets/images/<slug>/
-    vision-util.ts     — Puro: search terms, ext/mime, ranking
-    03-voice.ts        — Voz kokoro → assets/audio/<slug>.mp3
-    04-compose.ts      — Compose → renders/<slug>/ (manifest + HTML + assets + preview)
-    compose-util.ts    — Puro: copy plan, reescalado al audio real, manifest portable
-    05-subtitles.ts    — Subtítulos whisper → assets/output/<slug>.srt
-    subtitle-util.ts   — Puro: alineación LCS + chunking estilo CapCut
+    00-orchestrator.ts       — Orquestador (encadena etapas; en construcción)
+    01-script.ts             — Guion qwen3.6 → content/<slug>.yml (validado, con retry)
+    storyboard-validation.ts — Puro: extractJson + validateStoryboard
+    02-vision.ts             — Selección visual gemma4 → assets/images/<slug>/
+    image-search.ts          — Puro: queries, pre-rank, modo/overrides, ext/mime
+    03-voice.ts              — Voz kokoro → assets/audio/<slug>.mp3
+    04-compose.ts            — Compose → renders/<slug>/ (manifest + HTML + assets + preview)
+    render-workspace.ts      — Puro: copy plan, reescalado al audio real, manifest portable
+    05-subtitles.ts          — Subtítulos whisper → assets/output/<slug>.srt
+    subtitle-alignment.ts    — Puro: alineación LCS + chunking estilo CapCut
   render/
     motion.ts      — Motion en español → presets GSAP
     srt.ts         — Parser SRT
@@ -135,7 +135,7 @@ FIX: cómo solucionarlo
   de IA ni referencias a fases internas (ej. `feat/media-providers`, no `feat/fase-3`).
 - ESM: imports con extensión `.js`.
 - Tests: vitest, **TDD para código nuevo**. Lógica pura → módulo aparte y testeable
-  (ej. `vision-util.ts`), no enterrada en un script con `main()` autoejecutable.
+  (ej. `image-search.ts`), no enterrada en un script con `main()` autoejecutable.
 - Errores: formato `ERROR / WHY / FIX`.
 
 ## Cómo trabajar en este repo (para agentes y personas)

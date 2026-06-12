@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { chunkSegments } from '../../src/pipeline/subtitle-util.ts';
-import type { AlignedSegment } from '../../src/pipeline/subtitle-util.ts';
+import { chunkSegments } from '../../src/pipeline/subtitle-alignment.ts';
+import type { AlignedSegment } from '../../src/pipeline/subtitle-alignment.ts';
 
 const LONG_TEXT =
   'En el año 79, una ciudad romana entera desapareció bajo la ceniza ' +

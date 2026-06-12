@@ -13,7 +13,7 @@ import { config } from '../config/index.js';
 import { loadStoryboard, currentCaseSlug } from '../content/load.js';
 import { getAudioDuration } from '../lib/ffprobe.js';
 import { discoverImages, buildManifest, validateManifest } from '../lib/manifest.js';
-import { buildCopyPlan, rescaleScenesToAudio, toWorkspaceManifest } from './compose-util.js';
+import { buildCopyPlan, rescaleScenesToAudio, toWorkspaceManifest } from './render-workspace.js';
 import { generateHtml, generateCss } from '../render/template.js';
 import { generatePreviewHtml } from '../render/preview.js';
 

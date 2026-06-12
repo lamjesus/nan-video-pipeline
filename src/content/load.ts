@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parse } from 'yaml';
 import { config } from '../config/index.js';
-import { validateStoryboard } from '../pipeline/script-util.js';
+import { validateStoryboard } from '../pipeline/storyboard-validation.js';
 import type { Storyboard } from '../lib/types.js';
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
