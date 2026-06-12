@@ -53,8 +53,8 @@ ganadora en `config.yml`.
 - Descarga de candidatas (con `User-Agent`) y guardado de la elegida en
   `assets/images/<scene.id>.<ext>`
 - **Evaluación por visión:** `gemma4` (fallback `qwen3.6`) con la imagen en base64
-  (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué,
-  en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md); demo en [`casos-uso/caso-uso-1-vision.md`](./casos-uso/caso-uso-1-vision.md).
+  (formato array OpenAI), porque `mimo-v2.5` está ciego en el cluster. El porqué
+  y el contraste con/sin evaluación, en [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md).
   Modelos configurables en `config.yml`.
 - Tests TDD: 30 tests (16 providers + 14 de lógica pura en `image-search.ts`;
   freepik eliminado — su API no es gratuita)
@@ -65,11 +65,14 @@ ganadora en `config.yml`.
 
 **Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
 → 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
-confirma que `gemma4` acepta el base64 array. Detalle en `casos-uso/caso-uso-1-vision.md`.
+confirma que `gemma4` acepta el base64 array.
 
-**Limitación conocida:** la selección es tan buena como las candidatas; términos
-heurísticos débiles (ej. `scene-01`) traen archivo malo → mejorar keywords con
-`qwen3.6` (Tarea D) y generar imágenes al pool (Tarea I).
+**Limitación conocida (resuelta 2026-06-11):** la selección es tan buena como las
+candidatas; los términos heurísticos débiles (ej. `scene-01`) traían archivo malo.
+Resuelto con queries por escena con `qwen3.6` + pre-ranking por título con
+`qwen3-embedding` (solo el top `media.shortlist` pasa a visión) + modo de imágenes
+locales (`media.mode`, ver AGENTS.md > Imágenes locales). Para temas sin archivo
+(técnicos/nicho) el remedio es el modo local; la GUI del pool sigue siendo la Tarea I.
 
 **No toques:** el guion (Tarea D); consumes el storyboard ya cargado.
 

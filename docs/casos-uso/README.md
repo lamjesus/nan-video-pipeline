@@ -55,8 +55,3 @@ distintos a propósito):
   **10 escenas** generadas (estresa la búsqueda con tema abstracto)
 - [`caso-numancia.md`](./caso-numancia.md) — Numancia · histórico España ·
   **12 escenas** generadas (ejercita el recuento parametrizado)
-
-Y la demo original:
-
-- [`caso-uso-1-vision.md`](./caso-uso-1-vision.md) — selección visual (qué
-  corre en local vs. qué necesita el cluster)

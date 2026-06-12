@@ -181,6 +181,11 @@ importar y exige credenciales, porque la **evaluación** por visión las necesit
 
 **Fix:** exporta valores dummy (`NAN_BASE_URL`, `NAN_API_KEY`) — apuntando a un
 host que devuelva 404 rápido evitas reintentos lentos. La búsqueda y descarga
-corren de verdad; la evaluación cae al fallback neutro (coge la primera
-candidata). Útil para ver la tubería, no la calidad de selección. Ver
-`docs/casos-uso/caso-uso-1-vision.md`.
+corren de verdad; toda la cadena de modelos degrada sin romper: las queries
+caen a la heurística de stopwords, el pre-ranking se salta (bajan todas las
+candidatas) y la evaluación coge la primera. Útil para ver la tubería, **no**
+la calidad de selección — el contraste medido (2026-06-10, demo de la Tarea C)
+fue elocuente: con `gemma4` eligiendo, 9/9 escenas razonables; con el fallback
+sin visión, `scene-01` acabó con la bandera del Vaticano, `scene-05` con una
+foto de Bonnie Tyler y `scene-07` con un PDF de "grey literature". El valor de
+la etapa está en que un modelo VEA la imagen (en base64, ver mimo-v2.5 arriba).
