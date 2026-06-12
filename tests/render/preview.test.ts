@@ -18,8 +18,9 @@ function makeManifest(overrides: Partial<Manifest> = {}): Manifest {
     scenes: [
       {
         id: 'scene-01', block: 'GANCHO', start: 0, end: 10,
-        voiceover: 'Texto', onScreenText: [], imagePrompt: 'p',
-        motion: 'zoom-in', image: '/repo/assets/images/scene-01.jpg',
+        voiceover: 'Texto', onScreenText: [], caption: 'Hola mundo',
+        imagePrompt: 'p', motion: 'zoom-in',
+        image: '/repo/assets/images/scene-01.jpg',
       },
     ],
     generatedAt: '2026-06-11T00:00:00.000Z',
@@ -35,20 +36,25 @@ describe('generatePreviewHtml', () => {
     expect(html).toContain('tl.play()');
   });
 
-  it('inlines the SRT content and removes the fetch (file:// blocks it)', () => {
+  it('inlines captions as static HTML (no fetch needed)', () => {
     const html = generatePreviewHtml(makeManifest(), SRT);
     expect(html).not.toContain("fetch('captions/");
     expect(html).toContain('Hola mundo');
   });
 
-  it('escapes "<" in inlined captions so they cannot close the script tag', () => {
-    const evil = '1\n00:00:00,000 --> 00:00:02,000\nuno </script> dos\n';
-    const html = generatePreviewHtml(makeManifest(), evil);
-    expect(html).not.toContain('</script> dos');
-    expect(html).toContain('\\u003c/script> dos');
+  it('escapes "<" in captions so they cannot inject tags', () => {
+    // Caption with HTML-injected text — escapeHtml should neutralize it
+    const manifest = makeManifest({ scenes: [{
+      id: 'scene-01', block: 'GANCHO', start: 0, end: 10,
+      voiceover: 'Texto', onScreenText: [], caption: 'uno </script> dos',
+      imagePrompt: 'p', motion: 'zoom-in',
+      image: '/repo/assets/images/scene-01.jpg',
+    }] });
+    const html = generatePreviewHtml(manifest, null);
+    expect(html).toContain('uno &lt;/script&gt; dos');
   });
 
-  it('still works without subtitles (audio + play, no captions fetch)', () => {
+  it('still works without subtitles (audio + play, no caption divs)', () => {
     const html = generatePreviewHtml(makeManifest({ subtitle: { path: null } }), null);
     expect(html).toContain('<audio id="preview-audio"');
     expect(html).not.toContain("fetch('captions/");
@@ -59,7 +65,7 @@ describe('generatePreviewHtml', () => {
     const html = generatePreviewHtml(makeManifest(), SRT);
     expect(html).toContain('data-scene="scene-01"');
     expect(html).toContain('data-motion="zoom-in"');
-    // El index.html original sigue siendo el que genera template.ts.
-    expect(base).toContain("fetch('captions/");
+    // index.html ya no tiene fetch — los captions son inline
+    expect(base).toContain('class="caption"');
   });
 });
