@@ -4,7 +4,12 @@ import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ArtDirection, Scene, Storyboard } from './types.js';
 
-// --- Types ---
+export interface SrtEntry {
+  index: number;
+  start: number;
+  end: number;
+  text: string;
+}
 
 export interface ManifestScene {
   id: string;
@@ -13,6 +18,7 @@ export interface ManifestScene {
   end: number;
   voiceover: string;
   onScreenText: string[];
+  caption: string;     // subtitle text for this scene (from SRT, assigned by timing)
   imagePrompt: string;
   motion: string;
   image: string | null; // absolute path or null
@@ -69,17 +75,18 @@ export function buildManifest(
   subtitlePath: string | null,
   imageMap: Map<string, string | null>,
 ): Manifest {
-  const scenes: ManifestScene[] = storyboard.scenes.map((s) => ({
+  const scenes: ManifestScene[] = assignCaptions(storyboard.scenes.map((s) => ({
     id: s.id,
     block: s.block,
     start: s.start,
     end: s.end,
     voiceover: s.voiceover,
     onScreenText: s.onScreenText,
+    caption: '',
     imagePrompt: s.imagePrompt,
     motion: s.motion,
     image: imageMap.get(s.id) ?? null,
-  }));
+  })));
 
   return {
     slug,
@@ -134,4 +141,16 @@ export function validateManifest(
   }
 
   return { valid: errors.length === 0, errors, warnings };
+}
+
+/**
+ * Pure: assigns a caption to each scene from its voiceover text.
+ * The voiceover IS the canonical narration per scene — no need for SRT timing matching.
+ * SRT is kept for preview.html but captions in the render come from voiceover.
+ */
+export function assignCaptions(scenes: ManifestScene[]): ManifestScene[] {
+  return scenes.map((s) => ({
+    ...s,
+    caption: s.voiceover || '',
+  }));
 }
