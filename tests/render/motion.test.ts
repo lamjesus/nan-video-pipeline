@@ -12,6 +12,8 @@ const casoEjemploCases: Array<{ input: string; expected: MotionPreset }> = [
   { input: 'deriva lenta sobre la ceniza', expected: 'pan-slow' },
   { input: 'zoom-in al hallazgo', expected: 'zoom-in' },
   { input: 'zoom-out final', expected: 'zoom-out' },
+  { input: 'paneo hacia la derecha', expected: 'pan-right' },
+  { input: 'pan right', expected: 'pan-right' },
 ];
 
 describe('resolveMotion', () => {
@@ -33,7 +35,15 @@ describe('resolveMotion', () => {
     });
 
     it('matches pan keyword', () => {
-      expect(resolveMotion('pan right')).toBe('pan-left');
+      expect(resolveMotion('pan left')).toBe('pan-left');
+    });
+
+    it('matches pan right keyword', () => {
+      expect(resolveMotion('pan right')).toBe('pan-right');
+    });
+
+    it('matches pan derecha keyword', () => {
+      expect(resolveMotion('paneo hacia la derecha')).toBe('pan-right');
     });
 
     it('matches shake keyword', () => {

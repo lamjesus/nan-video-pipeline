@@ -147,24 +147,50 @@ de la PR: `yarn typecheck` + `yarn test` (+ `yarn doctor` si tocas el cluster). 
 
 ---
 
-## Tarea F — Entorno e integración [Luis]
+## Tarea F — Entorno e integración [✅ completada 2026-06-12]
 
-**Objetivo:** que el repo arranque limpio en cualquier máquina y el orquestador
-encadene las piezas.
+**Verificado:** `yarn produce "<tema>" [slug] [--skip-<stage>]...` encadena
+las 7 etapas en orden:
 
-**Incluye:** revisar `package.json`/`tsconfig`, el orquestador
-(`00-orchestrator.ts`), y que `yarn produce "<tema>"` corra las etapas en orden.
+- **Slug dinámico:** si no se pasa slug, busca el YAML más reciente en `content/`
+- **Pre-flight:** verifica HyperFrames + ffmpeg al inicio; salta render/mux si falta
+- **--skip-\<stage\>:** permite runs parciales (ej: `--skip-voice --skip-subtitles`)
+- **execFile sin shell:** los argumentos van literales, sin inyección de comandos
+- **Orquestador completo:** script → vision → voice → subtitles → compose → render → mux
+
+**Uso:**
+```bash
+yarn produce "El día que internet colapsó" mi-caso
+yarn produce "Científicos descubren algo inquietante" mi-caso --skip-subtitles
+```
+
+**Pendiente (fuera de esta tarea):** e2e test automatizado que corra el pipeline
+completo contra el cluster (por ahora se valida manualmente con un caso existente).
 
 ---
 
-## Tarea G — Composición y render [Luis]
+## Tarea G — Composición y render [✅ completada 2026-06-12]
 
-**Objetivo:** montar el video final a partir del guion, la voz y las imágenes.
+**Verificado:** pipeline completo e2e — `yarn produce` genera MP4 de ~55s a ~56MB.
 
-**Incluye:** la composición animada (`index.html` con la línea de tiempo) y la
-integración con HyperFrames para exportar el MP4 vertical. GSAP se carga por CDN
-dentro del propio HTML; HyperFrames se ejecuta con `npx hyperframes render .`.
-Esta pieza la lleva Luis.
+**Cambios:**
+- **GSAP timeline no pausada:** el timeline era `paused: true`, HyperFrames
+  necesita que se ejecute para capturar frames → `paused: false` + `onUpdate`
+  inline.
+- **data-composition-id + data-duration:** HyperFrames 0.6.x requiere un root
+  element con `data-composition-id` y `data-duration` para detectar la duración
+  de la composición.
+- **HyperFrames flags:** `--workers 1 --low-memory-mode` necesario (multi-worker
+  falla con GSAP timeline detection).
+- **Test actualizado:** `render-runner.test.ts` incluye los nuevos flags.
+
+**Uso:**
+```bash
+yarn produce "tema" slug
+yarn produce "tema" slug --skip-subtitles --skip-voice
+```
+
+**Output:** `assets/output/<slug>.mp4` (MP4 1080x1920, audio AAC + video copy)
 
 ---
 
