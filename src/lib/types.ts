@@ -21,7 +21,10 @@ export interface Scene {
   block: string;         // etiqueta narrativa ("GANCHO", "DESARROLLO"...)
   start: number;         // segundo de inicio
   end: number;           // segundo de fin
-  voiceover: string;     // narración (ES) que dirá la voz
+  voiceover: string;     // narración (ES); es el texto canónico de los subtítulos
+  voiceoverTTS?: string; // opcional: misma frase respeleada fonéticamente solo
+                         // para el TTS (p.ej. "Oupen Ei Ai"); si falta, se usa
+                         // voiceover. Los subtítulos SIEMPRE usan voiceover.
   onScreenText: string[];// textos que aparecen en pantalla
   imagePrompt: string;   // descripción de la imagen de la escena (EN)
   motion: string;        // nota de animación (zoom, paneo, etc.)

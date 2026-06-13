@@ -36,6 +36,12 @@ describe('generatePreviewHtml', () => {
     expect(html).toContain('tl.play()');
   });
 
+  it('pauses the timeline until the user clicks (audio/visual sync)', () => {
+    const html = generatePreviewHtml(makeManifest(), SRT);
+    expect(html).toContain('paused: true');
+    expect(html).not.toContain('paused: false');
+  });
+
   it('inlines captions as static HTML (no fetch needed)', () => {
     const html = generatePreviewHtml(makeManifest(), SRT);
     expect(html).not.toContain("fetch('captions/");

@@ -136,7 +136,7 @@ rojo permanente. La verificación se hace **en local** antes de abrir/actualizar
 
 ```bash
 yarn typecheck      # tipos
-yarn test           # 30 tests
+yarn test           # suite completa (vitest)
 yarn doctor         # sólo si tocas el cluster
 ```
 

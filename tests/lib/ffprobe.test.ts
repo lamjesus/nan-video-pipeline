@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { getAudioDuration } from '../../src/lib/ffprobe.ts';
 
+// El happy path (duración real de un audio) no se testea aquí: exigiría un
+// fixture binario y ffprobe instalado — se cubre en el e2e manual (yarn voice).
 describe('getAudioDuration', () => {
-  it('returns a positive number for a valid audio file', async () => {
-    // ffprobe on a non-existent file should return null (graceful fallback)
+  it('returns null for a missing file (graceful fallback)', async () => {
     const duration = await getAudioDuration('/nonexistent/file.mp3');
     expect(duration).toBeNull();
   });

@@ -1,5 +1,11 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { createNanCall } from '../../src/lib/nan-call.ts';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { createNanCall, _resetNanCallState } from '../../src/lib/nan-call.ts';
+
+beforeEach(() => {
+  // El estado del módulo es global a propósito (singleton ESM); los tests
+  // lo limpian para no heredar colas/contadores de otros tests.
+  _resetNanCallState();
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -60,6 +66,43 @@ describe('createNanCall — semáforo GLOBAL (límite duro del cluster: 3 en par
     const assertion = expect(p).rejects.toThrow('always');
     await vi.advanceTimersByTimeAsync(1000);
     await assertion;
+  });
+
+  it('enforces per-bucket rpm limits (kokoro 15 rpm ≠ chat 60 rpm)', async () => {
+    vi.useFakeTimers();
+    let ttsRuns = 0;
+    const tts = () =>
+      createNanCall(() => Promise.resolve(++ttsRuns), { bucket: 'tts', rpm: 2 })();
+
+    // 3 llamadas a un bucket con rpm=2: la tercera debe esperar a que la
+    // ventana de 60s libere hueco.
+    void tts();
+    void tts();
+    void tts();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(ttsRuns).toBe(2);
+
+    await vi.advanceTimersByTimeAsync(61_000);
+    expect(ttsRuns).toBe(3);
+  });
+
+  it('a saturated bucket does not block other buckets', async () => {
+    vi.useFakeTimers();
+    const ran: string[] = [];
+    const tts = createNanCall(() => {
+      ran.push('tts');
+      return Promise.resolve('ok');
+    }, { bucket: 'tts', rpm: 1 });
+    const chat = createNanCall(() => {
+      ran.push('chat');
+      return Promise.resolve('ok');
+    });
+
+    void tts();
+    void tts(); // saturado: rpm=1, queda en cola
+    void chat(); // bucket distinto: NO debe esperar al tts
+    await vi.advanceTimersByTimeAsync(10);
+    expect(ran).toEqual(['tts', 'chat']);
   });
 
   it('releases the slot while a call waits for its retry (no head-of-line blocking)', async () => {

@@ -1,0 +1,66 @@
+---
+export interface Props {
+  src: string;
+  caption?: string;
+  poster?: string;
+  autoplay?: boolean;
+  loop?: boolean;
+  width?: 'portrait' | 'landscape' | 'full';
+}
+
+const {
+  src,
+  caption,
+  poster,
+  autoplay = false,
+  loop = false,
+  width = 'portrait',
+} = Astro.props;
+
+const maxWidth = width === 'full' ? '100%' : width === 'landscape' ? '800px' : '420px';
+const isPortrait = width === 'portrait';
+
+// Resolve root-absolute asset paths against the configured base so the same
+// markup works at the domain root (NaN Cloud, base "/") and under a sub-path
+// (GitHub Pages, base "/<repo>/").
+const withBase = (path?: string) =>
+  path && path.startsWith('/')
+    ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}${path}`
+    : path;
+const videoSrc = withBase(src);
+const videoPoster = withBase(poster);
+---
+
+<div class="video-player" style="max-width: {maxWidth}; margin: 0 auto 1.5rem;">
+  <video
+    controls
+    class:list={[{ portrait: isPortrait }]}
+    {...videoPoster ? { poster: videoPoster } : {}}
+  >
+    <source src={videoSrc} type="video/mp4" />
+    Tu navegador no soporta video HTML5.
+  </video>
+  {caption && <p class="video-caption">{caption}</p>}
+</div>
+
+<style>
+  .video-player {
+    text-align: center;
+  }
+  .video-player video {
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    background: #000;
+  }
+  .video-player video.portrait {
+    max-height: 70vh;
+    aspect-ratio: 9 / 16;
+  }
+  .video-caption {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+</style>

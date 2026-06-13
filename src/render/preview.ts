@@ -20,6 +20,9 @@ export function generatePreviewHtml(manifest: Manifest, _srtContent: string | nu
 
   // Audio + overlay de play que arranca audio y timeline a la vez.
   const audioSrc = `audio/${basename(manifest.audio.path)}`;
+  // index.html nace con el timeline corriendo (lo exige HyperFrames); aquí se
+  // pausa hasta el click — si no, los visuales van por delante del audio.
+  html = html.replace('gsap.timeline({ paused: false })', 'gsap.timeline({ paused: true })');
   html = html.replace('</head>', PREVIEW_STYLE);
   html = html.replace(
     '<body>',

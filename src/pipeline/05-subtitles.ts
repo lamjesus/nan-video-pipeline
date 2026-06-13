@@ -1,7 +1,7 @@
 // PASO 5 · Generación de subtítulos con Whisper STT del cluster.
 // Transcribe el audio generado por la etapa de voz, alinea el texto canónico
 // del voiceover con los timestamps de Whisper, y escribe un archivo SRT.
-// Uso: yarn subtitles caso-ejemplo
+// Uso: yarn subtitles caso-nan-community
 //
 // La alineación usa LCS a nivel de palabras para que diferencias de puntuación
 // no bloqueen el matching. Si Whisper no devuelve verbose_json, se distribuye
@@ -19,32 +19,40 @@ import type { VoiceoverSegment, TranscriptionSegment } from './subtitle-alignmen
 
 // --- Whisper call ---
 
+// whisper tiene límite PROPIO de 10 rpm → bucket aparte del de chat.
+const WHISPER_BUCKET = { bucket: 'stt', rpm: 10 } as const;
+
 async function callWhisper(audioPath: string): Promise<unknown> {
   // Prefer SDK path
   if (typeof nan.audio?.transcriptions?.create === 'function') {
-    const call = createNanCall(() =>
-      nan.audio.transcriptions.create({
-        model: config.models.stt,
-        file: createReadStream(audioPath),
-        response_format: 'verbose_json',
-        language: 'es',
-      } as any),
+    const call = createNanCall(
+      () =>
+        nan.audio.transcriptions.create({
+          model: config.models.stt,
+          file: createReadStream(audioPath),
+          response_format: 'verbose_json',
+          language: 'es',
+        } as any),
+      WHISPER_BUCKET,
     );
     return call();
   }
-  // Fallback: direct fetch
-  const form = new FormData();
-  form.append('model', config.models.stt);
-  form.append('file', new Blob([readFileSync(audioPath)]), path.basename(audioPath));
-  form.append('response_format', 'verbose_json');
-  form.append('language', 'es');
-  const res = await fetch(`${config.nan.baseUrl()}/audio/transcriptions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${config.nan.apiKey()}` },
-    body: form,
-  });
-  if (!res.ok) throw new Error(`Whisper HTTP ${res.status}: ${await res.text()}`);
-  return res.json();
+  // Fallback: direct fetch (también con retry + semáforo + rpm propio)
+  const call = createNanCall(async () => {
+    const form = new FormData();
+    form.append('model', config.models.stt);
+    form.append('file', new Blob([readFileSync(audioPath)]), path.basename(audioPath));
+    form.append('response_format', 'verbose_json');
+    form.append('language', 'es');
+    const res = await fetch(`${config.nan.baseUrl()}/audio/transcriptions`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${config.nan.apiKey()}` },
+      body: form,
+    });
+    if (!res.ok) throw new Error(`Whisper HTTP ${res.status}: ${await res.text()}`);
+    return res.json();
+  }, WHISPER_BUCKET);
+  return call();
 }
 
 // --- Response parser ---

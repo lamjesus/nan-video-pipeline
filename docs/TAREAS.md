@@ -1,14 +1,33 @@
 # Tareas
 
+## Estado actual (2026-06-12)
+
+El equipo pasó a **cierre en solitario (Manu)**. Las tareas A-H están **hechas
+y verificadas** (las notas por tarea quedan abajo como historial); la Tarea E
+(biblioteca) sigue **abierta sin dueño** y la Tarea I es **futura**.
+
+Pendiente real:
+
+- **Demo:** el video de `caso-nan-community` (guion en 2 actos + imágenes +
+  voz) — ver [`caso-nan-community.md`](./caso-nan-community.md).
+- **Site de documentación**: scaffold en `site/` (Starlight); el destino de
+  deploy se decide tras el video demo.
+- **Release.**
+
+Los arreglos de `main` (flags `--skip-<etapa>`, slug por defecto, doctor,
+captions, throttle por endpoint) viajan en la **misma rama/PR** que esta doc.
+
+---
+
 Cada tarea es autónoma: tiene un **objetivo**, un **archivo** donde trabajar,
-**pasos** y un **criterio de hecho** (cómo saber que quedó). Las marcadas con
-**[Luis]** ya tienen dueño; el resto están abiertas para repartir.
+**pasos** y un **criterio de hecho** (cómo saber que quedó).
 
 Antes de tocar nada: `yarn install`, copiar `.env.example` a `.env` y completarlo,
-y comprobar que `yarn load caso-ejemplo` corre sin error.
+y comprobar que `yarn load caso-nan-community` corre sin error.
 
 Regla de oro: **no toques el archivo de otra tarea.** Si necesitas un dato de
-otra pieza, usa datos de ejemplo (el `caso-ejemplo`) mientras tanto.
+otra pieza, usa datos de ejemplo (el caso vivo, `caso-nan-community`) mientras
+tanto.
 
 ---
 
@@ -62,6 +81,9 @@ ganadora en `config.yml`.
   se repiten entre casos y el directorio plano hacía que un caso pisara al otro.
   Candidatas por proveedor configurables en `config.yml` → `media.candidates`
   (8). La etapa ahora **falla en alto** si alguna escena queda sin imagen.
+  *(Superado el 2026-06-12, PR #8: la escena sin candidatas recibe un
+  placeholder SVG y el exit 1 queda para fallos de guardado — ver
+  [`REFERENCIA.md`](./REFERENCIA.md) > Etapa 2.)*
 
 **Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
 → 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
@@ -102,7 +124,7 @@ qwen3.6 (limitación documentada en Tarea C).
 
 ---
 
-## Tarea E — Biblioteca buscable con qwen3-embedding
+## Tarea E — Biblioteca buscable con qwen3-embedding [abierta, sin dueño]
 
 **Archivo:** nuevo, `src/pipeline/06-library.ts`
 **Objetivo:** indexar cada caso producido y permitir búsqueda por similitud.
@@ -114,8 +136,8 @@ qwen3.6 (limitación documentada en Tarea C).
    los casos más similares (similitud coseno).
 3. Exponer un comando simple (`yarn library "buscar algo"`).
 
-**Hecho cuando:** se puede indexar el caso-ejemplo y buscar por una frase
-relacionada, devolviendo el caso.
+**Hecho cuando:** se puede indexar un caso existente (p. ej.
+`caso-nan-community`) y buscar por una frase relacionada, devolviendo el caso.
 
 **No toques:** el resto del pipeline; esta pieza es independiente.
 
@@ -194,18 +216,18 @@ yarn produce "tema" slug --skip-subtitles --skip-voice
 
 ---
 
-## Tarea I — Generación de imágenes con el nuevo modelo NaN [Manu · próxima PR]
+## Tarea I — Generación de imágenes con el nuevo modelo NaN [futura]
 
 **Objetivo:** explorar la generación de imágenes con el nuevo modelo de imagen de
-NaN para escenas que el archivo no cubre bien (ej. la `scene-01` del caso-ejemplo,
-donde las candidatas de archivo son malas).
+NaN para escenas que el archivo no cubre bien (las escenas de encuadre o de
+temas abstractos suelen traer candidatas de archivo malas).
 
 **Enfoque:** la generación se hace **por la GUI de NaN** (no por API en este repo).
 Las imágenes generadas se colocan en `assets/images/_pool/`, de modo que el
 provider **`local`** las sirve como candidatas — sin tocar la capa de evaluación,
 que ya rankea con `gemma4` sobre la unión de providers.
 
-**Hecho cuando:** con imágenes generadas en el pool, `yarn vision caso-ejemplo`
+**Hecho cuando:** con imágenes generadas en el pool, `yarn vision <slug>`
 (con `MEDIA_PROVIDERS` incluyendo `local`) las considera y `gemma4` elige entre
 archivo y generadas.
 

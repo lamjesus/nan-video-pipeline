@@ -1,15 +1,25 @@
 node_modules/
 .env
+# Basura de macOS (no debe versionarse)
+.DS_Store
 # Este repo usa yarn: nada de lockfile de npm
 package-lock.json
-# Assets generados (audio, imagenes, video)
+# Assets generados. El caso vivo (la demo) SÍ se versiona para que el equipo
+# vea el resultado; el pool de scratch y los crudos intermedios, no.
 assets/audio/*
+!assets/audio/caso-nan-community.mp3
 assets/images/*
+!assets/images/caso-nan-community/
 assets/output/*
+!assets/output/caso-nan-community.mp4
+!assets/output/caso-nan-community.srt
 !assets/**/.gitkeep
 # Workspaces de render por caso (artefactos generados)
 renders/
 render-*/
+# Site de docs (Astro Starlight): build y caché
+site/dist/
+site/.astro/
 # Caso scratch por defecto de `yarn script` (los casos con nombre SÍ se versionan)
 content/caso-generado.yml
 # Bitácora personal de trabajo (canónica en el vault; fuera de PRs)

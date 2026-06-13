@@ -1,0 +1,57 @@
+---
+title: Cómo funciona
+description: "Cómo funciona el pipeline: el viaje de un tema a un video."
+---
+
+## El viaje de un tema a un video
+
+Todo empieza con una idea. Un tema. El pipeline lo transforma en un video 9:16
+narrado, sin intervención humana y usando solo los modelos del cluster NaN.
+
+### 1. El guion — de idea a storyboard
+
+El LLM recibe el tema, unas directrices de formato y escribe un storyboard
+estructurado. Cada escena define: narración, textos en pantalla, dirección de
+arte visual y duración estimada. El resultado se guarda como YAML: datos, no
+código. Si detecta incoherencias, reintenta automáticamente.
+
+### 2. Las imágenes — buscar, no inventar
+
+Para cada escena, los providers (Wikimedia, Pexels, pool local) buscan imágenes
+candidatas. Un modelo de embedding pre-rankea por similitud semántica. Luego un
+modelo de visión evalúa las mejores mirando los píxeles reales en base64. El
+modelo no genera imágenes: elige entre material real. **Grounded, not
+hallucinated.**
+
+### 3. La voz — del texto al audio
+
+El texto de cada escena se envía a un modelo TTS que genera la narración en
+español. FFmpeg re-encodea a estéreo y mide la duración real. Los tiempos del
+guion se reescalan: el audio real manda, no las estimaciones.
+
+### 4. Los subtítulos — sincronización quirúrgica
+
+Un modelo STT transcribe el audio. Luego un algoritmo LCS (Longest Common
+Subsequence) alinea la transcripción contra el texto canónico del guion. El
+resultado: subtítulos precisos, con timestamps reales, en formato SRT.
+
+### 5. La composición — HTML animado
+
+Cada escena se convierte en HTML + CSS + GSAP. Las imágenes, el audio y los
+subtítulos se ensamblan en un workspace portable con doble clic de preview.
+Todo local, sin servidor.
+
+### 6. El render — frame a frame
+
+HyperFrames captura el HTML animado frame a frame y genera un video silencioso
+1080×1920 (9:16, formato vertical).
+
+### 7. El montaje final
+
+FFmpeg une el video silencioso con la narración. El MP4 resultante está listo
+para publicar.
+
+---
+
+El pipeline completo se ejecuta con un solo comando: `yarn produce "mi tema"`.
+Cada etapa es independiente y se puede ejecutar por separado.

@@ -1,0 +1,74 @@
+---
+title: NaN Video Pipeline
+description: De un tema a un video narrado 9:16, usando solo los modelos del cluster NaN.
+template: splash
+hero:
+  tagline: De un tema a un video corto narrado (9:16), de principio a fin, usando únicamente los modelos del cluster NaN. Guion, imágenes, voz, subtítulos y render — sin servicios externos.
+  actions:
+    - text: Cómo funciona
+      link: demo/
+      icon: right-arrow
+      variant: primary
+    - text: Ver en GitHub
+      link: https://github.com/lamjesus/nan-video-pipeline
+      variant: minimal
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+
+<VideoPlayer src="/caso-nan-community.mp4" caption="Video demo producido por el pipeline" width="portrait" />
+
+## El pipeline en una línea
+
+```
+Tema → guion → selección visual → voz → subtítulos → composición → MP4 (9:16)
+```
+
+Toda la información de un video vive en una estructura de datos central (el
+`Storyboard`, un YAML editable). Cada etapa la consume y la enriquece con un
+modelo distinto del cluster.
+
+## Las 7 etapas
+
+<CardGrid>
+  <Card title="1 · Guion" icon="pencil">
+    `qwen3.6` escribe un storyboard estructurado y validado: escenas, narración,
+    textos en pantalla y dirección de arte.
+  </Card>
+  <Card title="2 · Selección visual" icon="seti:image">
+    Los providers (Wikimedia, Pexels, pool local) traen candidatas;
+    `qwen3-embedding` pre-rankea y `gemma4` elige mirando los píxeles reales.
+  </Card>
+  <Card title="3 · Voz" icon="seti:audio">
+    `kokoro` narra en español; ffmpeg re-encodea a estéreo y se mide la
+    duración real del audio.
+  </Card>
+  <Card title="4 · Subtítulos" icon="seti:font">
+    `whisper` transcribe; una alineación LCS contra el texto canónico genera
+    SRT estilo CapCut.
+  </Card>
+  <Card title="5 · Composición" icon="seti:html">
+    Manifest + HTML animado con GSAP + assets en un workspace de render
+    portable, con preview de doble click.
+  </Card>
+  <Card title="6 · Render" icon="seti:video">
+    HyperFrames captura el HTML animado frame a frame → video silencioso
+    1080×1920.
+  </Card>
+  <Card title="7 · Mux" icon="rocket">
+    ffmpeg une video y narración → `assets/output/&lt;slug&gt;.mp4` listo para
+    publicar.
+  </Card>
+</CardGrid>
+
+## Por qué es interesante
+
+- **Solo modelos NaN**: chat, visión, TTS, STT y embeddings del mismo cluster,
+  por la misma API OpenAI-compatible.
+- **Grounded, no alucinado**: el caso demo se escribe a mano sobre la
+  documentación oficial; el material visual es archivo real o imágenes
+  generadas y curadas — el modelo de visión solo *elige*, no inventa.
+- **Datos, no código**: un caso es un YAML en `content/`; el pipeline entero se
+  ejecuta con `yarn produce`.

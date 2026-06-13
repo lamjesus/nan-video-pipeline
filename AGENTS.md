@@ -18,7 +18,7 @@ src/
     manifest.ts    — Tipos + builder puro del manifest de render
     media/         — Proveedores de imágenes (wikimedia default, local, pexels opt-in)
   pipeline/
-    00-orchestrator.ts       — Orquestador (encadena etapas; en construcción)
+    00-orchestrator.ts       — Orquestador (encadena las 7 etapas e2e)
     01-script.ts             — Guion qwen3.6 → content/<slug>.yml (validado, con retry)
     storyboard-validation.ts — Puro: extractJson + validateStoryboard
     02-vision.ts             — Selección visual gemma4 → assets/images/<slug>/
@@ -28,6 +28,7 @@ src/
     render-workspace.ts      — Puro: copy plan, reescalado al audio real, manifest portable
     05-subtitles.ts          — Subtítulos whisper → assets/output/<slug>.srt
     subtitle-alignment.ts    — Puro: alineación LCS + chunking estilo CapCut
+    render-runner.ts         — HyperFrames render + mux ffmpeg (lo invoca el orquestador)
   render/
     motion.ts      — Motion en español → presets GSAP
     srt.ts         — Parser SRT
@@ -38,10 +39,13 @@ scripts/
   doctor.ts        — Preflight: env, ffmpeg, NaN API, vitest
   models-check.ts  — Smoke test de cada modelo del cluster
 tests/             — vitest: lógica pura de cada etapa
+site/              — Site de docs (Astro Starlight; destino de deploy por decidir)
 docs/
+  REFERENCIA.md    — Referencia técnica completa (semilla del site de docs)
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
   TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, límite de 3, User-Agent…)
-  casos-uso/       — Casos de uso documentados (golden cases)
+  caso-nan-community.md — Ficha del caso vivo (video demo de la comunidad NaN)
+  IMAGENES-IA.md   — Imágenes con IA externa para el modo local
 ```
 
 ## Cómo usar
@@ -53,10 +57,10 @@ yarn doctor
 # Smoke test de modelos
 yarn models:check
 
-# Pipeline completo (orquestador, en construcción)
-yarn produce "<tema>"
+# Pipeline completo (las 7 etapas; --skip-<etapa> para runs parciales)
+yarn produce "<tema>" [slug] [--skip-<etapa>]...
 
-# Etapas por caso (slug = nombre del caso, p.ej. caso-ejemplo)
+# Etapas por caso (slug = nombre del caso, p.ej. caso-nan-community)
 yarn script "<tema>" [slug] [escenas]  # guion → content/<slug>.yml (10 escenas por defecto)
 yarn vision <slug>     # 1 imagen por escena → assets/images/<slug>/
 yarn voice <slug>      # narración → assets/audio/<slug>.mp3
@@ -143,6 +147,7 @@ FIX: cómo solucionarlo
    objetivo, archivo, criterio de "hecho"; respeta el dueño marcado).
 2. Antes de tocar el cluster, mira **`docs/TROUBLESHOOTING.md`**: recoge los fallos
    ya descubiertos (mimo ciego, User-Agent de Wikimedia, pexels…) para no repetirlos.
-3. Para ver un caso real corriendo, **`docs/casos-uso/`** (flujo común + fichas).
+3. Para ver un caso real corriendo, **`docs/caso-nan-community.md`** (el caso
+   vivo); el detalle técnico completo de cada etapa, en **`docs/REFERENCIA.md`**.
 4. No cambies la forma de `Storyboard` (`src/lib/types.ts`) sin avisar: todas las
    piezas dependen de ella.

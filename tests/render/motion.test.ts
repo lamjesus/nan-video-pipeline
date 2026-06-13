@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { resolveMotion, type MotionPreset } from '../../src/render/motion.ts';
 
-// Real motion strings from caso-ejemplo.ts
-const casoEjemploCases: Array<{ input: string; expected: MotionPreset }> = [
+// Motion strings reales de los storyboards del repo (los genera qwen3.6).
+const realMotionCases: Array<{ input: string; expected: MotionPreset }> = [
   { input: 'zoom-in lento sobre la ciudad', expected: 'zoom-in' },
   { input: 'paneo sobre la calle', expected: 'pan-left' },
   { input: 'shake sutil', expected: 'shake' },
@@ -17,8 +17,8 @@ const casoEjemploCases: Array<{ input: string; expected: MotionPreset }> = [
 ];
 
 describe('resolveMotion', () => {
-  describe('caso-ejemplo real strings', () => {
-    for (const { input, expected } of casoEjemploCases) {
+  describe('storyboard real strings', () => {
+    for (const { input, expected } of realMotionCases) {
       it(`maps "${input}" → "${expected}"`, () => {
         expect(resolveMotion(input)).toBe(expected);
       });

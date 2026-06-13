@@ -151,7 +151,7 @@ describe('validateStoryboard', () => {
 
   it('accepts any scene count by default (modo cargador)', () => {
     const sb = makeStoryboard();
-    sb.scenes = sb.scenes.slice(0, 9); // caso-ejemplo tiene 9 escenas
+    sb.scenes = sb.scenes.slice(0, 9); // un caso curado puede tener menos de 10
     expect(validateStoryboard(sb).valid).toBe(true);
     expect(validateStoryboard(sb, { sceneCount: REQUIRED_SCENES }).valid).toBe(false);
   });
