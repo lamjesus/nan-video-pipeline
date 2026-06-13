@@ -12,6 +12,9 @@ assets/output/*
 # Workspaces de render por caso (artefactos generados)
 renders/
 render-*/
+# Site de docs (Astro Starlight): build y caché
+site/dist/
+site/.astro/
 # Caso scratch por defecto de `yarn script` (los casos con nombre SÍ se versionan)
 content/caso-generado.yml
 # Bitácora personal de trabajo (canónica en el vault; fuera de PRs)

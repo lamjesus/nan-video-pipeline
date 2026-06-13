@@ -39,6 +39,7 @@ scripts/
   doctor.ts        — Preflight: env, ffmpeg, NaN API, vitest
   models-check.ts  — Smoke test de cada modelo del cluster
 tests/             — vitest: lógica pura de cada etapa
+site/              — Site de docs (Astro Starlight; destino de deploy por decidir)
 docs/
   REFERENCIA.md    — Referencia técnica completa (semilla del site de docs)
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
