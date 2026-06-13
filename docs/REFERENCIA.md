@@ -70,7 +70,7 @@ nan-video-pipeline/
 │   ├── TAREAS.md               # Reparto de trabajo con dueños y criterios
 │   ├── TROUBLESHOOTING.md      # Problemas reales y soluciones
 │   ├── caso-nan-community.md   # Ficha del caso vivo
-│   └── imagenes-ia.md          # Guía: imágenes con IA externa (modo local)
+│   └── IMAGENES-IA.md          # Guía: imágenes con IA externa (modo local)
 └── package.json                # yarn, tsx, typescript, vitest
 ```
 

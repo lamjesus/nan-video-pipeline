@@ -52,8 +52,8 @@ scripts/               doctor.ts (preflight) y models-check.ts (smoke test)
 assets/{audio,images,output}/   área de trabajo (gitignored)
 renders/<slug>/        workspace de render por caso (gitignored)
 tests/                 vitest: lógica pura de cada etapa
-docs/                  REFERENCIA, TAREAS, TROUBLESHOOTING, caso-nan-community,
-                       imagenes-ia
+docs/                  REFERENCIA, TAREAS, TROUBLESHOOTING, IMAGENES-IA,
+                       caso-nan-community
 ```
 
 ## Requisitos previos
@@ -135,7 +135,7 @@ Tiempos orientativos (medidos 2026-06-11):
 El caso vivo del repo es **`caso-nan-community`** — el video demo que explica
 la comunidad NaN y el propio pipeline. Ficha completa en
 [`docs/caso-nan-community.md`](./docs/caso-nan-community.md); sus imágenes se
-generan con IA externa siguiendo [`docs/imagenes-ia.md`](./docs/imagenes-ia.md).
+generan con IA externa siguiendo [`docs/IMAGENES-IA.md`](./docs/IMAGENES-IA.md).
 
 ## Configuración
 
@@ -164,7 +164,7 @@ Todo lo de detalle vive en [`docs/`](./docs/):
 | [`docs/TAREAS.md`](./docs/TAREAS.md) | Reparto de trabajo: objetivos y criterio de "hecho" por pieza |
 | [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md) | Fallos del cluster ya descubiertos y su solución (mimo ciego, User-Agent, pexels…) |
 | [`docs/caso-nan-community.md`](./docs/caso-nan-community.md) | Ficha del caso vivo: el video demo de la comunidad NaN |
-| [`docs/imagenes-ia.md`](./docs/imagenes-ia.md) | Cómo generar las imágenes con IA externa (modo local) |
+| [`docs/IMAGENES-IA.md`](./docs/IMAGENES-IA.md) | Cómo generar las imágenes con IA externa (modo local) |
 
 ## Estado
 

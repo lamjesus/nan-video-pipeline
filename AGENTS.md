@@ -45,7 +45,7 @@ docs/
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
   TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, límite de 3, User-Agent…)
   caso-nan-community.md — Ficha del caso vivo (video demo de la comunidad NaN)
-  imagenes-ia.md   — Imágenes con IA externa para el modo local
+  IMAGENES-IA.md   — Imágenes con IA externa para el modo local
 ```
 
 ## Cómo usar

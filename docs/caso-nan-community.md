@@ -28,7 +28,7 @@ toma tal cual y no llama al modelo.
 ## Cómo reproducirlo
 
 Las imágenes se generan con **IA externa** (modo local) — receta completa en
-[`imagenes-ia.md`](./imagenes-ia.md). El estilo común sale de la
+[`IMAGENES-IA.md`](./IMAGENES-IA.md). El estilo común sale de la
 `artDirection` del YAML (dark cinematic graphic novel) y el contenido de cada
 escena de su `imagePrompt`.
 
@@ -51,6 +51,6 @@ yarn produce "La comunidad que te da GPUs" caso-nan-community
 - **Guion en 2 actos:** reescribir el storyboard (acto 1 comunidad, acto 2 el
   propio pipeline).
 - **Imágenes definitivas:** generarlas con IA externa siguiendo
-  [`imagenes-ia.md`](./imagenes-ia.md).
+  [`IMAGENES-IA.md`](./IMAGENES-IA.md).
 - **Voz por decidir:** `em_alex` vs `ef_dora` (probar con `NAN_VOICE_ID` en
   `.env`, fijar la ganadora en `config.yml`).
