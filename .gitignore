@@ -4,10 +4,15 @@ node_modules/
 .DS_Store
 # Este repo usa yarn: nada de lockfile de npm
 package-lock.json
-# Assets generados (audio, imagenes, video)
+# Assets generados. El caso vivo (la demo) SÍ se versiona para que el equipo
+# vea el resultado; el pool de scratch y los crudos intermedios, no.
 assets/audio/*
+!assets/audio/caso-nan-community.mp3
 assets/images/*
+!assets/images/caso-nan-community/
 assets/output/*
+!assets/output/caso-nan-community.mp4
+!assets/output/caso-nan-community.srt
 !assets/**/.gitkeep
 # Workspaces de render por caso (artefactos generados)
 renders/

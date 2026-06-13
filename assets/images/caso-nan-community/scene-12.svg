@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" font-family="'Inter','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="50%" cy="42%" r="75%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/><rect width="1080" height="1920" fill="url(#vig)"/>
+
+  <text x="540" y="150" text-anchor="middle" fill="#e2e8f0" font-size="52" font-weight="800">3 · Voz</text>
+  <text x="540" y="196" text-anchor="middle" fill="#94a3b8" font-size="28">la narración la genera kokoro</text>
+
+  <!-- kokoro -->
+  <text x="540" y="560" text-anchor="middle" fill="#7dd3fc" font-size="120" font-weight="800" letter-spacing="2">kokoro</text>
+
+  <!-- waveform -->
+  <g fill="#38bdf8">
+    <rect x="150" y="730" width="14" height="60" rx="7" opacity="0.5"/>
+    <rect x="186" y="700" width="14" height="120" rx="7" opacity="0.6"/>
+    <rect x="222" y="660" width="14" height="200" rx="7" opacity="0.7"/>
+    <rect x="258" y="710" width="14" height="100" rx="7" opacity="0.6"/>
+    <rect x="294" y="620" width="14" height="280" rx="7" opacity="0.85"/>
+    <rect x="330" y="690" width="14" height="140" rx="7" opacity="0.7"/>
+    <rect x="366" y="650" width="14" height="220" rx="7" opacity="0.8"/>
+    <rect x="402" y="600" width="14" height="320" rx="7"/>
+    <rect x="438" y="670" width="14" height="180" rx="7" opacity="0.75"/>
+    <rect x="474" y="710" width="14" height="100" rx="7" opacity="0.6"/>
+    <rect x="510" y="630" width="14" height="260" rx="7" opacity="0.85"/>
+    <rect x="546" y="600" width="14" height="320" rx="7"/>
+    <rect x="582" y="680" width="14" height="160" rx="7" opacity="0.75"/>
+    <rect x="618" y="650" width="14" height="220" rx="7" opacity="0.8"/>
+    <rect x="654" y="620" width="14" height="280" rx="7" opacity="0.85"/>
+    <rect x="690" y="700" width="14" height="120" rx="7" opacity="0.6"/>
+    <rect x="726" y="660" width="14" height="200" rx="7" opacity="0.7"/>
+    <rect x="762" y="710" width="14" height="100" rx="7" opacity="0.6"/>
+    <rect x="798" y="640" width="14" height="240" rx="7" opacity="0.8"/>
+    <rect x="834" y="690" width="14" height="140" rx="7" opacity="0.7"/>
+    <rect x="870" y="720" width="14" height="80" rx="7" opacity="0.5"/>
+    <rect x="906" y="700" width="14" height="120" rx="7" opacity="0.6"/>
+  </g>
+
+  <!-- chips -->
+  <g font-size="28" font-weight="600">
+    <rect x="210" y="1010" width="200" height="64" rx="32" fill="#1e293b"/>
+    <text x="310" y="1051" text-anchor="middle" fill="#cbd5e1">TTS español</text>
+    <rect x="430" y="1010" width="200" height="64" rx="32" fill="#1e293b"/>
+    <text x="530" y="1051" text-anchor="middle" fill="#cbd5e1">67 voces</text>
+    <rect x="650" y="1010" width="220" height="64" rx="32" fill="#1e293b"/>
+    <text x="760" y="1051" text-anchor="middle" fill="#cbd5e1">&lt; 1s latencia</text>
+  </g>
+  <text x="540" y="1170" text-anchor="middle" fill="#7dd3fc" font-size="30" font-weight="600">em_alex · ef_dora</text>
+
+  <text x="540" y="1320" text-anchor="middle" fill="#64748b" font-size="26">Esta misma narración salió de kokoro.</text>
+</svg>

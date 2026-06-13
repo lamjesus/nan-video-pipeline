@@ -1,0 +1,279 @@
+1
+00:00:00,000 --> 00:00:01,899
+Imagina tener GPUs para crear con
+
+2
+00:00:01,899 --> 00:00:04,085
+inteligencia artificial. Sin pagar una
+
+3
+00:00:04,085 --> 00:00:06,272
+suscripción carísima. Eso existe, y se
+
+4
+00:00:06,272 --> 00:00:06,559
+llama
+
+5
+00:00:06,559 --> 00:00:06,924
+NaN.
+
+6
+00:00:06,924 --> 00:00:09,207
+Y no es humo. Es una API de verdad,
+
+7
+00:00:09,207 --> 00:00:11,947
+compatible con OpenAI. Pones una dirección
+
+8
+00:00:11,947 --> 00:00:14,295
+y una clave, y cualquier herramienta
+
+9
+00:00:14,295 --> 00:00:16,904
+funciona. Sin tocar nada más. ¿El modelo
+
+10
+00:00:16,904 --> 00:00:17,492
+estrella?
+
+11
+00:00:17,492 --> 00:00:17,856
+Qwen.
+
+12
+00:00:17,856 --> 00:00:20,183
+Entiende texto e imágenes, razona, usa
+
+13
+00:00:20,183 --> 00:00:21,285
+herramientas. Y no
+
+14
+00:00:21,285 --> 00:00:21,666
+está
+
+15
+00:00:21,666 --> 00:00:24,406
+solo: hay todo un catálogo abierto. Pero
+
+16
+00:00:24,406 --> 00:00:26,872
+hay más. Kokoro pone la voz. Whisper
+
+17
+00:00:26,872 --> 00:00:27,762
+transcribe en
+
+18
+00:00:27,762 --> 00:00:28,143
+noventa y nueve
+
+19
+00:00:28,143 --> 00:00:30,574
+idiomas. Ver, hablar, escuchar… todo en el
+
+20
+00:00:30,574 --> 00:00:32,716
+mismo sitio. ¿Quieres desplegar algo?
+
+21
+00:00:32,716 --> 00:00:33,097
+NaN Cloud
+
+22
+00:00:33,097 --> 00:00:35,411
+te da máquinas con control total. Agentes
+
+23
+00:00:35,411 --> 00:00:37,669
+en Telegram. Aplicaciones directas desde
+
+24
+00:00:37,669 --> 00:00:38,050
+GitHub.
+
+25
+00:00:38,050 --> 00:00:40,644
+Tú lo subes, ellos lo levantan. Y ojo, que
+
+26
+00:00:40,644 --> 00:00:43,176
+esto se usa de verdad. La comunidad mueve
+
+27
+00:00:43,176 --> 00:00:45,770
+cientos de millones de tokens al mes. Esto
+
+28
+00:00:45,770 --> 00:00:48,303
+no es un juguete. ¿Lo mejor? Va incluido.
+
+29
+00:00:48,303 --> 00:00:50,835
+Lo que aquí es gratis, en otros sitios te
+
+30
+00:00:50,835 --> 00:00:53,368
+costaría miles de dólares al mes. Míralo.
+
+31
+00:00:53,368 --> 00:00:55,653
+Así que nos lanzamos. Un hackathon de
+
+32
+00:00:55,653 --> 00:00:56,266
+NaN, siete
+
+33
+00:00:56,266 --> 00:00:58,156
+días, y una idea: coger toda esta
+
+34
+00:00:58,156 --> 00:01:00,504
+comunidad y construir algo que la cuente.
+
+35
+00:01:00,504 --> 00:01:02,509
+Y montamos esto: un flujo de código
+
+36
+00:01:02,509 --> 00:01:04,858
+abierto que convierte un tema en un vídeo
+
+37
+00:01:04,858 --> 00:01:07,034
+narrado. De principio a fin. Mira cómo
+
+38
+00:01:07,034 --> 00:01:08,237
+funciona. Primero, el
+
+39
+00:01:08,237 --> 00:01:08,874
+guion. Qwen
+
+40
+00:01:08,874 --> 00:01:10,869
+escribe la historia entera: escenas,
+
+41
+00:01:10,869 --> 00:01:13,085
+narración, hasta la dirección de arte. Y
+
+42
+00:01:13,085 --> 00:01:15,301
+se revisa solo. ¿Y las imágenes? Aquí va
+
+43
+00:01:15,301 --> 00:01:16,520
+la única pega honesta:
+
+44
+00:01:16,520 --> 00:01:16,839
+NaN
+
+45
+00:01:16,839 --> 00:01:19,515
+no las genera por API. Así que las traemos
+
+46
+00:01:19,515 --> 00:01:22,191
+de fuera, y gemma elige la mejor para cada
+
+47
+00:01:22,191 --> 00:01:24,676
+escena, mirándolas de verdad. ¿Esta voz
+
+48
+00:01:24,676 --> 00:01:27,352
+que estás oyendo? No soy yo. Es kokoro, el
+
+49
+00:01:27,352 --> 00:01:28,308
+mismo modelo de
+
+50
+00:01:28,308 --> 00:01:28,626
+NaN.
+
+51
+00:01:28,626 --> 00:01:31,017
+¿Y estos subtítulos que lees? Los pone
+
+52
+00:01:31,017 --> 00:01:33,598
+whisper. Escucha el audio y lo cuadra con
+
+53
+00:01:33,598 --> 00:01:33,723
+el
+
+54
+00:01:33,723 --> 00:01:34,042
+guion,
+
+55
+00:01:34,042 --> 00:01:36,242
+palabra por palabra. Después se monta
+
+56
+00:01:36,242 --> 00:01:38,620
+todo: una página que se anima y se graba
+
+57
+00:01:38,620 --> 00:01:40,999
+sola, fotograma a fotograma, hasta salir
+
+58
+00:01:40,999 --> 00:01:43,317
+el vídeo. Y nada de inventar. Cada dato
+
+59
+00:01:43,317 --> 00:01:45,398
+sale de la documentación oficial de
+
+60
+00:01:45,398 --> 00:01:45,724
+NaN.
+
+61
+00:01:45,724 --> 00:01:48,083
+Cero alucinaciones. Un momento. Todo esto
+
+62
+00:01:48,083 --> 00:01:50,211
+lo ha hecho el propio flujo. Hasta el
+
+63
+00:01:50,211 --> 00:01:51,591
+código lo escribimos con
+
+64
+00:01:51,591 --> 00:01:51,917
+Qwen.
+
+65
+00:01:51,917 --> 00:01:52,569
+Todo, sobre
+
+66
+00:01:52,569 --> 00:01:52,895
+NaN.
+
+67
+00:01:52,895 --> 00:01:55,746
+Así que ya lo sabes. El código es abierto
+
+68
+00:01:55,746 --> 00:01:58,110
+y la comunidad te espera. Entra en
+
+69
+00:01:58,110 --> 00:01:58,436
+nan punto builders
+
+70
+00:01:58,436 --> 00:01:59,088
+y construye.

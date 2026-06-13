@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" font-family="'Inter','Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="50%" cy="40%" r="75%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+    <marker id="ar" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/><rect width="1080" height="1920" fill="url(#vig)"/>
+
+  <text x="540" y="150" text-anchor="middle" fill="#e2e8f0" font-size="52" font-weight="800">2 · Selección visual</text>
+  <text x="540" y="196" text-anchor="middle" fill="#94a3b8" font-size="28">gemma4 elige sobre los píxeles reales</text>
+
+  <g stroke="#475569" stroke-width="2.5">
+    <line x1="540" y1="406" x2="540" y2="478" marker-end="url(#ar)"/>
+    <line x1="540" y1="588" x2="540" y2="660" marker-end="url(#ar)"/>
+    <line x1="540" y1="794" x2="540" y2="866" marker-end="url(#ar)"/>
+    <line x1="540" y1="1000" x2="540" y2="1072" marker-end="url(#ar)"/>
+  </g>
+
+  <!-- 1 providers -->
+  <rect x="150" y="300" width="780" height="104" rx="16" fill="#11161f" stroke="#475569" stroke-width="2"/>
+  <text x="540" y="345" text-anchor="middle" fill="#e2e8f0" font-size="32" font-weight="700">Providers + pool local</text>
+  <text x="540" y="380" text-anchor="middle" fill="#94a3b8" font-size="25">Wikimedia · Pexels · imágenes generadas</text>
+
+  <!-- 2 candidatas -->
+  <rect x="230" y="480" width="620" height="104" rx="16" fill="#11161f" stroke="#475569" stroke-width="2"/>
+  <text x="540" y="525" text-anchor="middle" fill="#e2e8f0" font-size="32" font-weight="700">8 candidatas por escena</text>
+  <text x="540" y="560" text-anchor="middle" fill="#94a3b8" font-size="25">cada proveedor aporta material</text>
+
+  <!-- 3 embedding -->
+  <rect x="270" y="660" width="540" height="130" rx="16" fill="#0e1a2b" stroke="#38bdf8" stroke-width="2"/>
+  <text x="540" y="708" text-anchor="middle" fill="#7dd3fc" font-size="30" font-weight="700">qwen3-embedding</text>
+  <text x="540" y="745" text-anchor="middle" fill="#cbd5e1" font-size="25">pre-rank por título</text>
+  <text x="540" y="775" text-anchor="middle" fill="#94a3b8" font-size="23">solo el top 5 se descarga</text>
+
+  <!-- 4 gemma -->
+  <rect x="300" y="866" width="480" height="130" rx="16" fill="#0e1a2b" stroke="#38bdf8" stroke-width="2"/>
+  <text x="540" y="914" text-anchor="middle" fill="#7dd3fc" font-size="30" font-weight="700">gemma4 · visión</text>
+  <text x="540" y="951" text-anchor="middle" fill="#cbd5e1" font-size="25">evalúa los píxeles reales</text>
+  <text x="540" y="981" text-anchor="middle" fill="#94a3b8" font-size="23">imagen en base64, no la URL</text>
+
+  <!-- 5 output -->
+  <rect x="360" y="1072" width="360" height="96" rx="48" fill="#2a0e12" stroke="#ef4444" stroke-width="2"/>
+  <text x="540" y="1128" text-anchor="middle" fill="#fca5a5" font-size="30" font-weight="700">1 imagen / escena</text>
+
+  <text x="540" y="1300" text-anchor="middle" fill="#94a3b8" font-size="26">El cluster no genera imágenes por API — su única limitación.</text>
+  <text x="540" y="1340" text-anchor="middle" fill="#64748b" font-size="25">Las aportamos nosotras (generadas o de archivo) y gemma elige.</text>
+</svg>
