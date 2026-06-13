@@ -679,7 +679,7 @@ El algoritmo de alineación es el corazón de la etapa de subtítulos:
 
 ---
 
-## Tests (18 archivos, 205 tests)
+## Tests (18 archivos, 207 tests)
 
 Recuento medido el 2026-06-12 (`yarn test`, con los fixes de
 `fix/broken-main-and-tech-debt` aplicados). El recuento por archivo cambia con

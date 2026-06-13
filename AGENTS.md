@@ -18,7 +18,7 @@ src/
     manifest.ts    — Tipos + builder puro del manifest de render
     media/         — Proveedores de imágenes (wikimedia default, local, pexels opt-in)
   pipeline/
-    00-orchestrator.ts       — Orquestador (encadena etapas; en construcción)
+    00-orchestrator.ts       — Orquestador (encadena las 7 etapas e2e)
     01-script.ts             — Guion qwen3.6 → content/<slug>.yml (validado, con retry)
     storyboard-validation.ts — Puro: extractJson + validateStoryboard
     02-vision.ts             — Selección visual gemma4 → assets/images/<slug>/
@@ -28,6 +28,7 @@ src/
     render-workspace.ts      — Puro: copy plan, reescalado al audio real, manifest portable
     05-subtitles.ts          — Subtítulos whisper → assets/output/<slug>.srt
     subtitle-alignment.ts    — Puro: alineación LCS + chunking estilo CapCut
+    render-runner.ts         — HyperFrames render + mux ffmpeg (lo invoca el orquestador)
   render/
     motion.ts      — Motion en español → presets GSAP
     srt.ts         — Parser SRT
@@ -55,8 +56,8 @@ yarn doctor
 # Smoke test de modelos
 yarn models:check
 
-# Pipeline completo (orquestador, en construcción)
-yarn produce "<tema>"
+# Pipeline completo (las 7 etapas; --skip-<etapa> para runs parciales)
+yarn produce "<tema>" [slug] [--skip-<etapa>]...
 
 # Etapas por caso (slug = nombre del caso, p.ej. caso-nan-community)
 yarn script "<tema>" [slug] [escenas]  # guion → content/<slug>.yml (10 escenas por defecto)
