@@ -49,7 +49,9 @@ src/
                        (+ lógica pura testeable en módulos aparte)
   render/              motion (presets GSAP), template (HTML/CSS), srt, preview
 scripts/               doctor.ts (preflight) y models-check.ts (smoke test)
-assets/{audio,images,output}/   área de trabajo (gitignored)
+assets/audio/<slug>.mp3        narración (gitignored)
+assets/images/<slug>/          imágenes por caso (gitignored)
+assets/output/<slug>.srt/.mp4  subtítulos + video final (gitignored)
 renders/<slug>/        workspace de render por caso (gitignored)
 tests/                 vitest: lógica pura de cada etapa
 docs/                  REFERENCIA, TAREAS, TROUBLESHOOTING, IMAGENES-IA,
@@ -58,11 +60,11 @@ docs/                  REFERENCIA, TAREAS, TROUBLESHOOTING, IMAGENES-IA,
 
 ## Requisitos previos
 
-- **Node.js 24+**
+- **Node.js 18+** (LTS recomendado)
 - **FFmpeg + ffprobe** (`brew install ffmpeg` en macOS, `apt install ffmpeg` en Linux)
-- **HyperFrames** (`npm install -g hyperframes`) — solo para render/mux; sin él,
-  el orquestador salta esas dos etapas
+- **HyperFrames** — se ejecuta vía `npx hyperframes` (no requiere instalación global)
 - **pre-commit** (`pip install pre-commit` o `brew install pre-commit`) → `pre-commit install`
+  (solo `gitleaks` configurado; lint/typecheck se ejecutan manualmente)
 - Variables de entorno: copiar `.env.example` a `.env` y completar `NAN_BASE_URL` / `NAN_API_KEY`
 
 ## Puesta en marcha
@@ -74,6 +76,10 @@ cp .env.example .env          # completa NAN_BASE_URL y NAN_API_KEY
 yarn doctor                   # verifica que todo está listo
 yarn load caso-nan-community  # comprueba que la estructura carga
 ```
+
+> ⚠️ **No hay CI configurado** (GitHub Actions bloqueado en la cuenta del owner).
+> Antes de PR: `yarn typecheck && yarn test` en local. Ver `docs/TROUBLESHOOTING.md`
+> para fallos conocidos del cluster (mimo ciego, límite 3 req, User-Agent…).
 
 ## Comandos
 
@@ -145,6 +151,25 @@ Dos fuentes, sin solapamiento:
   defecto, providers y modo de imagen. Si la plataforma renombra un modelo, se cambia aquí.
 - **`.env`** (secreto, no versionado): credenciales y overrides opcionales.
 
+### Modo de imágenes local (`media.mode: local`)
+
+Para usar imágenes generadas con IA externa (sin búsqueda en red):
+
+```bash
+# En .env o config.yml:
+MEDIA_MODE=local
+MEDIA_PROVIDERS=local
+```
+
+Dos formas de colocar imágenes (combinables):
+
+1. **Por escena (determinista):** `assets/images/<slug>/<scene-id>.jpg` — se usa tal cual.
+2. **Pool descriptivo:** `assets/images/_pool/numancia_hilltop-fog.jpg` — el nombre
+   del archivo se convierte en query y se empareja por similitud + gemma4.
+
+> En ambos modos, si la imagen de una escena ya existe, **se respeta** (no busca).
+> Regenerar = borrarla o `yarn vision <slug> --force`.
+
 | Variable (.env) | Obligatorio | Descripción |
 |----------|-------------|-------------|
 | `NAN_BASE_URL` | ✅ | Base URL del cluster NaN (API OpenAI-compatible) |
@@ -176,3 +201,13 @@ El estado por pieza vive en `docs/TAREAS.md`.
 > El material visual proviene de **archivo de dominio público seleccionado por
 > IA** o de **imágenes generadas fuera** (modo local): los modelos del cluster
 > entienden imágenes pero no las generan.
+
+## Problemas comunes
+
+| Síntoma | Causa probable | Solución |
+|---------|----------------|----------|
+| `vision`: 0 candidatas / fallback genérico | Términos de búsqueda débiles | Usa `MEDIA_MODE=local` + pool descriptivo en `_pool/` |
+| `vision`: misma imagen en varias escenas | Pool pequeño / deduplicación | Añade más imágenes a `_pool/` o usa `--force` |
+| `mimo-v2.5` alucina descripciones | Modelo **ciego** en el cluster | Usa `gemma4` (config.yml → `visionEval`) |
+| `Error: máxima 3 peticiones simultáneas` | Límite del cluster | Lanza casos en **máx 2 carriles paralelos** |
+| `wikimedia` devuelve HTML, no imagen | Falta `User-Agent` | Ya incluido en código; si falla, revisa `docs/TROUBLESHOOTING.md` |
