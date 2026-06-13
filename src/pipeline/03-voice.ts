@@ -16,7 +16,9 @@ const exec = promisify(execFile);
 async function main() {
   const storyboard = await loadStoryboard();
   const slug = currentCaseSlug();
-  const text = storyboard.scenes.map((s: Scene) => s.voiceover).join(' ');
+  // Para el TTS usamos voiceoverTTS (respeleo fonético) si existe; si no,
+  // el voiceover normal. Los subtítulos SIEMPRE usan voiceover (grafía correcta).
+  const text = storyboard.scenes.map((s: Scene) => s.voiceoverTTS ?? s.voiceover).join(' ');
 
   // Mostrar el texto antes de generar (revisar tildes / pronunciación).
   console.log('\n--- TEXTO A NARRAR ---\n' + text + '\n--- fin ---\n');
