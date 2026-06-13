@@ -153,53 +153,48 @@ scenes:
       - "qwen3.6"
     imagePrompt: A vintage typewriter on a dark desk with screenplay pages scattered around, single dramatic overhead light, ink and paper texture
     motion: zoom-in lento
-  # [scene-11 · CAPTURA GUI generador] La GUI del generador de imágenes de NaN con
-  # variantes (de este caso, idealmente). Alternativa FLUX: contact sheet.
+  # [scene-11 · DIAGRAMA ✓] Embudo de selección visual (SVG→PNG generado). Incluye
+  # la nota honesta: el cluster no genera imágenes por API. Fuente: scene-11.svg.
   - id: scene-11
     block: DESARROLLO
     start: 60
     end: 66
-    voiceover: "Las imágenes no se inventan: se generan o se buscan en archivo, y gemma evalúa cada candidata mirando los píxeles reales."
-    onScreenText:
-      - "2 · Imágenes"
-      - "gemma4 elige"
-    imagePrompt: A photographic contact sheet of multiple small images on a dark table, one image highlighted under a beam of light, magnifying glass nearby
-    motion: paneo lateral
-  # [scene-12 · FLUX] Micrófono vintage en cabina oscura, ondas de sonido.
+    voiceover: "Lo único que NaN no hace por API es generar imágenes. Las traemos de fuera o de archivo, y gemma elige la mejor mirando los píxeles reales."
+    # El diagrama ya rotula la etapa y el embudo.
+    onScreenText: []
+    imagePrompt: Vertical funnel diagram of the visual selection, providers to one image per scene, gemma4 highlighted, dark palette
+    motion: estático
+  # [scene-12 · DIAGRAMA ✓] Tarjeta kokoro + onda de sonido (SVG→PNG). scene-12.svg.
   - id: scene-12
     block: DESARROLLO
     start: 66
     end: 72
     voiceover: "La voz que estás escuchando ahora mismo es kokoro, el modelo de texto a voz del cluster."
-    onScreenText:
-      - "3 · Voz"
-      - "kokoro"
-    imagePrompt: A vintage studio microphone in a dark recording booth, sound waves visualized as glowing lines in the air, moody atmosphere
+    # La tarjeta ya rotula kokoro y sus datos.
+    onScreenText: []
+    imagePrompt: Card with the word kokoro and a sound waveform plus voice stats, dark palette
     motion: estático
-  # [scene-13 · CAPTURA preview/srt] El preview.html con un caption en pantalla, o el
-  # .srt en el editor (líneas con timestamps). Lo que mejor se lea en vertical.
+  # [scene-13 · DIAGRAMA ✓] Alineación guion↔whisper → SRT (SVG→PNG). scene-13.svg.
   - id: scene-13
     block: DESARROLLO
     start: 72
     end: 78
     voiceover: "Y los subtítulos que estás leyendo: whisper transcribe el audio y se alinean con el guion palabra por palabra."
-    onScreenText:
-      - "4 · Subtítulos"
-      - "whisper"
-    imagePrompt: Rows of subtitle text panels floating in dark space, one row illuminated, waveform pattern in the background, cinematic depth
-    motion: deriva lenta
-  # [scene-14 · CAPTURA HyperFrames render] HyperFrames renderizando en la terminal
-  # (progreso de frames). Alternativa FLUX: tira de fotogramas ensamblándose.
+    # El diagrama ya rotula la etapa y la alineación.
+    onScreenText: []
+    imagePrompt: Two-column alignment diagram, script words matched to whisper timestamps producing an SRT, dark palette
+    motion: estático
+  # [scene-14 · DIAGRAMA ✓] Flujo de render HTML→frames→mux→MP4 (SVG→PNG). Cierra la
+  # escena sin depender del render final. scene-14.svg.
   - id: scene-14
     block: DESARROLLO
     start: 78
     end: 84
     voiceover: "Composición y render: una página animada se captura frame a frame hasta convertirse en el vídeo final."
-    onScreenText:
-      - "5 · Render"
-      - "GSAP · HyperFrames · ffmpeg"
-    imagePrompt: A film strip of frames being assembled in the dark, frames glowing as they connect, mechanical cinema equipment silhouettes
-    motion: zoom-in lento
+    # El diagrama ya rotula la etapa y el flujo.
+    onScreenText: []
+    imagePrompt: Render flow diagram, HTML and GSAP to film frames to ffmpeg mux to MP4, dark palette
+    motion: estático
   # [scene-15 · CAPTURA docs] nan.builders/docs en oscuro (la fuente del guion).
   # Alternativa FLUX: documentos con pasajes resaltados brillando.
   - id: scene-15
