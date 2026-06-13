@@ -30,7 +30,7 @@ nan-video-pipeline/
 │   ├── lib/
 │   │   ├── types.ts            # Tipos del dominio (Storyboard, Scene, ArtDirection)
 │   │   ├── nan-client.ts       # Cliente OpenAI compartido para el cluster
-│   │   ├── nan-call.ts         # Throttle GLOBAL: máx 3 concurrentes, 60 rpm + retry
+│   │   ├── nan-call.ts         # Throttle GLOBAL: máx 3 concurrentes + rpm por endpoint + retry
 │   │   ├── ffprobe.ts          # Duración real del audio
 │   │   ├── manifest.ts         # Tipos + builder puro del manifest de render
 │   │   └── media/              # Proveedores de imágenes
@@ -465,46 +465,56 @@ Mapea strings libres de movimiento a presets GSAP:
 **`generateHtml(manifest)`** — HTML determinista (mismo manifest → mismo output):
 
 - GSAP 3.12.5 desde CDN
-- Secciones de escena con `data-motion`, `data-scene`, `data-start`, `data-end`
+- Secciones de escena con `data-motion`, `data-scene`, `data-start`, `data-duration`
 - Contenedor con `data-composition-id="main"` y `data-duration=<segundos>` (requerido por HyperFrames)
 - Script inline: timeline GSAP con `paused: false` (HyperFrames necesita que se ejecute)
-- SRT parser browser-side + fetch de captions
-- Sync de captions con `tl.eventCallback('onUpdate')`
+- Captions **inline estáticos** por escena (`<div class="caption">`): aparecen y
+  desaparecen con su escena — no hay fetch de SRT ni sincronización en runtime
 
 **`generateCss(manifest)`** — CSS determinista:
 
 - Container 9:16 con `aspect-ratio: 9/16`
 - Escenas absolutas con `opacity: 0` (GSAP las activa)
 - Overlay text: uppercase, amarillo para el primero, blanco para el segundo
-- Captions: fondo semitransparente `rgba(0,0,0,0.75)`, `border-radius: 6px`, transición fade 50ms
+- Captions (`.caption`): píldora estilo CapCut por escena — fondo `rgba(0,0,0,0.75)`,
+  `border-radius: 6px`, centrada abajo (bottom 6%)
 
 ### `preview.ts` — Preview para humanos
 
 Genera un HTML autocontenido que se abre con doble click:
-- Inlines el SRT (no usa fetch, funciona con `file://`)
-- Agrega `<audio>` con la narración
-- Botón de play que inicia el timeline GSAP
-- Escapes XSS en captions inlined
+- Parte del MISMO `generateHtml` (los captions ya van inline y escapados)
+- Agrega `<audio>` con la narración y un overlay de play
+- **Pausa el timeline hasta el click**: `index.html` nace corriendo (lo exige
+  HyperFrames), pero en el preview eso desincronizaba visuales y audio
+- El click arranca audio y timeline a la vez
 
 ---
 
 ## Infraestructura
 
-### `nan-call.ts` — Semaphore + throttle + retry
+### `nan-call.ts` — Semaphore + buckets de rpm + retry
 
-**Problema:** El cluster NaN tiene un límite duro de 3 peticiones simultáneas.
+**Problema:** El cluster NaN tiene un límite duro de 3 peticiones simultáneas,
+y cada endpoint tiene además su propio límite de rpm (chat 60, kokoro 15,
+whisper 10).
 
 **Solución:** Cola global a nivel de módulo (ESM singleton):
 
-- **Semáforo:** máx 3 concurrentes (`active < MAX_CONCURRENT`)
-- **Throttle:** 60 RPM (ventana de 60 segundos, FIFO)
+- **Semáforo:** máx 3 concurrentes globales (`active < MAX_CONCURRENT`)
+- **Throttle por bucket:** ventana de 60 s por endpoint — `chat` 60 rpm
+  (default), `tts` 15 rpm (voz), `stt` 10 rpm (whisper). Un bucket saturado
+  no bloquea a los demás
+- **Drain programado:** si la cola queda bloqueada solo por rpm, un timer la
+  despierta cuando caduca el timestamp más antiguo del bucket
 - **Retry exponencial:** máx 3 retries, delay = `2^retries * 1000ms` (2s, 4s, 8s)
 - **Slot release durante retry:** el slot se libera antes del backoff para no bloquear a otros
 - **Re-queue al inicio:** los retries van al frente de la cola (`queue.unshift`)
+- `_resetNanCallState()` (solo tests): limpia el estado global del módulo
 
 **Uso:**
 ```typescript
 const call = createNanCall(() => nan.chat.completions.create({ ... }));
+const tts = createNanCall(fn, { bucket: 'tts', rpm: 15 });
 const result = await call();
 ```
 
@@ -749,7 +759,7 @@ Exige `User-Agent` identificable. Se setea en `fetch()`.
 Opt-in. Sin `PEXELS_API_KEY`, el provider se salta silenciosamente.
 
 ### Cluster: máximo 3 peticiones simultáneas
-`nan-call.ts` implementa semáforo global + throttle 60 RPM. No lanzar múltiples procesos del pipeline en paralelo.
+`nan-call.ts` implementa semáforo global + ventanas de rpm por endpoint (chat 60, kokoro 15, whisper 10). No lanzar múltiples procesos del pipeline en paralelo.
 
 ### Windows: `yarn voice` crasha con exit 3221226505
 Crash nativo transitorio de ffmpeg. Reintento funciona.

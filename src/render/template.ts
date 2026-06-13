@@ -170,9 +170,9 @@ body {
   font-weight: 600;
 }
 
-/* Captions estilo CapCut: fondo oscuro semitransparente, texto blanco,
-   borde redondeado, animación suave de entrada/salida. */
-.caption-container {
+/* Captions estilo CapCut: fondo oscuro semitransparente, texto blanco, borde
+   redondeado. Uno por escena (inline): aparece y desaparece con su escena. */
+.caption {
   position: absolute;
   bottom: 6%;
   left: 50%;
@@ -191,7 +191,6 @@ body {
   text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
   pointer-events: none;
   z-index: 10;
-  transition: opacity 0.1s ease;
   -webkit-text-stroke: 2px rgba(0,0,0,0.6);
   paint-order: stroke fill;
 }`;

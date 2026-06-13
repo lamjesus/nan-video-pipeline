@@ -136,8 +136,10 @@ describe('generateCss', () => {
     expect(css).toContain('.overlay-text');
   });
 
-  it('contains .caption class', () => {
-    expect(css).toContain('.caption');
+  it('styles the .caption class that generateHtml actually emits', () => {
+    // Regresión: el CSS definía .caption-container (diseño viejo) mientras el
+    // HTML emite <div class="caption"> — los captions salían sin estilo.
+    expect(css).toMatch(/\.caption\s*\{/);
   });
 
   it('contains 9:16 aspect ratio container', () => {

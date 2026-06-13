@@ -8,13 +8,14 @@ y verificadas** (las notas por tarea quedan abajo como historial); la Tarea E
 
 Pendiente real:
 
-- **Arreglos de main** (PR aparte, `fix/broken-main-and-tech-debt`): flags
-  `--skip-<etapa>` del orquestador, slug por defecto `caso-nan-community` y el
-  preflight de `doctor.ts`.
 - **Demo:** el video de `caso-nan-community` (guion en 2 actos + imágenes +
   voz) — ver [`caso-nan-community.md`](./caso-nan-community.md).
-- **Site de documentación** (semilla: [`REFERENCIA.md`](./REFERENCIA.md)).
+- **Site de documentación**: scaffold en `site/` (Starlight); el destino de
+  deploy se decide tras el video demo.
 - **Release.**
+
+Los arreglos de `main` (flags `--skip-<etapa>`, slug por defecto, doctor,
+captions, throttle por endpoint) viajan en la **misma rama/PR** que esta doc.
 
 ---
 
@@ -80,6 +81,9 @@ ganadora en `config.yml`.
   se repiten entre casos y el directorio plano hacía que un caso pisara al otro.
   Candidatas por proveedor configurables en `config.yml` → `media.candidates`
   (8). La etapa ahora **falla en alto** si alguna escena queda sin imagen.
+  *(Superado el 2026-06-12, PR #8: la escena sin candidatas recibe un
+  placeholder SVG y el exit 1 queda para fallos de guardado — ver
+  [`REFERENCIA.md`](./REFERENCIA.md) > Etapa 2.)*
 
 **Verificado e2e (2026-06-10):** `yarn vision caso-ejemplo` contra el cluster real
 → 9/9 imágenes; `gemma4` acierta en la mayoría (volcán, ruinas). `yarn models:check`
