@@ -195,20 +195,19 @@ scenes:
     onScreenText: []
     imagePrompt: Render flow diagram, HTML and GSAP to film frames to ffmpeg mux to MP4, dark palette
     motion: estático
-  # [scene-15 · CAPTURA docs] nan.builders/docs en oscuro (la fuente del guion).
-  # Alternativa FLUX: documentos con pasajes resaltados brillando.
+  # [scene-15 · CAPTURA docs ✓] nav de nan.builders/docs (Introducción, Empezar, API,
+  # Models, Ejemplos, Agents, Apps) = las fuentes del guion.
   - id: scene-15
     block: DESARROLLO
     start: 84
     end: 90
     voiceover: "Y nada está alucinado: este guion se apoya en la documentación oficial de la comunidad."
-    onScreenText:
-      - "Grounded"
-      - "Fuentes reales"
+    # Captura de docs: la voz ya dice "documentación oficial"; un overlay chocaría con el menú.
+    onScreenText: []
     imagePrompt: Open technical documents on a dark desk with key passages glowing, a hand silhouette pointing at a highlighted line, archival mood
     motion: estático
-  # [scene-16 · FLUX] El meta-giro: mise en abyme (pantalla que muestra la misma sala
-  # que la contiene), una sola fuente de luz.
+  # [scene-16 · FLUX ✓] Meta-giro: mise en abyme (pantalla con la misma sala recursiva
+  # + mando). Ilustración → mantiene overlay.
   - id: scene-16
     block: CIERRE
     start: 90
@@ -219,8 +218,8 @@ scenes:
       - "100% sobre NaN"
     imagePrompt: A dark room with a screen showing the same dark room on its display, recursive mise en abyme effect, single light source, mysterious mood
     motion: deriva lenta
-  # [scene-17 · FLUX o CAPTURA Discord] CTA: puerta oscura con luz y figura en el
-  # umbral (FLUX), o el Discord con el canal de bienvenida.
+  # [scene-17 · FLUX ✓] CTA: puerta oscura con luz y figura en el umbral.
+  # Ilustración → mantiene overlay.
   - id: scene-17
     block: CIERRE
     start: 96
