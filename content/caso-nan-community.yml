@@ -2,6 +2,30 @@
 # Acto 1 (escenas 1-6): qué es la comunidad NaN · Acto 2 (escenas 7-15): este proyecto
 # Fuentes: documentación oficial de NaN (Introducción, Empezar, Modelos, Agents, API, Apps)
 # NO usar yarn script para este caso (el modelo alucinaría los datos; YAML curado a mano)
+#
+# ── IMÁGENES (se colocan a mano, escena a escena) ──────────────────────────
+# Destino: assets/images/caso-nan-community/scene-NN.png (vale jpg/webp/gif/svg)
+#   · Colocada la imagen, `yarn vision` la respeta tal cual (override por escena).
+#   · Rehacer UNA escena = borrar su fichero. (--force ignora TODAS, ojo.)
+#   · Mientras falten: MEDIA_MODE=local yarn vision caso-nan-community
+#     deja placeholder SVG en las que falten → el preview ya se puede montar.
+#   · Iterar: yarn compose caso-nan-community → doble click en renders/.../preview.html
+#
+# Lenguaje visual: Acto 1 ILUSTRADO (la promesa) · Acto 2 CAPTURAS reales (la
+# prueba) · cierre ILUSTRADO (la emoción). Cada escena indica su fuente:
+#   · CAPTURA: pantallazo real. SIEMPRE tema oscuro. El render hace center-crop
+#     (object-fit: cover) → encuadra lo importante al centro, o recorta tú a
+#     9:16 (1080x1920). Sube el zoom del editor/web para que se lea tras el crop.
+#   · FLUX: generar (GUI de NaN) con prompt = imagePrompt de la escena + este
+#     ESTILO común (cópialo tal cual como sufijo en todos):
+#       Dark cinematic graphic novel illustration, editorial comic art. Bold
+#       ink outlines, heavy cross-hatching in shadows. Desaturated charcoal
+#       blacks, slate greys, deep blues, muted red accents. Low-key
+#       chiaroscuro, dramatic single light source, volumetric haze. Heavy film
+#       grain, halftone dithering, cinematic vignette. Ominous, somber mood.
+#       Cinematic wide framing. No text, no watermark, no logos.
+#       9:16 aspect ratio.
+# ────────────────────────────────────────────────────────────────────────────
 channel: NaN Community
 caseNumber: 1
 title: La comunidad que te da GPUs para construir con IA
@@ -17,6 +41,7 @@ artDirection:
   humanTreatment: Human presence through silhouettes and distant figures, faces obscured
   constraints: No text, no watermark, no logos, no gore
 scenes:
+  # [scene-01.png · FLUX] El gancho: sala de servidores con racks de GPU brillando.
   - id: scene-01
     block: GANCHO
     start: 0
@@ -27,6 +52,9 @@ scenes:
       - "GPUs para construir"
     imagePrompt: A dark server room with rows of glowing GPU racks, volumetric light beams cutting through haze, cinematic perspective from the entrance
     motion: zoom-in lento
+  # [scene-02.png · CAPTURA] Editor en oscuro con la config del cluster: config.yml
+  # + .env.example (NUNCA el .env real — la API key ni tapada), o una herramienta
+  # conectada (Cursor/OpenCode apuntando al base URL). Alternativa FLUX: el imagePrompt.
   - id: scene-02
     block: DESARROLLO
     start: 6
@@ -37,6 +65,7 @@ scenes:
       - "Base URL + API Key"
     imagePrompt: A dark desk with multiple screens showing code editors with API configuration snippets visible on screen
     motion: paneo lateral
+  # [scene-03.png · FLUX] Red neuronal abstracta (azul/oro sobre oscuro).
   - id: scene-03
     block: DESARROLLO
     start: 12
@@ -47,6 +76,7 @@ scenes:
       - "Hasta 1M de contexto"
     imagePrompt: Abstract visualization of a neural network with glowing nodes and connections, dark background with blue and gold light, cinematic data flow
     motion: estático
+  # [scene-04.png · FLUX] Tríptico ojo / onda de audio / caracteres (acento rojo).
   - id: scene-04
     block: DESARROLLO
     start: 18
@@ -57,6 +87,8 @@ scenes:
       - "Un solo cluster"
     imagePrompt: A split composition showing three panels, an eye for vision, a waveform for audio, and text characters for text, all in dark graphic novel style with red accent light
     motion: shake
+  # [scene-05.png · CAPTURA] Consola cloud.nan.builders en oscuro (apps / agents /
+  # microVMs — la vista que mejor se vea). Alternativa FLUX: el imagePrompt.
   - id: scene-05
     block: DESARROLLO
     start: 24
@@ -67,6 +99,9 @@ scenes:
       - "MicroVMs · Agentes · Apps"
     imagePrompt: A dark room with a single terminal screen showing a Linux shell prompt, cables connecting to a small physical server box, dramatic side lighting
     motion: paneo lateral
+  # [scene-06.png · FLUX] Bisagra entre actos: sala de edición a oscuras, pantalla
+  # con un timeline de video VERTICAL brillando. Alternativa CAPTURA: preview.html
+  # de este mismo caso en pantalla (más meta aún).
   - id: scene-06
     block: DESARROLLO
     start: 30
@@ -77,6 +112,8 @@ scenes:
       - "Esto."
     imagePrompt: A dark editing room with a large screen showing a vertical video timeline glowing in the darkness, silhouette watching from behind
     motion: zoom-out
+  # [scene-07.png · CAPTURA] Terminal corriendo `yarn produce "..." caso-nan-community`
+  # con las etapas (1/7, 2/7…) a la vista, o el repo en GitHub (README arriba).
   - id: scene-07
     block: DESARROLLO
     start: 36
@@ -87,6 +124,9 @@ scenes:
       - "De un tema a un video"
     imagePrompt: A technical blueprint diagram of a pipeline drawn in glowing chalk lines on a dark wall, seven connected stages, industrial atmosphere
     motion: deriva lenta
+  # [scene-08.png · CAPTURA] ESTE yml abierto en el editor (se ve el guion del propio
+  # video — máxima meta). Zoom alto, escenas 1-3 visibles. Alternativa FLUX: máquina
+  # de escribir con páginas de guion.
   - id: scene-08
     block: DESARROLLO
     start: 42
@@ -97,6 +137,8 @@ scenes:
       - "qwen3.6"
     imagePrompt: A vintage typewriter on a dark desk with screenplay pages scattered around, single dramatic overhead light, ink and paper texture
     motion: zoom-in lento
+  # [scene-09.png · CAPTURA] La GUI del generador de imágenes de NaN con varias
+  # variantes generadas (de este caso, idealmente). Alternativa FLUX: contact sheet.
   - id: scene-09
     block: DESARROLLO
     start: 48
@@ -107,6 +149,7 @@ scenes:
       - "gemma4 elige"
     imagePrompt: A photographic contact sheet of multiple small images on a dark table, one image highlighted under a beam of light, magnifying glass nearby
     motion: paneo lateral
+  # [scene-10.png · FLUX] Micrófono vintage en cabina oscura, ondas de sonido.
   - id: scene-10
     block: DESARROLLO
     start: 54
@@ -117,6 +160,8 @@ scenes:
       - "kokoro"
     imagePrompt: A vintage studio microphone in a dark recording booth, sound waves visualized as glowing lines in the air, moody atmosphere
     motion: estático
+  # [scene-11.png · CAPTURA] El preview.html con un caption en pantalla, o el .srt
+  # en el editor (líneas con timestamps). Lo que mejor se lea en vertical.
   - id: scene-11
     block: DESARROLLO
     start: 60
@@ -127,6 +172,8 @@ scenes:
       - "whisper"
     imagePrompt: Rows of subtitle text panels floating in dark space, one row illuminated, waveform pattern in the background, cinematic depth
     motion: deriva lenta
+  # [scene-12.png · CAPTURA] HyperFrames renderizando en la terminal (progreso de
+  # frames). Alternativa FLUX: tira de fotogramas ensamblándose.
   - id: scene-12
     block: DESARROLLO
     start: 66
@@ -137,6 +184,8 @@ scenes:
       - "GSAP · HyperFrames · ffmpeg"
     imagePrompt: A film strip of frames being assembled in the dark, frames glowing as they connect, mechanical cinema equipment silhouettes
     motion: zoom-in lento
+  # [scene-13.png · CAPTURA] nan.builders/docs en oscuro (la fuente del guion).
+  # Alternativa FLUX: documentos con pasajes resaltados brillando.
   - id: scene-13
     block: DESARROLLO
     start: 72
@@ -147,6 +196,8 @@ scenes:
       - "Fuentes reales"
     imagePrompt: Open technical documents on a dark desk with key passages glowing, a hand silhouette pointing at a highlighted line, archival mood
     motion: estático
+  # [scene-14.png · FLUX] El meta-giro: mise en abyme (pantalla que muestra la misma
+  # sala que la contiene), una sola fuente de luz.
   - id: scene-14
     block: CIERRE
     start: 78
@@ -157,6 +208,7 @@ scenes:
       - "100% modelos NaN"
     imagePrompt: A dark room with a screen showing the same dark room on its display, recursive mise en abyme effect, single light source, mysterious mood
     motion: deriva lenta
+  # [scene-15.png · FLUX] CTA: puerta oscura con luz entrando, figura en el umbral.
   - id: scene-15
     block: CIERRE
     start: 84
