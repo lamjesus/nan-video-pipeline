@@ -8,6 +8,8 @@ El caso vivo del repo es `caso-nan-community`: un video demo que explica
 modelos, NaN Cloud) y **después en qué consiste este proyecto** — con el giro
 de que el propio video está producido por el pipeline que describe.
 
+[▶ Ver en YouTube](https://youtube.com/shorts/KgxE2EAXMnE)
+
 ## Por qué el guion es curado, no generado
 
 El storyboard (`content/caso-nan-community.yml`) se escribe a mano sobre la
@@ -25,5 +27,4 @@ MEDIA_MODE=local yarn produce "La comunidad NaN" caso-nan-community
 ## Estado
 
 El guion actual es un **draft** en evolución (se está reescribiendo en dos
-actos: comunidad → proyecto). El video final de la demo se publicará en esta
-misma página.
+actos: comunidad → proyecto).

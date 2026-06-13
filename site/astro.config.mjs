@@ -2,11 +2,9 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
-// Dos destinos de deploy con base distinta:
-// - GitHub Pages (default):  https://lamjesus.github.io/nan-video-pipeline
-// - nginx en NaN Cloud:      SITE_BASE=/ SITE_URL=https://<app>.apps.nan.builders yarn build
-const base = process.env.SITE_BASE ?? '/nan-video-pipeline';
-const site = process.env.SITE_URL ?? 'https://lamjesus.github.io';
+// Base: / para NaN Cloud (subdominio propio), /nan-video-pipeline para GitHub Pages.
+const base = process.env.SITE_BASE ?? '/';
+const site = process.env.SITE_URL ?? 'https://hackathon-mlorentedev-nan-video-demo.apps.nan.builders';
 
 export default defineConfig({
   site,
@@ -27,10 +25,11 @@ export default defineConfig({
         },
       ],
       sidebar: [
-        { label: 'Empezar', slug: 'empezar' },
+        { label: 'Cómo funciona', slug: 'demo' },
         { label: 'El pipeline', slug: 'pipeline' },
         { label: 'Caso demo: la comunidad NaN', slug: 'caso-nan-community' },
         { label: 'Imágenes con IA externa', slug: 'imagenes-ia' },
+        { label: 'Empezar', slug: 'empezar' },
         { label: 'Troubleshooting', slug: 'troubleshooting' },
       ],
     }),
