@@ -11,11 +11,14 @@
 #     deja placeholder SVG en las que falten → el preview ya se puede montar.
 #   · Iterar: yarn compose caso-nan-community → doble click en renders/.../preview.html
 #
-# Lenguaje visual: Acto 1 ILUSTRADO (la promesa) · Acto 2 CAPTURAS reales (la
-# prueba) · cierre ILUSTRADO (la emoción). Cada escena indica su fuente:
+# Lenguaje visual: MEZCLA de capturas reales (Discord de la comunidad, doc
+# oficial, consola, el proyecto funcionando) e ilustración FLUX para lo
+# conceptual/emocional. Cada escena indica su fuente recomendada:
 #   · CAPTURA: pantallazo real. SIEMPRE tema oscuro. El render hace center-crop
 #     (object-fit: cover) → encuadra lo importante al centro, o recorta tú a
 #     9:16 (1080x1920). Sube el zoom del editor/web para que se lea tras el crop.
+#     En capturas de Discord: ojo con usernames/avatares de terceros (recorta o
+#     difumina si hace falta).
 #   · FLUX: generar (GUI de NaN) con prompt = imagePrompt de la escena + este
 #     ESTILO común (cópialo tal cual como sufijo en todos):
 #       Dark cinematic graphic novel illustration, editorial comic art. Bold
@@ -41,7 +44,9 @@ artDirection:
   humanTreatment: Human presence through silhouettes and distant figures, faces obscured
   constraints: No text, no watermark, no logos, no gore
 scenes:
-  # [scene-01.png · FLUX] El gancho: sala de servidores con racks de GPU brillando.
+  # [scene-01.png · FLUX o CAPTURA Discord] Gancho: sala de servidores con racks de
+  # GPU (FLUX), o el Discord de la comunidad vivo (canales/gente) si prefieres
+  # abrir con la comunidad real.
   - id: scene-01
     block: GANCHO
     start: 0
@@ -52,9 +57,9 @@ scenes:
       - "GPUs para construir"
     imagePrompt: A dark server room with rows of glowing GPU racks, volumetric light beams cutting through haze, cinematic perspective from the entrance
     motion: zoom-in lento
-  # [scene-02.png · CAPTURA] Editor en oscuro con la config del cluster: config.yml
-  # + .env.example (NUNCA el .env real — la API key ni tapada), o una herramienta
-  # conectada (Cursor/OpenCode apuntando al base URL). Alternativa FLUX: el imagePrompt.
+  # [scene-02.png · CAPTURA doc] nan.builders/docs "Empezar": donde se ve base URL +
+  # API key. Alternativas: editor con config.yml/.env.example (NUNCA el .env real —
+  # la API key ni tapada) o herramienta conectada (Cursor/OpenCode).
   - id: scene-02
     block: DESARROLLO
     start: 6
@@ -65,7 +70,8 @@ scenes:
       - "Base URL + API Key"
     imagePrompt: A dark desk with multiple screens showing code editors with API configuration snippets visible on screen
     motion: paneo lateral
-  # [scene-03.png · FLUX] Red neuronal abstracta (azul/oro sobre oscuro).
+  # [scene-03.png · CAPTURA doc] nan.builders/docs "Modelos": la lista real de
+  # modelos del cluster. Alternativa FLUX: red neuronal abstracta (azul/oro).
   - id: scene-03
     block: DESARROLLO
     start: 12
@@ -208,7 +214,9 @@ scenes:
       - "100% modelos NaN"
     imagePrompt: A dark room with a screen showing the same dark room on its display, recursive mise en abyme effect, single light source, mysterious mood
     motion: deriva lenta
-  # [scene-15.png · FLUX] CTA: puerta oscura con luz entrando, figura en el umbral.
+  # [scene-15.png · FLUX o CAPTURA Discord] CTA: puerta oscura con luz y figura en
+  # el umbral (FLUX), o el Discord con el canal de bienvenida ("la comunidad está
+  # esperando" con la comunidad real). Si la 01 fue Discord, aquí mejor FLUX (no repetir).
   - id: scene-15
     block: CIERRE
     start: 84
