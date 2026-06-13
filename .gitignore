@@ -1,5 +1,7 @@
 node_modules/
 .env
+# Basura de macOS (no debe versionarse)
+.DS_Store
 # Este repo usa yarn: nada de lockfile de npm
 package-lock.json
 # Assets generados (audio, imagenes, video)
