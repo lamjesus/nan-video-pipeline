@@ -126,11 +126,10 @@ scenes:
     start: 42
     end: 48
     voiceover: "Y eso es justo lo que hicimos en el hackathon de NaN: coger toda esta comunidad y construir algo que la cuente."
-    onScreenText:
-      - "Hackathon NaN"
-      - "Nuestro reto"
+    # Captura del anuncio real en Discord (avatares difuminados): ya es todo texto.
+    onScreenText: []
     imagePrompt: A dark hackathon space, laptops glowing in a dim room, silhouettes of builders working late, sense of focus and momentum
-    motion: zoom-in lento
+    motion: estático
   # [scene-09 · DIAGRAMA ✓] Arquitectura REAL del pipeline (SVG→PNG, NO FLUX:
   # etiquetas correctas, 7 etapas). Fuente editable: scene-09.svg. Motion estático.
   - id: scene-09
