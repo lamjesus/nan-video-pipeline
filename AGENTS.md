@@ -39,9 +39,11 @@ scripts/
   models-check.ts  — Smoke test de cada modelo del cluster
 tests/             — vitest: lógica pura de cada etapa
 docs/
+  REFERENCIA.md    — Referencia técnica completa (semilla del site de docs)
   TAREAS.md        — Reparto de trabajo (objetivos + criterios de hecho)
   TROUBLESHOOTING.md — Hallazgos del cluster (mimo ciego, límite de 3, User-Agent…)
-  casos-uso/       — Casos de uso documentados (golden cases)
+  caso-nan-community.md — Ficha del caso vivo (video demo de la comunidad NaN)
+  imagenes-ia.md   — Imágenes con IA externa para el modo local
 ```
 
 ## Cómo usar
@@ -56,7 +58,7 @@ yarn models:check
 # Pipeline completo (orquestador, en construcción)
 yarn produce "<tema>"
 
-# Etapas por caso (slug = nombre del caso, p.ej. caso-ejemplo)
+# Etapas por caso (slug = nombre del caso, p.ej. caso-nan-community)
 yarn script "<tema>" [slug] [escenas]  # guion → content/<slug>.yml (10 escenas por defecto)
 yarn vision <slug>     # 1 imagen por escena → assets/images/<slug>/
 yarn voice <slug>      # narración → assets/audio/<slug>.mp3
@@ -143,6 +145,7 @@ FIX: cómo solucionarlo
    objetivo, archivo, criterio de "hecho"; respeta el dueño marcado).
 2. Antes de tocar el cluster, mira **`docs/TROUBLESHOOTING.md`**: recoge los fallos
    ya descubiertos (mimo ciego, User-Agent de Wikimedia, pexels…) para no repetirlos.
-3. Para ver un caso real corriendo, **`docs/casos-uso/`** (flujo común + fichas).
+3. Para ver un caso real corriendo, **`docs/caso-nan-community.md`** (el caso
+   vivo); el detalle técnico completo de cada etapa, en **`docs/REFERENCIA.md`**.
 4. No cambies la forma de `Storyboard` (`src/lib/types.ts`) sin avisar: todas las
    piezas dependen de ella.
