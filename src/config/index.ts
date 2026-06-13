@@ -60,7 +60,36 @@ function loadFileConfig(): FileConfig {
   }
 }
 
-const file = loadFileConfig();
+// El parse de YAML no garantiza la forma: un typo en config.yml acabaría como
+// `model: undefined` en el cluster (HTTP 422 críptico). Mejor fallar al cargar.
+const MODEL_KEYS = [
+  'text', 'textHeavy', 'visionEval', 'visionEvalFallback',
+  'tts', 'stt', 'embedding', 'reranker',
+] as const;
+
+function validateFileConfig(file: FileConfig): FileConfig {
+  const missing: string[] = [];
+  for (const key of MODEL_KEYS) {
+    const v = file?.models?.[key];
+    if (typeof v !== 'string' || v.length === 0) missing.push(`models.${key}`);
+  }
+  if (typeof file?.voice?.default !== 'string' || file.voice.default.length === 0) {
+    missing.push('voice.default');
+  }
+  if (!Array.isArray(file?.media?.providers) || file.media.providers.length === 0) {
+    missing.push('media.providers');
+  }
+  if (missing.length > 0) {
+    throw new Error(
+      `ERROR: config.yml incompleto\n` +
+        `WHY: faltan o están vacías estas claves: ${missing.join(', ')}\n` +
+        `FIX: complétalas en config.yml (la referencia está versionada en el repo)`,
+    );
+  }
+  return file;
+}
+
+const file = validateFileConfig(loadFileConfig());
 
 export const config = {
   // Rutas absolutas (evita que los scripts escriban en el lugar equivocado).

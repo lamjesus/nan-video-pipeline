@@ -34,7 +34,12 @@ export async function selectProvider(mode: 'auto' | 'local' = 'auto'): Promise<M
         if (process.env.PEXELS_API_KEY) {
           const { PexelsProvider } = await import('./pexels.js');
           providers.push(new PexelsProvider());
+        } else {
+          console.warn('[media] pexels pedido pero sin PEXELS_API_KEY — se omite');
         }
+        break;
+      default:
+        console.warn(`[media] provider desconocido "${name}" — se omite (válidos: wikimedia, local, pexels)`);
         break;
     }
   }
