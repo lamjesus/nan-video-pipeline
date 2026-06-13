@@ -1,7 +1,7 @@
 // PASO 2 · Selección de material visual con un modelo de visión del cluster.
 // El modelo NO genera imágenes: las entiende. Se le pasan candidatas (de archivo
 // de dominio público, p.ej. Wikimedia Commons) y evalúa cuál encaja con la escena.
-// Uso: yarn vision caso-ejemplo
+// Uso: yarn vision caso-nan-community
 //
 // ⚠️ mimo-v2.5 está CIEGO en el cluster: no descarga URLs y alucina la imagen
 // desde el nombre del fichero. La evaluación real se hace con `gemma4`

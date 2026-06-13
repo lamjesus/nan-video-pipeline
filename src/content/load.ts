@@ -30,7 +30,7 @@ export async function loadStoryboard(): Promise<Storyboard> {
 
   const data = parse(raw) as unknown;
   // El recuento de escenas es regla de GENERACIÓN; al cargar se valida solo
-  // la estructura (caso-ejemplo tiene 9, los golden pueden variar).
+  // la estructura (el recuento puede variar entre casos).
   const v = validateStoryboard(data);
   if (!v.valid) {
     throw new Error(
@@ -65,10 +65,10 @@ async function disponibles(): Promise<string> {
 
 /** Slug del caso actual, para nombrar archivos de salida. */
 export function currentCaseSlug(): string {
-  return process.argv[2] ?? 'caso-ejemplo';
+  return process.argv[2] ?? 'caso-nan-community';
 }
 
-// Permite probar el cargador directamente: `npx tsx src/content/load.ts caso-ejemplo`
+// Permite probar el cargador directamente: `npx tsx src/content/load.ts caso-nan-community`
 // (pathToFileURL: en Windows `file://${argv[1]}` nunca coincide por los backslashes)
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   loadStoryboard()

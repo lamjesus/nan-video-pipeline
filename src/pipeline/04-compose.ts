@@ -1,6 +1,6 @@
 // PASO 4 · Composición: valida assets y materializa el workspace renders/<slug>/
 // (manifest.json + index.html + styles.css + preview.html + copia de assets).
-// Uso: yarn compose caso-ejemplo
+// Uso: yarn compose caso-nan-community
 //
 // Lee el storyboard y el slug, valida que existan audio/imágenes/subtítulos,
 // mide la duración real del audio con ffprobe, reescala los tiempos de escena

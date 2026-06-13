@@ -13,8 +13,8 @@ export interface ValidateOptions {
   /**
    * Si se indica, exige exactamente ese número de escenas — la regla de
    * GENERACIÓN (yarn script valida contra el recuento pedido, 10 por
-   * defecto). El cargador no lo pasa: un caso curado o golden puede tener
-   * cualquier número ≥ 1 (caso-ejemplo tiene 9).
+   * defecto). El cargador no lo pasa: un caso curado puede tener
+   * cualquier número ≥ 1 (el recuento varía por caso).
    */
   sceneCount?: number;
 }
