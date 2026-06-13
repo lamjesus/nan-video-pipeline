@@ -14,8 +14,7 @@
 // usando execFile (sin shell) para evitar inyección de comandos.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { readdir, stat, existsSync } from 'node:fs';
-import { readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runRender, muxAudio, checkRenderDeps } from './render-runner.js';
@@ -32,11 +31,13 @@ if (!tema) {
   process.exit(1);
 }
 
-const slug = process.argv[3] ?? 'caso-generado';
+// El slug es opcional: si argv[3] es un flag, no hay slug explícito.
+const slugArg = process.argv[3];
+const slug = slugArg && !slugArg.startsWith('--') ? slugArg : 'caso-generado';
 const skipStages = new Set<string>();
-for (const arg of process.argv.slice(4)) {
+for (const arg of process.argv.slice(3)) {
   if (arg.startsWith('--skip-')) {
-    skipStages.add(arg.slice(9));
+    skipStages.add(arg.slice('--skip-'.length));
   }
 }
 
