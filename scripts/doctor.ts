@@ -12,8 +12,13 @@
 import 'dotenv/config'; // carga .env antes de leer process.env
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const exec = promisify(execFile);
+// package.json relativo al script, no al cwd: doctor funciona desde cualquier sitio.
+const PKG_PATH = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
 
 interface CheckResult {
   name: string;
@@ -58,7 +63,7 @@ function checkEnv(): void {
 function checkVitest(): void {
   try {
     // Verificar que vitest está instalado (devDep)
-    const pkg = JSON.parse(require('node:fs').readFileSync('./package.json', 'utf-8'));
+    const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf-8'));
     const hasVitest = pkg.devDependencies?.vitest || pkg.dependencies?.vitest;
     if (hasVitest) {
       record({ name: 'vitest (test runner)', ok: true });
@@ -69,8 +74,12 @@ function checkVitest(): void {
         error: 'vitest no está en package.json. Ejecuta: yarn add -D vitest',
       });
     }
-  } catch {
-    record({ name: 'vitest (test runner)', ok: true }); // skip si no se puede leer
+  } catch (err) {
+    record({
+      name: 'vitest (test runner)',
+      ok: false,
+      error: `No se pudo leer ${PKG_PATH}: ${err instanceof Error ? err.message : String(err)}`,
+    });
   }
 }
 
