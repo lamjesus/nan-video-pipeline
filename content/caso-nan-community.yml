@@ -1,5 +1,5 @@
 # Guion sobre la comunidad NaN y el propio pipeline — 2 actos (v2, draft)
-# Acto 1 (escenas 1-6): qué es la comunidad NaN · Acto 2 (escenas 7-15): este proyecto
+# Acto 1 (escenas 1-7): qué es la comunidad NaN · Acto 2 (escenas 8-17): este proyecto
 # Fuentes: documentación oficial de NaN (Introducción, Empezar, Modelos, Agents, API, Apps)
 # NO usar yarn script para este caso (el modelo alucinaría los datos; YAML curado a mano)
 #
@@ -10,10 +10,11 @@
 #   · Mientras falten: MEDIA_MODE=local yarn vision caso-nan-community
 #     deja placeholder SVG en las que falten → el preview ya se puede montar.
 #   · Iterar: yarn compose caso-nan-community → doble click en renders/.../preview.html
+#   · TODA captura a 1080x1920 (device mode 9:16): si no, se ve borrosa al escalar.
 #
-# Lenguaje visual: MEZCLA de capturas reales (Discord de la comunidad, doc
-# oficial, consola, el proyecto funcionando) e ilustración FLUX para lo
-# conceptual/emocional. Cada escena indica su fuente recomendada:
+# Lenguaje visual: MEZCLA de capturas reales (Discord, doc oficial, consola,
+# dashboard, el proyecto funcionando) e ilustración FLUX para lo conceptual.
+# Cada escena indica su fuente recomendada:
 #   · CAPTURA: pantallazo real. SIEMPRE tema oscuro. El render hace center-crop
 #     (object-fit: cover) → encuadra lo importante al centro, o recorta tú a
 #     9:16 (1080x1920). Sube el zoom del editor/web para que se lea tras el crop.
@@ -32,7 +33,7 @@
 channel: NaN Community
 caseNumber: 1
 title: La comunidad que te da GPUs para construir con IA
-totalDuration: 90
+totalDuration: 102
 artDirection:
   medium: Dark cinematic graphic novel illustration, editorial comic art
   lineWork: Bold ink outlines, heavy cross-hatching in shadows
@@ -44,183 +45,192 @@ artDirection:
   humanTreatment: Human presence through silhouettes and distant figures, faces obscured
   constraints: No text, no watermark, no logos, no gore
 scenes:
-  # [scene-01.png · FLUX o CAPTURA Discord] Gancho: sala de servidores con racks de
-  # GPU (FLUX), o el Discord de la comunidad vivo (canales/gente) si prefieres
-  # abrir con la comunidad real.
+  # [scene-01 · CAPTURA landing ✓] Gancho: la landing de NaN ("GPUs compartidas").
   - id: scene-01
     block: GANCHO
     start: 0
     end: 6
     voiceover: "¿Y si una comunidad te diera GPUs para construir con IA, sin pagar una suscripción carísima?"
-    onScreenText:
-      - "La comunidad NaN"
-      - "GPUs para construir"
+    # Sin overlay: la landing capturada ya lleva "NaN" + "GPUs compartidas".
+    onScreenText: []
     imagePrompt: A dark server room with rows of glowing GPU racks, volumetric light beams cutting through haze, cinematic perspective from the entrance
     motion: zoom-in lento
-  # [scene-02.png · CAPTURA doc] nan.builders/docs "Empezar": donde se ve base URL +
-  # API key. Alternativas: editor con config.yml/.env.example (NUNCA el .env real —
-  # la API key ni tapada) o herramienta conectada (Cursor/OpenCode).
+  # [scene-02 · CAPTURA doc Empezar ✓] base URL + API key + config OpenAI-compatible.
   - id: scene-02
     block: DESARROLLO
     start: 6
     end: 12
     voiceover: "NaN es infraestructura real: una API compatible con OpenAI. Un base URL, una API key, y cualquier herramienta funciona sin cambios."
-    onScreenText:
-      - "API compatible con OpenAI"
-      - "Base URL + API Key"
+    # Captura de docs: la propia página rotula BASE URL / API KEY / OpenAI-compatible.
+    onScreenText: []
     imagePrompt: A dark desk with multiple screens showing code editors with API configuration snippets visible on screen
     motion: paneo lateral
-  # [scene-03.png · CAPTURA doc] nan.builders/docs "Modelos": la lista real de
-  # modelos del cluster. Alternativa FLUX: red neuronal abstracta (azul/oro).
+  # [scene-03 · CAPTURA doc Modelos ✓] qwen3.6 (principal) + gemma4 con capacidades.
   - id: scene-03
     block: DESARROLLO
     start: 12
     end: 18
-    voiceover: "Modelos de texto como Qwen y DeepSeek, con tool calling, razonamiento y hasta un millón de tokens de contexto."
-    onScreenText:
-      - "qwen3.6 · deepseek-v4-flash"
-      - "Hasta 1M de contexto"
+    voiceover: "El modelo principal es Qwen: multimodal, con tool calling, razonamiento y un contexto enorme. Y es solo uno del catálogo abierto."
+    # Voz alineada a lo que se ve (qwen3.6 "el principal"); el 1M es de deepseek, fuera de frame.
+    onScreenText: []
     imagePrompt: Abstract visualization of a neural network with glowing nodes and connections, dark background with blue and gold light, cinematic data flow
     motion: estático
-  # [scene-04.png · FLUX] Tríptico ojo / onda de audio / caracteres (acento rojo).
+  # [scene-04 · CAPTURA doc kokoro+whisper ✓] voz + audio (visión ya sale en la 03).
   - id: scene-04
     block: DESARROLLO
     start: 18
     end: 24
-    voiceover: "Y no solo texto: visión con gemma, voz con kokoro, transcripción con whisper, embeddings. Todo en el mismo cluster."
-    onScreenText:
-      - "Visión · Voz · Audio"
-      - "Un solo cluster"
+    voiceover: "Y no solo texto: kokoro genera voz en español, whisper transcribe audio en 99 idiomas. Visión, voz y audio, todo en el mismo cluster."
+    # Captura de docs: la página ya rotula kokoro / whisper y sus capacidades.
+    onScreenText: []
     imagePrompt: A split composition showing three panels, an eye for vision, a waveform for audio, and text characters for text, all in dark graphic novel style with red accent light
-    motion: shake
-  # [scene-05.png · CAPTURA] Consola cloud.nan.builders en oscuro (apps / agents /
-  # microVMs — la vista que mejor se vea). Alternativa FLUX: el imagePrompt.
+    motion: estático
+  # [scene-05 · CAPTURA Hermes Telegram ✓] agente real en Telegram (lista de cronjobs).
   - id: scene-05
     block: DESARROLLO
     start: 24
     end: 30
     voiceover: "Con NaN Cloud despliegas máquinas virtuales con acceso root, agentes conectados a Telegram y apps directamente desde GitHub."
-    onScreenText:
-      - "NaN Cloud"
-      - "MicroVMs · Agentes · Apps"
+    # La voz ya dice "agentes conectados a Telegram"; un overlay chocaría con la cabecera del chat.
+    onScreenText: []
     imagePrompt: A dark room with a single terminal screen showing a Linux shell prompt, cables connecting to a small physical server box, dramatic side lighting
-    motion: paneo lateral
-  # [scene-06.png · FLUX] Bisagra entre actos: sala de edición a oscuras, pantalla
-  # con un timeline de video VERTICAL brillando. Alternativa CAPTURA: preview.html
-  # de este mismo caso en pantalla (más meta aún).
+    motion: estático
+  # [scene-06 · CAPTURA dashboard uso] Curva de uso 30 días + breakdown por modelo.
+  # ⚠️ RECAPTURAR a 1080x1920 (la colocada es 404x720 → texto borroso al escalar).
   - id: scene-06
     block: DESARROLLO
     start: 30
     end: 36
-    voiceover: "¿Y qué se puede construir con todo eso? Por ejemplo… esto mismo que estás viendo."
-    onScreenText:
-      - "¿Qué puedes construir?"
-      - "Esto."
-    imagePrompt: A dark editing room with a large screen showing a vertical video timeline glowing in the darkness, silhouette watching from behind
-    motion: zoom-out
-  # [scene-07.png · CAPTURA] Terminal corriendo `yarn produce "..." caso-nan-community`
-  # con las etapas (1/7, 2/7…) a la vista, o el repo en GitHub (README arriba).
+    voiceover: "Y no es un experimento: la comunidad mueve cientos de millones de tokens al mes en estos modelos."
+    # El dashboard ya rotula "Model usage" y el breakdown con sus cifras.
+    onScreenText: []
+    imagePrompt: A glowing line chart of model usage over time on a dark dashboard, multiple colored curves, data visualization aesthetic
+    motion: estático
+  # [scene-07 · CAPTURA dashboard coste] CAPSTONE de valor: comparación de gasto vs
+  # otros proveedores + "incluido en tu membresía". Paga el gancho de la escena 01.
+  # ⚠️ RECAPTURAR a 1080x1920 (la colocada es 404x720 → la tabla se ve borrosa).
   - id: scene-07
     block: DESARROLLO
     start: 36
     end: 42
-    voiceover: "Este video lo está produciendo un pipeline open source que convierte un tema en un video narrado, de principio a fin."
-    onScreenText:
-      - "nan-video-pipeline"
-      - "De un tema a un video"
-    imagePrompt: A technical blueprint diagram of a pipeline drawn in glowing chalk lines on a dark wall, seven connected stages, industrial atmosphere
-    motion: deriva lenta
-  # [scene-08.png · CAPTURA] ESTE yml abierto en el editor (se ve el guion del propio
-  # video — máxima meta). Zoom alto, escenas 1-3 visibles. Alternativa FLUX: máquina
-  # de escribir con páginas de guion.
+    voiceover: "Y todo está incluido en tu membresía. Lo mismo, en otros proveedores, costaría miles de dólares al mes."
+    # El dashboard ya rotula "Cost comparison" y "included in your membership".
+    onScreenText: []
+    imagePrompt: A dark dashboard table comparing costs across AI providers, one row highlighted as free, financial data visualization
+    motion: estático
+  # [scene-08 · CAPTURA hackathon] BISAGRA acto1→acto2: del "qué es la comunidad" al
+  # "qué construimos". Captura la página del Hackatón (botón de la landing) o el canal
+  # de hackathon del Discord. Overlay provisional: lo trimamos si trae texto propio.
   - id: scene-08
     block: DESARROLLO
     start: 42
     end: 48
+    voiceover: "Y eso es justo lo que hicimos en el hackathon de NaN: coger toda esta comunidad y construir algo que la cuente."
+    onScreenText:
+      - "Hackathon NaN"
+      - "Nuestro reto"
+    imagePrompt: A dark hackathon space, laptops glowing in a dim room, silhouettes of builders working late, sense of focus and momentum
+    motion: zoom-in lento
+  # [scene-09 · DIAGRAMA ✓] Arquitectura REAL del pipeline (SVG→PNG, NO FLUX:
+  # etiquetas correctas, 7 etapas). Fuente editable: scene-09.svg. Motion estático.
+  - id: scene-09
+    block: DESARROLLO
+    start: 48
+    end: 54
+    voiceover: "Construimos un pipeline open source que convierte un tema en un vídeo narrado, de principio a fin. Mira cómo lo hace."
+    # El diagrama ya rotula el nombre del proyecto y las 7 etapas.
+    onScreenText: []
+    imagePrompt: Vertical architecture diagram of the pipeline, seven labeled stages from topic to MP4, NaN models highlighted, dark palette
+    motion: estático
+  # [scene-10 · CAPTURA este yml] ESTE yml abierto en el editor (el guion del propio
+  # vídeo — máxima meta). Zoom alto, escenas 1-3 visibles. Alternativa FLUX: máquina de escribir.
+  - id: scene-10
+    block: DESARROLLO
+    start: 54
+    end: 60
     voiceover: "Primero, el guion: Qwen escribe un storyboard estructurado con escenas, narración y dirección de arte, y lo valida."
     onScreenText:
       - "1 · Guion"
       - "qwen3.6"
     imagePrompt: A vintage typewriter on a dark desk with screenplay pages scattered around, single dramatic overhead light, ink and paper texture
     motion: zoom-in lento
-  # [scene-09.png · CAPTURA] La GUI del generador de imágenes de NaN con varias
-  # variantes generadas (de este caso, idealmente). Alternativa FLUX: contact sheet.
-  - id: scene-09
+  # [scene-11 · CAPTURA GUI generador] La GUI del generador de imágenes de NaN con
+  # variantes (de este caso, idealmente). Alternativa FLUX: contact sheet.
+  - id: scene-11
     block: DESARROLLO
-    start: 48
-    end: 54
+    start: 60
+    end: 66
     voiceover: "Las imágenes no se inventan: se generan o se buscan en archivo, y gemma evalúa cada candidata mirando los píxeles reales."
     onScreenText:
       - "2 · Imágenes"
       - "gemma4 elige"
     imagePrompt: A photographic contact sheet of multiple small images on a dark table, one image highlighted under a beam of light, magnifying glass nearby
     motion: paneo lateral
-  # [scene-10.png · FLUX] Micrófono vintage en cabina oscura, ondas de sonido.
-  - id: scene-10
+  # [scene-12 · FLUX] Micrófono vintage en cabina oscura, ondas de sonido.
+  - id: scene-12
     block: DESARROLLO
-    start: 54
-    end: 60
+    start: 66
+    end: 72
     voiceover: "La voz que estás escuchando ahora mismo es kokoro, el modelo de texto a voz del cluster."
     onScreenText:
       - "3 · Voz"
       - "kokoro"
     imagePrompt: A vintage studio microphone in a dark recording booth, sound waves visualized as glowing lines in the air, moody atmosphere
     motion: estático
-  # [scene-11.png · CAPTURA] El preview.html con un caption en pantalla, o el .srt
-  # en el editor (líneas con timestamps). Lo que mejor se lea en vertical.
-  - id: scene-11
+  # [scene-13 · CAPTURA preview/srt] El preview.html con un caption en pantalla, o el
+  # .srt en el editor (líneas con timestamps). Lo que mejor se lea en vertical.
+  - id: scene-13
     block: DESARROLLO
-    start: 60
-    end: 66
+    start: 72
+    end: 78
     voiceover: "Y los subtítulos que estás leyendo: whisper transcribe el audio y se alinean con el guion palabra por palabra."
     onScreenText:
       - "4 · Subtítulos"
       - "whisper"
     imagePrompt: Rows of subtitle text panels floating in dark space, one row illuminated, waveform pattern in the background, cinematic depth
     motion: deriva lenta
-  # [scene-12.png · CAPTURA] HyperFrames renderizando en la terminal (progreso de
-  # frames). Alternativa FLUX: tira de fotogramas ensamblándose.
-  - id: scene-12
+  # [scene-14 · CAPTURA HyperFrames render] HyperFrames renderizando en la terminal
+  # (progreso de frames). Alternativa FLUX: tira de fotogramas ensamblándose.
+  - id: scene-14
     block: DESARROLLO
-    start: 66
-    end: 72
-    voiceover: "Composición y render: una página animada se captura frame a frame hasta convertirse en el video final."
+    start: 78
+    end: 84
+    voiceover: "Composición y render: una página animada se captura frame a frame hasta convertirse en el vídeo final."
     onScreenText:
       - "5 · Render"
       - "GSAP · HyperFrames · ffmpeg"
     imagePrompt: A film strip of frames being assembled in the dark, frames glowing as they connect, mechanical cinema equipment silhouettes
     motion: zoom-in lento
-  # [scene-13.png · CAPTURA] nan.builders/docs en oscuro (la fuente del guion).
+  # [scene-15 · CAPTURA docs] nan.builders/docs en oscuro (la fuente del guion).
   # Alternativa FLUX: documentos con pasajes resaltados brillando.
-  - id: scene-13
+  - id: scene-15
     block: DESARROLLO
-    start: 72
-    end: 78
+    start: 84
+    end: 90
     voiceover: "Y nada está alucinado: este guion se apoya en la documentación oficial de la comunidad."
     onScreenText:
       - "Grounded"
       - "Fuentes reales"
     imagePrompt: Open technical documents on a dark desk with key passages glowing, a hand silhouette pointing at a highlighted line, archival mood
     motion: estático
-  # [scene-14.png · FLUX] El meta-giro: mise en abyme (pantalla que muestra la misma
-  # sala que la contiene), una sola fuente de luz.
-  - id: scene-14
+  # [scene-16 · FLUX] El meta-giro: mise en abyme (pantalla que muestra la misma sala
+  # que la contiene), una sola fuente de luz.
+  - id: scene-16
     block: CIERRE
-    start: 78
-    end: 84
-    voiceover: "Todo lo que acabas de ver y oír salió del propio pipeline, corriendo únicamente sobre los modelos de NaN."
+    start: 90
+    end: 96
+    voiceover: "Y todo esto salió del propio pipeline. Hasta su código lo escribimos con Qwen, en NaN: de principio a fin, un solo cluster."
     onScreenText:
-      - "Hecho por el pipeline"
-      - "100% modelos NaN"
+      - "El vídeo y el código"
+      - "100% sobre NaN"
     imagePrompt: A dark room with a screen showing the same dark room on its display, recursive mise en abyme effect, single light source, mysterious mood
     motion: deriva lenta
-  # [scene-15.png · FLUX o CAPTURA Discord] CTA: puerta oscura con luz y figura en
-  # el umbral (FLUX), o el Discord con el canal de bienvenida ("la comunidad está
-  # esperando" con la comunidad real). Si la 01 fue Discord, aquí mejor FLUX (no repetir).
-  - id: scene-15
+  # [scene-17 · FLUX o CAPTURA Discord] CTA: puerta oscura con luz y figura en el
+  # umbral (FLUX), o el Discord con el canal de bienvenida.
+  - id: scene-17
     block: CIERRE
-    start: 84
-    end: 90
+    start: 96
+    end: 102
     voiceover: "El código es abierto y la comunidad está esperando. Entra a nan punto builders y construye."
     onScreenText:
       - "Open source"
