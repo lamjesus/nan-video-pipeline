@@ -108,6 +108,16 @@ describe('generateHtml', () => {
     expect(html).toContain('data-motion');
   });
 
+  it('runs the timeline on load (HyperFrames captures a running timeline)', () => {
+    expect(html).toContain('paused: false');
+  });
+
+  it('has no SRT-fetch leftovers — captions are inline static HTML', () => {
+    expect(html).not.toContain('fetch(');
+    expect(html).not.toContain('caption-container');
+    expect(html).not.toContain('parseSrt');
+  });
+
   it('is deterministic — same manifest produces identical output', () => {
     const html2 = generateHtml(manifest);
     expect(html).toBe(html2);

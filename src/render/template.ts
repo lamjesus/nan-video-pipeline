@@ -58,40 +58,10 @@ ${JSON.stringify(artDirection).replace(/</g, '\\u003c')}
 ${sceneSections}
   </div>
   <script>
-    // SRT parser (browser-side)
-    function parseSrt(content) {
-      if (!content || !content.trim()) return [];
-      return content.split(/\\n\\n+/).filter(b => b.trim()).map(block => {
-        const m = /(\\d+)\\n(\\d{2}:\\d{2}:\\d{2},\\d{3})\\s*-->\\s*(\\d{2}:\\d{2}:\\d{2},\\d{3})\\n([\\s\\S]+)/.exec(block.trim());
-        if (!m) return null;
-        const ts = (s) => { const p = s.replace(',','.').split(':'); return +p[0]*3600 + +p[1]*60 + +p[2]; };
-        return { index: +m[1], start: ts(m[2]), end: ts(m[3]), text: m[4].trim() };
-      }).filter(Boolean);
-    }
-
-    // Load captions
-    let captions = [];
-    ${srtHref ? `fetch('${srtHref}').then(r => r.text()).then(t => { captions = parseSrt(t); }).catch(() => {});` : ''}
-
-    const captionEl = document.getElementById('caption-container');
-    let currentCaption = '';
-    function updateCaption(time) {
-      const active = captions.find(c => time >= c.start && time <= c.end);
-      const text = active ? active.text : '';
-      if (text !== currentCaption) {
-        captionEl.style.opacity = '0';
-        setTimeout(() => {
-          captionEl.textContent = text;
-          captionEl.style.opacity = '1';
-        }, 50);
-        currentCaption = text;
-      }
-    }
-
-    const tl = gsap.timeline({
-      paused: false,
-      onUpdate: () => updateCaption(tl.time()),
-    });
+    // Los captions van inline por escena (div.caption): no hay fetch de SRT
+    // ni sincronización en runtime. El timeline nace corriendo porque
+    // HyperFrames lo exige; el preview lo pausa hasta el click.
+    const tl = gsap.timeline({ paused: false });
     const scenes = document.querySelectorAll('.scene');
     scenes.forEach((scene) => {
       const start = parseFloat(scene.dataset.start);
