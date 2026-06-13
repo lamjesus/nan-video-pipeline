@@ -1,15 +1,18 @@
-# nan-video-pipeline — Documentación Completa
+# nan-video-pipeline — Referencia técnica
+
+> Referencia técnica completa del pipeline (semilla del futuro site de
+> documentación). Para la vista rápida, ver el [README](../README.md).
 
 ## Qué es
 
-Un pipeline de video generativo end-to-end que convierte un tema en un video narrado de formato vertical (9:16). Funciona con **7 etapas encadenadas**, cada una usando un modelo diferente del cluster NaN (OpenAI-compatible). Todo el código es open source, tipado con TypeScript, y tiene 195 tests.
+Un pipeline de video generativo end-to-end que convierte un tema en un video narrado de formato vertical (9:16). Funciona con **7 etapas encadenadas**, cada una usando un modelo diferente del cluster NaN (OpenAI-compatible). Todo el código es tipado con TypeScript y tiene 18 archivos de tests vitest.
 
 **Flujo de datos:**
 ```
 tema → (qwen3.6) → storyboard.yml → (gemma4) → imágenes → (kokoro) → audio → (whisper) → SRT → HTML/GSAP → (HyperFrames) → MP4
 ```
 
-**Output:** `assets/output/<slug>.mp4` — video 1080x1920, audio AAC, ~60MB, 1-2 minutos.
+**Output:** `assets/output/<slug>.mp4` — video 1080x1920, audio AAC (medido con los casos de prueba: ~56 MB para ~55 s).
 
 ---
 
@@ -20,10 +23,7 @@ nan-video-pipeline/
 ├── config.yml                  # Modelos, voz, providers (ajustable sin tocar TS)
 ├── .env                        # NAN_BASE_URL, NAN_API_KEY (secreto)
 ├── content/                    # Storyboards como YAML (datos, no código)
-│   ├── caso-ejemplo.yml
-│   ├── caso-local.yml
-│   ├── caso-numancia.yml
-│   └── caso-redes.yml
+│   └── caso-nan-community.yml  # El caso vivo (ver docs/caso-nan-community.md)
 ├── src/
 │   ├── config/index.ts         # Carga config.yml + .env + rutas + API
 │   ├── content/load.ts         # Cargador: parsea content/<slug>.yml y valida
@@ -53,19 +53,24 @@ nan-video-pipeline/
 │   ├── render/
 │   │   ├── template.ts         # index.html + styles.css deterministas (9:16)
 │   │   ├── motion.ts           # Motion: keywords → presets GSAP
+│   │   ├── srt.ts              # Parser SRT
 │   │   └── preview.ts          # preview.html reproducible con doble click
-│   ├── scripts/
-│   │   ├── doctor.ts           # Preflight: env, ffmpeg, NaN API, vitest
-│   │   └── models-check.ts     # Smoke test de cada modelo del cluster
+├── scripts/                    # En la RAÍZ del repo (no en src/)
+│   ├── doctor.ts               # Preflight: env, vitest, ffmpeg, hyperframes, NaN API
+│   └── models-check.ts         # Smoke test de cada modelo del cluster
 ├── assets/
-│   ├── images/<slug>/          # Imágenes generadas por la etapa de visión
+│   ├── images/<slug>/          # Imágenes elegidas por la etapa de visión
+│   ├── images/_pool/           # Pool local de imágenes (provider `local`)
 │   ├── audio/<slug>.mp3        # Narración generada por kokoro
-│   └── output/<slug>.mp4       # Video final
+│   └── output/<slug>.mp4       # Video final (y <slug>.srt)
 ├── renders/<slug>/             # Workspace de render (manifest + HTML + assets)
-├── tests/                      # 18 archivos, 195 tests vitest
+├── tests/                      # 18 archivos de tests vitest
 ├── docs/
+│   ├── REFERENCIA.md           # Este documento
 │   ├── TAREAS.md               # Reparto de trabajo con dueños y criterios
-│   └── TROUBLESHOOTING.md      # Problemas reales y soluciones
+│   ├── TROUBLESHOOTING.md      # Problemas reales y soluciones
+│   ├── caso-nan-community.md   # Ficha del caso vivo
+│   └── imagenes-ia.md          # Guía: imágenes con IA externa (modo local)
 └── package.json                # yarn, tsx, typescript, vitest
 ```
 
@@ -153,10 +158,11 @@ media:
 ### `.env` — Secretos
 
 ```bash
-NAN_BASE_URL=https://api.nan.builders/v1
-NAN_API_KEY=sk-...
-NAN_VOICE_ID=em_alex         # override de voz por defecto
-MEDIA_PROVIDERS=wikimedia,local  # override de providers
+NAN_BASE_URL=https://...     # base URL del cluster (API OpenAI-compatible)
+NAN_API_KEY=...              # token del miembro (secreto)
+NAN_VOICE_ID=ef_dora         # opcional: override de voz por defecto
+MEDIA_PROVIDERS=wikimedia,local  # opcional: override de providers
+MEDIA_MODE=local             # opcional: override del modo de imágenes
 PEXELS_API_KEY=...           # opcional, para Pexels
 ```
 
@@ -210,10 +216,10 @@ PEXELS_API_KEY=...           # opcional, para Pexels
 **Proceso por escena:**
 
 ### 0. Override
-Si ya existe `assets/images/<slug>/scene-XX.png`, se usa tal cual. Regenerar = borrarla o usar `--force`.
+Si ya existe `assets/images/<slug>/scene-XX.<ext>` (jpg/jpeg/png/gif/webp/svg), se usa tal cual. Regenerar = borrarla o usar `--force`.
 
 ### 1. Queries de búsqueda
-Una sola llamada a `qwen3.6` que genera una query de búsqueda por escena (1 llamada para TODAS). Si falla tras 3 intents, degrada a heurística: quita stopwords del `imagePrompt` y usa las 3 palabras restantes.
+Una sola llamada a `qwen3.6` que genera una query de búsqueda por escena (1 llamada para TODAS). Si falla tras 3 intentos, degrada a heurística: quita stopwords del `imagePrompt` y usa hasta 3 palabras restantes. Si una query no devuelve candidatas, se reintenta con una versión genérica (`generifyQuery`: sin nombres propios).
 
 ### 2. Buscar candidatas
 Cada provider (Wikimedia, Pexels, local) busca por la query. Devuelve `{url, title}`.
@@ -247,7 +253,7 @@ Los bytes de las candidatas que pasaron el pre-ranking se bajan con `fetch({ hea
 `mimo-v2.5` está CIEGO (no descarga URLs, alucina desde el nombre del fichero), por eso se usa gemma4 con bytes embebidos.
 
 ### 6. Elegir y guardar
-La candidata con mejor score se guarda en `assets/images/<slug>/scene-XX.png`. Se evita repetir la misma imagen entre escenas. Si alguna escena queda sin imagen, el pipeline falla con exit 1.
+La candidata con mejor score se guarda en `assets/images/<slug>/scene-XX.<ext>` (extensión derivada de la URL, `jpg` por defecto). Se evita repetir la misma imagen entre escenas. Si una escena queda sin candidata válida, se escribe un **placeholder SVG** oscuro con el id de la escena (la etapa no rompe el pipeline por una búsqueda vacía); solo sale con exit 1 si ni siquiera pudo guardarse una imagen para alguna escena.
 
 **Modo `local`:** Cero red. Solo lee `assets/images/_pool/`. El pool entero entra al pre-ranking por nombre de fichero (el nombre se convierte en texto: `numancia_hilltop-fog.jpg` → `"numancia hilltop fog"`).
 
@@ -393,8 +399,11 @@ Primera parte
 
 **Argumentos:**
 - `$1`: tema del video (obligatorio)
-- `$2`: slug (opcional, default `caso-generado`)
-- `$3+`: flags `--skip-<stage>` para runs parciales
+- `$2`: slug (opcional; si empieza por `--` se interpreta como flag, no como slug)
+- flags `--skip-<stage>` para runs parciales (pueden ir con o sin slug)
+
+Sin slug explícito se usa el sentinel interno `caso-generado`, que dispara el
+fallback: el YAML **más reciente** de `content/` por mtime.
 
 **Proceso:**
 
@@ -420,7 +429,7 @@ yarn produce "La comunidad que te da GPUs" caso-nan-community
 # Flujo 2: YAML no existe → genera con qwen3.6
 yarn produce "Un volcán que sepultó Pompeya" caso-vesubio
 
-# Forzar regeneración del guion (sobreescrbe el YAML existente)
+# Forzar regeneración del guion (sobreescribe el YAML existente)
 yarn script "tema" slug
 ```
 
@@ -544,41 +553,43 @@ interface Manifest {
 
 ## Modelo de datos: Storyboard (YAML)
 
-Los storyboards son **datos**, no código. Se generan con `yarn script` y se editan a mano:
+Los storyboards son **datos**, no código. Se generan con `yarn script` O se escriben a mano (como el caso vivo, `content/caso-nan-community.yml`):
 
 ```yaml
-# Generado por \`yarn script\` — tema: "Pan que mató a 100 personas en Colombia".
-channel: Historias Reales
-caseNumber: 104
-title: El Pan Envenenado de Medellín
+# Guion sobre la comunidad NaN — basado en la documentación oficial (PDFs)
+channel: NaN Community
+caseNumber: 1
+title: La comunidad que te da GPUs para construir con IA
 totalDuration: 60
 artDirection:
-  medium: 2D Vector Animation
-  lineWork: Bold, clean outlines
-  palette: Desaturated vintage tones, sepia, and muted reds
-  lighting: High contrast, dramatic shadows
-  texture: Smooth vector with subtle grain overlay
-  mood: Suspenseful, historical, ominous
-  composition: Centered subjects, rule of thirds
-  humanTreatment: Silhouettes or simplified stylized figures, no gore
-  constraints: No blood, no explicit violence
+  medium: Dark cinematic graphic novel illustration, editorial comic art
+  lineWork: Bold ink outlines, heavy cross-hatching in shadows
+  palette: Desaturated charcoal blacks, slate greys, deep blues, muted red accents
+  lighting: Low-key chiaroscuro, dramatic single light source, volumetric haze
+  texture: Heavy film grain, halftone dithering, cinematic vignette
+  mood: Ominous, somber, sense of hidden power
+  composition: Cinematic wide framing, strong depth, dramatic negative space
+  humanTreatment: Human presence through silhouettes and distant figures, faces obscured
+  constraints: No text, no watermark, no logos, no gore
 scenes:
   - id: scene-01
     block: GANCHO
     start: 0
     end: 6
-    voiceover: Imagina comprar un pan y morir en horas.
+    voiceover: "Imaginá tener acceso a GPUs de inferencia sin pagar una suscripción..."
     onScreenText:
-      - El Pan que Mató
-      - Medellín, 1991
-    imagePrompt: Close up of a rustic bread loaf on a wooden table
+      - "La comunidad NaN"
+      - "GPUs para construir"
+    imagePrompt: A dark server room with rows of glowing GPU racks, volumetric light beams
     motion: zoom-in lento
   # ... más escenas
 ```
 
 **Validación al cargar:**
 - `validateStoryboard()` verifica estructura (sin reglas de conteo de escenas)
-- El conteo de escenas es regla de GENERACIÓN, no de carga (caso-ejemplo tiene 9, otros pueden variar)
+- El conteo de escenas es regla de GENERACIÓN, no de carga (los casos pueden variar)
+- Las etapas toman el slug del primer argumento de la CLI; sin argumento, el
+  default es `caso-nan-community` (el caso vivo del repo)
 
 ---
 
@@ -668,28 +679,32 @@ El algoritmo de alineación es el corazón de la etapa de subtítulos:
 
 ---
 
-## Tests (195 tests, 18 archivos)
+## Tests (18 archivos, 205 tests)
 
-| Archivo | Tests | Cubre |
-|---------|-------|-------|
-| `tests/pipeline/storyboard-validation.test.ts` | 17 | `extractJson`, `validateStoryboard`, YAML round-trip |
-| `tests/pipeline/image-search.test.ts` | 30 | `deriveSearchTerms`, `buildSearchQueriesPrompt`, `parseSearchQueries`, `cosineSimilarity`, `shortlistByCosine`, `resolveMediaMode`, `findSceneOverride`, `extFromUrl`, `mimeFromExt`, `bestByScore` |
-| `tests/pipeline/subtitle-alignment.test.ts` | 7 | `alignSegments`, `toSRT`, `parseSRT` |
-| `tests/pipeline/subtitle-chunk.test.ts` | 6 | `chunkSegments` — word preservation, time contiguity, reindexing |
-| `tests/pipeline/subtitle-align-position.test.ts` | 4 | Regression: unmatched word placement |
-| `tests/pipeline/render-workspace.test.ts` | 11 | `buildCopyPlan`, `rescaleScenesToAudio`, `toWorkspaceManifest` |
-| `tests/pipeline/render-runner.test.ts` | 12 | `checkRenderDeps`, `runRender`, `muxAudio` (mocked) |
-| `tests/render/motion.test.ts` | 24 | `resolveMotion` — caso-ejemplo strings, keyword matching, case insensitive, fallback |
-| `tests/render/template.test.ts` | 15 | `generateHtml`, `generateCss` — determinism, escaping, data attributes |
-| `tests/render/preview.test.ts` | 5 | `generatePreviewHtml` — audio overlay, SRT inlining, XSS escape |
-| `tests/render/srt.test.ts` | 11 | `parseSrt`, `formatTimestamp` |
-| `tests/lib/nan-call.test.ts` | 4 | Semaphore max 3, retry backoff, slot release |
-| `tests/lib/ffprobe.test.ts` | 2 | `getAudioDuration` — null fallback |
-| `tests/lib/manifest.test.ts` | 12 | `buildManifest`, `validateManifest`, `discoverImages` |
-| `tests/lib/media/wikimedia.test.ts` | 3 | search, limit, empty query |
-| `tests/lib/media/index.test.ts` | 4 | `selectProvider` — defaults, env override, pexels opt-in, local mode |
-| `tests/lib/media/local.test.ts` | 9 | `filenameToText`, `LocalProvider` — temp dir cleanup |
-| `tests/lib/media/provider.test.ts` | 3 | Type compliance |
+Recuento medido el 2026-06-12 (`yarn test`, con los fixes de
+`fix/broken-main-and-tech-debt` aplicados). El recuento por archivo cambia con
+cada PR; el mapa de cobertura es lo estable:
+
+| Archivo | Cubre |
+|---------|-------|
+| `tests/pipeline/storyboard-validation.test.ts` | `extractJson`, `validateStoryboard`, YAML round-trip |
+| `tests/pipeline/image-search.test.ts` | `deriveSearchTerms`, `buildSearchQueriesPrompt`, `parseSearchQueries`, `shortlistByCosine`, `resolveMediaMode`, `findSceneOverride`, `extFromUrl`, `mimeFromExt`, `bestByScore`, `generifyQuery` |
+| `tests/pipeline/subtitle-alignment.test.ts` | `alignSegments`, `toSRT`, `parseSRT` |
+| `tests/pipeline/subtitle-chunk.test.ts` | `chunkSegments` — word preservation, time contiguity, reindexing |
+| `tests/pipeline/subtitle-align-position.test.ts` | Regression: unmatched word placement |
+| `tests/pipeline/render-workspace.test.ts` | `buildCopyPlan`, `rescaleScenesToAudio`, `toWorkspaceManifest` |
+| `tests/pipeline/render-runner.test.ts` | `checkRenderDeps`, `runRender`, `muxAudio` (mocked) |
+| `tests/render/motion.test.ts` | `resolveMotion` — keyword matching, case insensitive, fallback |
+| `tests/render/template.test.ts` | `generateHtml`, `generateCss` — determinism, escaping, data attributes |
+| `tests/render/preview.test.ts` | `generatePreviewHtml` — audio overlay, SRT inlining, XSS escape |
+| `tests/render/srt.test.ts` | `parseSrt`, `formatTimestamp` |
+| `tests/lib/nan-call.test.ts` | Semaphore max 3, retry backoff, slot release |
+| `tests/lib/ffprobe.test.ts` | `getAudioDuration` — null fallback |
+| `tests/lib/manifest.test.ts` | `buildManifest`, `validateManifest`, `discoverImages` |
+| `tests/lib/media/wikimedia.test.ts` | search, limit, empty query |
+| `tests/lib/media/index.test.ts` | `selectProvider` — defaults, env override, pexels opt-in, local mode |
+| `tests/lib/media/local.test.ts` | `filenameToText`, `LocalProvider` — temp dir cleanup |
+| `tests/lib/media/provider.test.ts` | Type compliance |
 
 **Ejecutar:** `yarn test` (vitest)
 
@@ -700,8 +715,9 @@ El algoritmo de alineación es el corazón de la etapa de subtítulos:
 ### `yarn doctor` — Preflight
 
 Verifica:
-1. `NAN_BASE_URL` y `NAN_API_KEY` en env
-2. `vitest` en devDependencies
+1. `NAN_BASE_URL` y `NAN_API_KEY` en env (carga `.env` vía `dotenv/config`)
+2. `vitest` en devDependencies (lee `package.json` por ruta relativa al script,
+   funciona desde cualquier cwd)
 3. `ffmpeg` y `ffprobe` en PATH
 4. `hyperframes` disponible
 5. Conectividad a NaN API (fetch `/models`)
